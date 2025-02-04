@@ -364,7 +364,7 @@ def reformat(tracks_folder_path):
     def get_track_number(file_path):
         audio = MP3(file_path, ID3=ID3)
         if 'TRCK' in audio:
-            log_data(f'audio num is {audio['TRCK']}')
+            # log_data(f'audio num is {audio['TRCK']}')
             return int(str(audio['TRCK']))
         return None
 
@@ -379,7 +379,7 @@ def reformat(tracks_folder_path):
         track_num += 1
 
 
-    # log_data(f'Folder')
+    log_data(f'Folder {tracks_folder_path} has been reformated')
 
 
 def change_album_cover(tracks_folder_path, new_album_cover_art_path):
@@ -409,8 +409,47 @@ def change_album_cover(tracks_folder_path, new_album_cover_art_path):
     log_data('Program Completed')
 
 
-def delete_track(track_path):
-    pass
+def delete_track(path):
+
+    split_path = path.replace('\\', '//').rsplit('//', 2)
+    parent_directory = split_path[0]
+    track = split_path[2]
+
+    old_url_text_path = os.path.join(parent_directory + '//old urls.txt')
+    filter_text_path = os.path.join(parent_directory + '//filter.txt')
+
+
+    
+    track_to_filter = ''
+    tracks_set = set()
+    os.remove(path)
+
+    with open(old_url_text_path, 'r') as file:
+        for line in file:     
+            if len(line.strip()) > 1:   
+                parsed_track_name = line.split('# ')[1].replace('\n', '') + '.mp3'
+                if parsed_track_name == track:
+                    track_to_filter += line
+                    continue
+                tracks_set.add(line)
+
+    
+
+    with open(old_url_text_path, 'w') as file:
+        for track in tracks_set:
+            file.write(track)
+
+    if not os.path.exists(filter_text_path):
+        with open(filter_text_path, 'x', encoding="utf-8") as file:
+            file.write((track_to_filter.replace('\n','') + '\n'))
+        file.close()
+    else:
+        with open(filter_text_path, 'a', encoding="utf-8") as file:
+            file.write((track_to_filter.replace('\n','') + '\n'))
+        file.close()
+
+    reformat((parent_directory + '//tracks'))
+    log_data(f'Track has been deleted from {path}')
 
 
 
@@ -420,25 +459,11 @@ def get_input():
         "manual/m"
         "copy/c"
         "all"
-        "reformat/r"
-        "coverart/ca"
-        "quit/q"
-        "command info/info/i" 
-        """.replace('   ','') 
-
-
-    available_modes = """\
-        "ytber/yt" = Search for ONE youtuber in the youtubers dictionary, if found add all the videos 
-        "all" = 
-        "manual/m" = 
-        "copy/c" = 
-        "all" = 
         "reformat/r" "<MP3 File Path>"  = 
         "coverart/ca" "<MP3 File Path>" = 
-        "quit/q" = 
-        "command info/info/i" = 
-        NOTE - Download will ALWAYS skip videos with "beat" or "instrumental" in the title 
-
+        "delete/del/d" "<MP3 File Path>"  = 
+        "quit/q"
+        "command info/info/i" 
         """.replace('   ','') 
     
     while True:
@@ -491,8 +516,8 @@ def get_input():
 
         elif mode.lower().startswith('delete') or mode.lower().startswith('del') or mode.lower().startswith('d '):
             path = os.path.join(mode[6:] if mode.lower().startswith('delete') else (mode[2:] if mode.lower().startswith('d ') else mode[4:]))
-
-            pass
+            delete_track(path)
+            continue
 
         elif mode.lower().startswith('q') or mode.lower().startswith('quit'):
             break
