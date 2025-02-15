@@ -9,18 +9,10 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK
 
 
-music_dir = os.getenv('MUSIC_PATH')
+
 log_number = (sum(1 if '.log'in i else 2 for i in os.listdir('./logs')) + 1) if len(os.listdir('./logs')) > 0 else 1
 logging.basicConfig(filename=f'logs/example{log_number}.log', level=logging.INFO, filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-
-
-youtubers = [
-        {'jpobs':{'directory_path': os.path.join((music_dir + r'\iTunes\tracks\auto\jpobs')).replace('\\', '//'), 
-        'yt_link': 'https://www.youtube.com/@Joey-gq2iw', 
-        'album_cover_path': os.path.join((music_dir + r"\album covers\1.jpg")).replace('\\', '//')}}
-]
 
 
 def log_data(data='Default data', print_bool=True, mode='default'):
@@ -43,6 +35,8 @@ def input_log(request):
     # logs the users input
     request_data = input(request)
     logging.info(request_data)
+    if "path" in request and not os.path.exists(request_data.replace('"','').replace('\\', '//')):
+        log_error(f'ERROR PATH COULD NOT BE FOUND FOR {request_data}')
     return request_data.replace('"', '')
 
 
@@ -66,56 +60,57 @@ def download(url, track_number, file_destination, album_cover_path, album_cover_
     valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
     valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
     valid_title = valid_title.replace("[Lyric Video]", '').replace('(Unreleased)', '')
+    valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
 
     if 'beat' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
         log_data(f'Beat video found, skipping {vid.title}')
         log_data()
         return f'beat/instrumental ### {vid.title}'
 
-    log_data(f'Downloading track {valid_title}', False)
-    audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
+    # log_data(f'Downloading track {valid_title}', False)
+    # audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
     
-    # Convert to MP3 using moviepy
-    mp3_file_path = os.path.splitext(audio_file_path)[0] + '.mp3'
-    audio_clip = AudioFileClip(audio_file_path)
-    audio_clip.write_audiofile(mp3_file_path, codec='mp3', bitrate='192k')
+    # # Convert to MP3 using moviepy
+    # mp3_file_path = os.path.splitext(audio_file_path)[0] + '.mp3'
+    # audio_clip = AudioFileClip(audio_file_path)
+    # audio_clip.write_audiofile(mp3_file_path, codec='mp3', bitrate='192k')
     
-    # set MP3 data
-    try:
-        audio = MP3(mp3_file_path, ID3=ID3)
-    except:
-        # add audio tag if it doesn't exist
-        audio.add_tags()
+    # # set MP3 data
+    # try:
+    #     audio = MP3(mp3_file_path, ID3=ID3)
+    # except:
+    #     # add audio tag if it doesn't exist
+    #     audio.add_tags()
     
-    # open album cover photo
-    with open( album_cover_path, 'rb') as file:
-        cover_data = file.read()
-        file.close()
+    # # open album cover photo
+    # with open( album_cover_path, 'rb') as file:
+    #     cover_data = file.read()
+    #     file.close()
     
-    apic = APIC(
-        encoding=3,
-        mime='image/jpeg',
-        type=3,
-        desc='Cover',
-        data=cover_data
-    )
+    # apic = APIC(
+    #     encoding=3,
+    #     mime='image/jpeg',
+    #     type=3,
+    #     desc='Cover',
+    #     data=cover_data
+    # )
     
-    audio.tags.add(apic)
+    # audio.tags.add(apic)
     
-    audio['TIT2'] = TIT2(encoding=3, text=valid_title) # Title
-    audio['TALB'] = TALB(encoding=3, text=album_cover_title) # Album 
-    audio['TRCK'] = TRCK(encoding=3, text=str(track_number)) # Track number
-    audio['TPE1'] = TPE1(encoding=3, text='YouTube Music') # Lead Artist/Performer/Soloist/Group
+    # audio['TIT2'] = TIT2(encoding=3, text=valid_title) # Title
+    # audio['TALB'] = TALB(encoding=3, text=album_cover_title) # Album 
+    # audio['TRCK'] = TRCK(encoding=3, text=str(track_number)) # Track number
+    # audio['TPE1'] = TPE1(encoding=3, text='YouTube Music') # Lead Artist/Performer/Soloist/Group
 
     
     
-    audio.save()
-    os.remove(audio_file_path)
+    # audio.save()
+    # os.remove(audio_file_path)
     
-    os.makedirs(file_destination + '//tracks', exist_ok=True)
-    shutil.move(mp3_file_path.replace('\\', '/'), file_destination + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
+    # os.makedirs(file_destination + '//tracks', exist_ok=True)
+    # shutil.move(mp3_file_path.replace('\\', '/'), file_destination + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
     
-    log_data('Download Completed\n')
+    # log_data('Download Completed\n')
     return valid_title
     
 
@@ -211,7 +206,7 @@ def main(yt_vids_link=None, path=None, album_cover_path=None, mode=None):
                 log_data('Error amount exceeded threshhold')
                 log_data(data_set)
                 log_error('TOO MANY ERRORS')
-    
+     
     elif mode == 'copy':
         log_data('Running copy mode\n')
         
@@ -259,10 +254,6 @@ def main(yt_vids_link=None, path=None, album_cover_path=None, mode=None):
             log_data('Error amount exceeded threshhold')
             log_data(data_set)
             log_error('TOO MANY ERRORS')
-    
-    elif mode == 'reformat':
-        pass
-
 
     else:
         log_error('Missing mode in main function')
@@ -270,6 +261,29 @@ def main(yt_vids_link=None, path=None, album_cover_path=None, mode=None):
     #####################
     ### data writing ####
     #####################
+
+
+
+
+
+
+
+    for i in data_set:
+        if i.startswith('beat/instrumental'):
+            continue
+        parsed_track_name = i.split('# ')[1]
+        log_data(f'Added track: {parsed_track_name}', False)
+        log_data(f'Track can be found in {path}', False)
+        log_data('')
+        log_data('')
+        log_data('')
+    return
+
+
+
+
+
+   
     try:
         if len(data_set) > 0:
             if not os.path.exists(old_url_text_path):
@@ -340,7 +354,7 @@ def manual():
     # mode to just do one yt link only 
  
     yt_vids_link = input_log('Copy and paste yt video link here: ')
-    path = input_log('Enter path here: ') # 'r' needs to be in front of string
+    path = input_log('Copy and paste folder destination path here: ') # 'r' needs to be in front of string
     album_cover_path = input_log('Enter album cover art path here: ')
     main(yt_vids_link, path, album_cover_path, 'manual')
 
@@ -459,9 +473,9 @@ def get_input():
         "manual/m"
         "copy/c"
         "all"
-        "reformat/r" "<MP3 File Path>"  = 
-        "coverart/ca" "<MP3 File Path>" = 
-        "delete/del/d" "<MP3 File Path>"  = 
+        "reformat/r" "<MP3 File Path>"  
+        "coverart/ca" "<MP3 File Path>" 
+        "delete/del/d" "<MP3 File Path>"  
         "quit/q"
         "command info/info/i" 
         """.replace('   ','') 
@@ -531,6 +545,33 @@ def get_input():
             continue
 
 
+
+
+
+######################### PLEASE READ BELOW TO USE "all" AND "ytber/yt" COMMANDS #######################
+
+# Set the MUSIC_PATH environment variable to the base directory of your music collection.
+music_dir = os.getenv('MUSIC_PATH')
+
+# Example of youtubers list with the environment variable
+# youtubers = [
+#     {'jpobs': {'directory_path': os.path.join((music_dir + r'\iTunes\tracks\auto\jpobs')).replace('\\', '//'), 
+#                'yt_link': 'https://www.youtube.com/@Joey-gq2iw', 
+#                'album_cover_path': os.path.join((music_dir + r"\album covers\1.jpg")).replace('\\', '//')}}
+# ]
+
+'''
+If you want to use the "all" or "ytber/yt" command and don’t want to set up the "MUSIC_PATH" environment variable, you can manually specify the full path as shown below:
+
+youtubers = [
+    {'jpobs': {'directory_path': 'C:\\Users\\user1\\Music\\iTunes\\tracks\\auto\\jpobs'.replace('\\', '//'),
+               'yt_link': 'https://www.youtube.com/@Joey-gq2iw',
+               'album_cover_path': 'C:\\Users\\user1\\Music\\album covers\\1.jpg'.replace('\\', '//')}}
+]
+
+'''
+
+
+
+
 get_input()
-
-
