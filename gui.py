@@ -13,7 +13,11 @@ class MyGUI():
         self.btns = {}
         self.controller = controller(youtubers)
         self.display_youtuber_buttons(youtubers)
+        self.display_quit_button()
         self.root.mainloop()
+
+        
+
 
 
     def display_youtuber_buttons(self, youtubers):
@@ -32,15 +36,15 @@ class MyGUI():
             self.btns[youtuber] = btn
             buttonframe.pack(pady=200)
 
-        quit_button = tk.Button(buttonframe, text="Quit", command=self.root.quit)
-        quit_button.grid(row=j+1, column= 1, sticky=tk.W + tk.E)
-        buttonframe.pack()
-       
 
-    def display_quit_button(self, row_num):
-        quit_button = tk.Button(self.root, text="Quit", command=self.root.quit)
-        quit_button.grid(row=row_num+1, column=0, columnspan=3, pady=10)
 
+    def display_quit_button(self):
+        quitbuttonframe = tk.Frame(self.root, bg="lightgray", height=50)
+        quitbuttonframe.pack(fill='x')
+
+        quit_button = tk.Button(quitbuttonframe, text="Quit", command=self.root.quit)
+        quit_button.grid(column=0, columnspan=3, pady=10)
+        quit_button.pack(pady=10)
     
     def display_options(self):
         pass
