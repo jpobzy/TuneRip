@@ -1,23 +1,23 @@
-from download import download_video
-from validator import validate_path
+from app.downloadFile import download_video
+from app.validator import validate_path
 import os
 from pytubefix import YouTube, Channel
-
+from database.database import database
 
 import yaml
 
 class controller():
     def __init__(self, path_env):
-        self.youtubers_dict = self.import_youtubers(path_env)
-        if len(self.youtubers_dict) == 0:
-            print('ERROR, NO YT DICT WAS FOUND')
-        else:
-            print('Controller successfully loaded')
+        self.youtubersDict = self.importYoutubers()
+        self.db = database(self.youtubersDict)
+        
+        # print(f'cache is {self.db.cache}')
 
-    def import_youtubers(self, path_env):
+    
+    def importYoutubers(self):
         youtubers = {}
         res = []
-        with open('youtubers.yaml') as file:
+        with open('./app/youtubers.yaml') as file:
             try:
                 file_dict = yaml.safe_load(file)
                 youtubers = file_dict['youtubers']
@@ -27,29 +27,33 @@ class controller():
         return youtubers
 
 
-    def getUserInfo(self):
-        retVal = []
-        idval = 1
-        for key, val in self.youtubers_dict.items():
-            idval+=1
-            try:
-                channel = Channel(val['yt_link'], 'WEB')
-                retVal.append({'id': idval,'name':  channel.channel_name, 'pfp': channel.thumbnail_url,})
-            except:
-                print(f"ERROR UNABLE TO FIND YOUTUBER {key}")
-                continue
-        return retVal
+    
+
+
+
+    # def getUserInfo(self):
+    #     retVal = []
+    #     idval = 1
+    #     for key, val in self.youtubersDict.items():
+    #         idval+=1
+    #         try:
+    #             channel = Channel(val['yt_link'], 'WEB')
+    #             retVal.append({'id': idval,'name':  channel.channel_name, 'pfp': channel.thumbnail_url,})
+    #         except:
+    #             print(f"ERROR UNABLE TO FIND YOUTUBER {key}")
+    #             continue
+    #     return retVal
 
 
      # def input_chosen(self, input):
     #     print(f'input is: {input}')
-    #     print(f'download_path is: {self.youtubers_dict.get(input)['directory_path']}')
+    #     print(f'download_path is: {self.youtubersDict.get(input)['directory_path']}')
     #     # self.download = download_video()
 
     #     # next(iter(youtubers[i]))
         
     #     try:
-    #         artist = self.youtubers_dict.get(input)
+    #         artist = self.youtubersDict.get(input)
     #         artist_url = self.get_artist_url(artist['yt_link'])
     #         album_cover_path = validate_path(artist['album_cover_path'])
     #         artist_directory_path = validate_path(artist['directory_path'])

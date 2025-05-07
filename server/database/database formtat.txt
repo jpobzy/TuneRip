@@ -1,0 +1,18 @@
+[
+    {
+        'user': 'jpobs', 
+        'channelName': 'jpobzy',
+        'directory_path' : '\iTunes\tracks\auto\test',
+        'yt_link' : 'https://www.youtube.com/test',
+        'album_cover_path' : '\album covers\1.jpg',
+        'ytChannelProfileUrl': 'https://www.youtube.com/image1'
+    },
+    {
+        'user': '2', 
+        'channelName': 'user2',
+        'directory_path' : '\iTunes\tracks\auto\test2',
+        'yt_link' : 'https://www.youtube.com/test2',
+        'album_cover_path' : '\album covers\2.jpg',
+        'ytChannelProfileUrl': 'https://www.youtube.com/image2'
+    },
+]

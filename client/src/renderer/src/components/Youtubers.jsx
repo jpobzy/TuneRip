@@ -8,7 +8,8 @@ export default function Youtubers() {
   const numbers = [1, 2, 3, 4, 5];
 
   async function getUsers(){
-      const response = await axios.get('http://localhost:8080/youtubers');
+      const response = await axios.get('http://localhost:8080/users');
+      console.log('data is')
       console.log(response.data);
       setUsers(response.data)
   }
@@ -22,9 +23,12 @@ export default function Youtubers() {
       <h1 >Youtubers</h1>
       <ul>
       {users.map((user) =>
-        <YoutuberCard user={user} key={user.id}/>
+        <YoutuberCard 
+        name={user.name} 
+        thumbnailUrl={user.userURL} 
+        key={user.id}/>
+        
         )}
-
       </ul>
 
 
