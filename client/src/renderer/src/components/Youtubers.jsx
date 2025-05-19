@@ -1,18 +1,55 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
+import UploadImg from './UploadImg';
+import AlbumCoversCard from './AlbumCoverCard';
+import '../assets/youtubers.css'
 
-export default function Youtubers() {
+
+export default function Youtubers({ onCardClick }) {
 
   const [users, setUsers] = useState([])
-  const numbers = [1, 2, 3, 4, 5];
+  const [cardClicked, setCardClicked] = useState(false)
+  const [albumCoverChosen, setAlbumCoverChosen] = useState(false)
+  const [albumCoverFileNames, setAlbumCoverFileNames] = useState([])
+  const [chosenUser, setChosenUser] = useState([])
+
+
+  const handleCardClicked = async(username) => {
+    setCardClicked(true);
+    setChosenUser(username)
+    getAllCovers();
+  }
 
   async function getUsers(){
       const response = await axios.get('http://localhost:8080/users');
-      console.log('data is')
-      console.log(response.data);
       setUsers(response.data)
   }
+
+
+
+  async function getAllCovers() {
+      const response = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
+      setAlbumCoverFileNames(response.data.files)
+  };
+
+  const handleCoverClicked = async(file) =>{
+    setAlbumCoverFileNames([])
+    downloadFromUser(file)
+  }
+
+
+
+  async function downloadFromUser(albumCover){
+    const response = await axios.get(`http://localhost:8080/download/${chosenUser}/${albumCover}`);
+    setAlbumCoverChosen(true)
+  }
+
+  async function resetAll(){
+    setCardClicked(false)
+    setAlbumCoverChosen(false)
+  }
+
 
   useEffect(()=> {
     getUsers();
@@ -20,15 +57,46 @@ export default function Youtubers() {
     
   return (
     <div>
-      <h1 >Youtubers</h1>
+    
       <ul>
-      {users.map((user) =>
-        <YoutuberCard 
-        name={user.name} 
-        thumbnailUrl={user.userURL} 
-        key={user.id}/>
-        
+      <div >
+        {cardClicked ? (
+          albumCoverChosen ? (
+            console.log('hello')
+          ) : (
+          <div className='album-cover-containter'>
+            {Object.entries(albumCoverFileNames).map((filename, index)=>(
+              <AlbumCoversCard
+              filename={filename[1]}
+              onclick={()=>handleCoverClicked(filename[1])}
+              key ={index+1}
+              />
+            ))}
+            <UploadImg />
+          </div>
+          
+          )
+        ) : (
+          <div >
+              <h1 className='header'>Youtubers</h1>
+            <div className='user-container'>
+            { 
+              Object.entries(users).map((item, index) =>(
+              <YoutuberCard
+                name = {item[0]}
+                userPFP={item[0]}
+                onClick={()=>handleCardClicked(item[0])}
+                key = {index+1}
+              />
+            ))}
+            </div>
+          </div>
         )}
+      </div>
+
+      {<div>
+        <button onClick={() => resetAll()}> reverse</button>
+      </div> }
       </ul>
 
 

@@ -1,0 +1,29 @@
+.loading{
+    position: right;
+}
+
+
+.user-container {
+    display: grid;
+    grid-template-columns: 2fr 2fr;
+    gap: 0.5rem;
+}
+
+.avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+}
+  
+
+.user-card {
+    height: 120px;
+    padding: 0.5rem;
+    border: 1px solid grey;
+    border-radius: 45px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+.user-card:hover {
+    background-color: #d9e8f0;
+}

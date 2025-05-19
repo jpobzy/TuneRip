@@ -4,18 +4,20 @@ from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureTy
 import os, shutil, re
 # from log import log_data, log_warning, log_error
 from pytubefix import YouTube, Channel
+from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(link_url='', track_number=None, artist_directory_path='', album_cover_path='', album_cover_title='', debug_mode=False):
+def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', debug_mode=True):
     count = 0
+    print(f"TRACK NUM: {trackNum}")
 
-    vid = YouTube(link_url, 'WEB') # set both to true 
+    vid = YouTube(url, 'WEB') # set both to true 
     while vid.author == 'unknown':
         # log_data('finding author')
-        vid = YouTube(link_url, 'WEB')
+        vid = YouTube(url, 'WEB')
         if count == 10:
-            # log_error(f'unable to find track {link_url}')
-            raise ValueError(f'unable to find track {link_url}')
+            # log_error(f'unable to find track {url}')
+            raise ValueError(f'unable to find track {url}')
         count += 1
 
     # Download the audio only
@@ -27,7 +29,7 @@ def download_video(link_url='', track_number=None, artist_directory_path='', alb
     valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
     valid_title = valid_title.replace("[Lyric Video]", '').replace(' (Unreleased) ', '')
     valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
-    valid_title = valid_title.replace(" (Unreleased Remix) ", '')
+    valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
     valid_title = re.sub(r'\[.*?\]', '', valid_title) 
 
     
@@ -37,9 +39,21 @@ def download_video(link_url='', track_number=None, artist_directory_path='', alb
     
     if debug_mode == True: ##################################################################################################
         # print_colored_text('red', f'Title is {re.sub(r'\[.*?\]', '', valid_title)}')
-        # print_colored_text('red', f'track number is {track_number}')
+        # print_colored_text('red', f'track number is  trackNum}')
         # print_colored_text('red', 'DEBUG IS ENABLED, SKIPPING TRACK BEING DOWNLOADED')
         return valid_title
+
+
+
+
+
+
+
+
+
+
+
+#####################################################################################################
 
     # log_data(f'Downloading track {valid_title}', False)
     audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
@@ -57,7 +71,7 @@ def download_video(link_url='', track_number=None, artist_directory_path='', alb
         audio.add_tags()
     
     # open album cover photo
-    with open( album_cover_path, 'rb') as file:
+    with open( albumCoverSrc, 'rb') as file:
         cover_data = file.read()
         file.close()
     
@@ -72,17 +86,21 @@ def download_video(link_url='', track_number=None, artist_directory_path='', alb
     audio.tags.add(apic)
     
     audio['TIT2'] = TIT2(encoding=3, text=valid_title) # Title
-    audio['TALB'] = TALB(encoding=3, text=album_cover_title) # Album 
-    audio['TRCK'] = TRCK(encoding=3, text=str(track_number)) # Track number
+    audio['TALB'] = TALB(encoding=3, text=albumCoverTitle) # Album 
+    audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
     audio['TPE1'] = TPE1(encoding=3, text='YouTube Music') # Lead Artist/Performer/Soloist/Group
 
     
     
     audio.save()
-    os.remove(audio_file_path)
-    
-    # os.makedirs(artist_directory_path + '//tracks', exist_ok=True)
-    # shutil.move(mp3_file_path.replace('\\', '/'), artist_directory_path + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
+    os.remove(audio_file_path) # deletes mp4 file
+
+    os.makedirs(trackDest / 'tracks', exist_ok=True)
+    shutil.move(mp3_file_path.replace('\\', '/'), trackDest /'tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
+
+
+    # os.makedirs(trackDest + '//tracks', exist_ok=True)
+    # shutil.move(mp3_file_path.replace('\\', '/'), trackDest + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
     
     # log_data('Download Completed\n')
     return valid_title

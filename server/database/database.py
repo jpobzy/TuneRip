@@ -1,25 +1,19 @@
 from pymongo import MongoClient
-
-
-from pytubefix import YouTube, Channel
-
+import pymongo
+import datetime
 
 
 class database():
-    def __init__(self, data):
+    def __init__(self, data, insertCallback):
         client = MongoClient("localhost", 27017)
         self.youtubers = data
+        self.callback = insertCallback
         self.db  = client['youtube']
         self.users = self.db['users']
-
-        self.cache = []
+        self.tracks = self.db['tracks']
+        self.cache = {} # user : ytLink
         self.loadCache()
-
-        # print(client.list_database_names())
-        # print(self.db.list_collection_names())
-
-    
-
+        
 
     def loadCache(self):
         cur = self.users.find()    
@@ -27,30 +21,61 @@ class database():
 
         if len(results)==0: 
             print('db was empty, inserting users')
-            self.insertUser(self.youtubers)
-           
+            userList = self.callback()
+            self.users.insert_many(userList)
+            self.tracks.create_index('trackId', unique=True)
+
         for doc in self.users.find():
-            self.cache.append({'id': doc['id'], 'name': doc['name'], 'userURL' : doc['ytChannelProfileUrl']}) 
+            self.cache[doc['name']] = doc['ytLink']
+
         return
 
-    def insertUser(self, youtubersDict):
-        idval = 1
-        for key, val in youtubersDict.items():
-            channel = Channel(val['yt_link'], 'WEB')
-            try:
-                channel = Channel(val['yt_link'], 'WEB')
-                self.users.insert_one({'id': idval, 
-                               'name':  channel.channel_name, 
-                               'ytChannelProfileUrl': channel.thumbnail_url,
-                                'yt_link': val['yt_link'],
-                               'directory_path': val['directory_path'].encode('unicode_escape').decode(),
-                               'album_cover_path' : val['album_cover_path'].encode('unicode_escape').decode()
-                               })
-                idval+=1
-            except Exception as error :
-                print(f"ERROR UNABLE TO FIND USER {key} with error {error}")
-                continue
+
+    def insertTrackIntoDB(self, user, albumTitle, trackName, videoId, status, albumCoverFile):
+        data = {
+            'user': user,
+            'albumTitle': albumTitle,
+            'trackName': trackName,
+            'trackId': videoId,
+            'status': status,
+            'albumCoverImageFile': albumCoverFile,
+            'whenRecordAdded': datetime.datetime.now()
+        }
+        self.tracks.insert_one(data)
         return
+
+
+
+    def checkIfTrackExists(self, user, trackId):
+        return True if self.tracks.find_one({'user': user, 'trackId': trackId}) != None else False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def insertUser(self, data):
+        self.users.insert_one(data)
+        return 
             
 
     def displayDB(self):
@@ -73,3 +98,9 @@ class database():
             res.append(user)
         return res
 
+
+    def getUserInfo(self, key):
+        ytLink = [item for item in filter(lambda x: x.get('name') == key, self.cache)][0]['ytLink']
+        return ytLink 
+    
+        
