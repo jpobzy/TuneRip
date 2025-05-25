@@ -3,7 +3,7 @@ import electronLogo from './assets/electron.svg'
 import Youtubers from './components/Youtubers'
 import './assets/app.css'
 import React, { useEffect, useState } from 'react'
-
+import DownloadedShowcase from './components/DownloadedShowcase'
 
 function App() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
@@ -27,7 +27,6 @@ function App() {
       )
 
       }
-  
     </>
   )
 }

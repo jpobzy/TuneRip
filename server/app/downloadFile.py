@@ -7,14 +7,13 @@ from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', debug_mode=True):
+def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', debug_mode=False):
     count = 0
-    print(f"TRACK NUM: {trackNum}")
-
-    vid = YouTube(url, 'WEB') # set both to true 
+    
+    vid = YouTube(url) # set both to true 
     while vid.author == 'unknown':
         # log_data('finding author')
-        vid = YouTube(url, 'WEB')
+        vid = YouTube(url)
         if count == 10:
             # log_error(f'unable to find track {url}')
             raise ValueError(f'unable to find track {url}')
@@ -22,6 +21,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
 
     # Download the audio only
     audio_download = vid.streams.get_audio_only()    
+   
 
     valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
     valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
@@ -33,27 +33,21 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     valid_title = re.sub(r'\[.*?\]', '', valid_title) 
 
     
-    if 'beat' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
+    if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
         # log_warning(f'Beat video found, skipping {vid.title}')
+        print(f'Beat video found, skipping {vid.title}')
         return f'beat/instrumental ### {vid.title}'
     
     if debug_mode == True: ##################################################################################################
         # print_colored_text('red', f'Title is {re.sub(r'\[.*?\]', '', valid_title)}')
         # print_colored_text('red', f'track number is  trackNum}')
         # print_colored_text('red', 'DEBUG IS ENABLED, SKIPPING TRACK BEING DOWNLOADED')
+        
+        print('DEBUG MODE IS ENABLED, RETURNING BEFORE DOWNLOADING AUDIO')
         return valid_title
 
 
-
-
-
-
-
-
-
-
-
-#####################################################################################################
+    #####################################################################################################
 
     # log_data(f'Downloading track {valid_title}', False)
     audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
@@ -104,5 +98,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     
     # log_data('Download Completed\n')
     return valid_title
+
+
 
 

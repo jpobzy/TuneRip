@@ -4,3 +4,5 @@ mutagen
 moviepy==1.0.3
 pyyaml
 flask-cors
+# eventlet
+colorthief

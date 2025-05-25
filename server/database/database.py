@@ -4,9 +4,8 @@ import datetime
 
 
 class database():
-    def __init__(self, data, insertCallback):
+    def __init__(self, insertCallback):
         client = MongoClient("localhost", 27017)
-        self.youtubers = data
         self.callback = insertCallback
         self.db  = client['youtube']
         self.users = self.db['users']
@@ -51,7 +50,11 @@ class database():
 
 
 
+    def addNewUser(self, data):
+        self.users.insert_one(data)
 
+        self.cache[data['name']] = data['ytLink']
+        return
 
 
 

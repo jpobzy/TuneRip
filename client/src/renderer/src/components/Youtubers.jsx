@@ -4,21 +4,27 @@ import YoutuberCard from './YoutuberCard';
 import UploadImg from './UploadImg';
 import AlbumCoversCard from './AlbumCoverCard';
 import '../assets/youtubers.css'
-
+import DownloadedShowcase from './DownloadedShowcase';
+import { Palette } from 'color-thief-react';
+import AddUserForm from '../components/AddUserForm'
 
 export default function Youtubers({ onCardClick }) {
 
-  const [users, setUsers] = useState([])
-  const [cardClicked, setCardClicked] = useState(false)
-  const [albumCoverChosen, setAlbumCoverChosen] = useState(false)
-  const [albumCoverFileNames, setAlbumCoverFileNames] = useState([])
-  const [chosenUser, setChosenUser] = useState([])
+  const [users, setUsers] = useState([]);
+  const [cardClicked, setCardClicked] = useState(false);
+  const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
+  const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
+  const [chosenUser, setChosenUser] = useState([]);
+  const [coverChosen, setCoverChosen] = useState([])
+  const [albumCoverGradientsMap, setAlbumCoverGradientsMap] = useState({})
 
 
   const handleCardClicked = async(username) => {
     setCardClicked(true);
     setChosenUser(username)
-    getAllCovers();
+    const response = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
+    setAlbumCoverFileNames(response.data.files)
+    setAlbumCoverGradientsMap(response.data.paletteMap)
   }
 
   async function getUsers(){
@@ -26,24 +32,14 @@ export default function Youtubers({ onCardClick }) {
       setUsers(response.data)
   }
 
-
-
-  async function getAllCovers() {
-      const response = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
-      setAlbumCoverFileNames(response.data.files)
-  };
-
   const handleCoverClicked = async(file) =>{
     setAlbumCoverFileNames([])
-    downloadFromUser(file)
-  }
-
-
-
-  async function downloadFromUser(albumCover){
-    const response = await axios.get(`http://localhost:8080/download/${chosenUser}/${albumCover}`);
+  
+    const response = await axios.get(`http://localhost:8080/download/${chosenUser}/${file}`);
+    setCoverChosen(file)
     setAlbumCoverChosen(true)
   }
+
 
   async function resetAll(){
     setCardClicked(false)
@@ -58,13 +54,19 @@ export default function Youtubers({ onCardClick }) {
   return (
     <div>
     
-      <ul>
+
       <div >
         {cardClicked ? (
           albumCoverChosen ? (
-            console.log('hello')
+            // <DownloadedShodwcase albumCoverSrc={albumCoverGradientsMap[coverChosen]}/>
+            <div>
+                {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>}
+            
+            </div>
+           
           ) : (
-          <div className='album-cover-containter'>
+          <div >
+            <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(
               <AlbumCoversCard
               filename={filename[1]}
@@ -72,8 +74,14 @@ export default function Youtubers({ onCardClick }) {
               key ={index+1}
               />
             ))}
-            <UploadImg />
+
+            </div>
+
+            <div>
+              <UploadImg />
+            </div>
           </div>
+     
           
           )
         ) : (
@@ -90,6 +98,8 @@ export default function Youtubers({ onCardClick }) {
               />
             ))}
             </div>
+
+            <AddUserForm />
           </div>
         )}
       </div>
@@ -97,7 +107,6 @@ export default function Youtubers({ onCardClick }) {
       {<div>
         <button onClick={() => resetAll()}> reverse</button>
       </div> }
-      </ul>
 
 
     </div>

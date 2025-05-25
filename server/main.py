@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 from app.controllers.controller import controller
-from flask import send_from_directory 
-
-import os
+from flask import send_from_directory, redirect
+from flask import Flask, render_template, Response, stream_with_context
+import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
@@ -19,9 +19,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALBUM_COVER_FOLDER'] = ALBUM_COVER_FOLDER
 
 path_env = 'MUSIC_PATH'
-controller_obj = controller(path_env)
 
-
+controller_obj = controller()
 
 @app.route("/")
 def hello_world():
@@ -53,9 +52,8 @@ def getAlbumCover(route):
 
 @app.route('/download/<string:user>/<string:albumcoverfilename>')
 def downloadUser(user, albumcoverfilename):
-    print(f'downloding for user {user}, with album cover {albumcoverfilename}')
     controller_obj.downloadVideos(user, albumcoverfilename)
-    
+    print(f'downloding for user {user}, with album cover {albumcoverfilename}')    
     return {'Success': True}
 
 
@@ -70,9 +68,38 @@ def getAlbumCoverFileNames():
     return jsonify(controller_obj.returnAlbumCoverFileNames())
 
 
+@app.route('/newUser', methods=['POST'])
+def createNewUser():
+    controller_obj.addNewUser(json.loads(request.data))
+    return '', 204
+
+
+@app.route('/downloadProgress')
+def sse():
+    print('download progress was req')
+    def event_stream():
+        print('hello world')
+        while True:
+            try:
+                data = controller_obj.queue.get_nowait()
+                print(f'new data is {data}')
+                time.sleep(1)
+                yield f'data: Downloaded {data} \n\n'
+            except queue.Empty:
+                # print('keeping connection alive')
+                time.sleep(1)
+                data = None
+                yield ": keep-alive\n\n"
+            except Exception as e:
+                print("Caught other exception:", e)
+                data = None
+    return Response(stream_with_context(event_stream()), content_type='text/event-stream')
+
+
+
 
 
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=8080, use_reloader=False)
+    app.run(debug=False, port=8080, use_reloader=False, threaded=True)

@@ -3,3 +3,4 @@ albumCovers/
 testEnv/
 images
 test.py
+database/__pycache__
