@@ -6,3 +6,4 @@ pyyaml
 flask-cors
 # eventlet
 colorthief
+pymongo

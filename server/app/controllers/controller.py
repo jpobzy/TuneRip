@@ -16,7 +16,7 @@ class controller():
         self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
 
-    def getUserData(self):
+    def getUserData(self, dbClient):
         retVal = []
         for key, val in self.db.cache.items():
             try:

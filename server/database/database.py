@@ -5,12 +5,14 @@ import datetime
 
 class database():
     def __init__(self, insertCallback):
-        client = MongoClient("localhost", 27017)
-        self.callback = insertCallback
-        self.db  = client['youtube']
+        self.client = MongoClient("mongodb://localhost:27017/")
+        self.cache = {} # user : ytLink
+        self.db  = self.client['youtube']
         self.users = self.db['users']
         self.tracks = self.db['tracks']
-        self.cache = {} # user : ytLink
+
+        self.callback = insertCallback
+
         self.loadCache()
         
 
@@ -20,10 +22,15 @@ class database():
 
         if len(results)==0: 
             print('db was empty, inserting users')
-            userList = self.callback()
+            if len(self.client.list_database_names()) == 3:
+                self.users.insert_one({'hello': 'world'})
+                return
+            userList = self.callback(self.db)
             self.users.insert_many(userList)
             self.tracks.create_index('trackId', unique=True)
 
+        if len(results) == 1 and results[0]['hello'] == 'world':
+            return 
         for doc in self.users.find():
             self.cache[doc['name']] = doc['ytLink']
 
