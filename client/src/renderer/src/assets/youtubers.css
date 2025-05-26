@@ -33,7 +33,8 @@
   height: 100px; 
   padding: 1rem;
   padding-top: 2rem;
-  background: #f9f9f9;
+  /* background: #f9f9f9; */
+  background: transparent;
   border: 1px solid grey;
   border-radius: 45px; 
 

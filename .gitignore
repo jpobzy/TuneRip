@@ -1,6 +1,6 @@
 downloads
 albumCovers/
-testEnv/
-images
-test.py
-database/__pycache__/
+images/
+__pycache__
+databaseFormat.txt
+server/database/__pycache__

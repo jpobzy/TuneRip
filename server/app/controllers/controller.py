@@ -137,6 +137,9 @@ class controller():
 
 
     def downloadImg(self, file):
+        """
+        Takes an image file the user upload it and saves it locally on the backend
+        """
         file.save(self.projRoot / f'server/static/albumCovers/{file.filename}')
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
@@ -158,3 +161,31 @@ class controller():
             print(f'ERROR USER {data['ytLink']} COULD NOT BE FOUND DUE TO ERROR {error}')
 
             return error, 404
+
+
+    def downloadTxt(self, file, status):
+        """
+        Takes a text file that contains youtube urls and adds them to the tracks DB so it can be filtered
+        status = downloaded/filter
+        """
+        content = file.read().decode('utf-8')
+        urls = [line.strip()[0: 43] for line in content.split('\n') if line.strip() and line.startswith('https://www.youtube.com/watch?v=')]
+
+        for url in urls:
+            id = url[32:]
+            if self.db.checkIfTrackExists(id):
+                continue
+            try:
+                video = YouTube(url)
+                user = video.author
+                trackId = video.video_id
+                trackName = video.title
+                albumTitle = None
+                albumCoverFile = None
+                self.db.insertTrackIntoDB(user, albumTitle, trackName, trackId, status, albumCoverFile)
+            except Exception as error:
+                print(f'ERROR TRACK {url} COULD NOT BE FOUND DUE TO {error}')
+                return
+        
+        return
+            

@@ -37,13 +37,13 @@ class database():
         return
 
 
-    def insertTrackIntoDB(self, user, albumTitle, trackName, videoId, status, albumCoverFile):
+    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile):
         data = {
             'user': user,
             'albumTitle': albumTitle,
             'trackName': trackName,
-            'trackId': videoId,
-            'status': status,
+            'trackId': trackId,
+            'status': status, # downloaded or filtered
             'albumCoverImageFile': albumCoverFile,
             'whenRecordAdded': datetime.datetime.now()
         }
@@ -52,16 +52,8 @@ class database():
 
 
 
-    def checkIfTrackExists(self, user, trackId):
-        return True if self.tracks.find_one({'user': user, 'trackId': trackId}) != None else False
-
-
-
-    def addNewUser(self, data):
-        self.users.insert_one(data)
-
-        self.cache[data['name']] = data['ytLink']
-        return
+    def checkIfTrackExists(self, trackId):
+        return True if self.tracks.find_one({'trackId': trackId}) != None else False
 
 
 
@@ -83,34 +75,7 @@ class database():
 
 
 
-    def insertUser(self, data):
-        self.users.insert_one(data)
-        return 
-            
-
-    def displayDB(self):
-        for user in self.users.find():
-            print(f'user is {user}')
 
 
-    def isEmpty(self):
-        cur = self.users.find()    
-        results = list(cur) 
-        if len(results)==0: 
-            return False
-        else:
-            return True
 
-
-    def getDB(self):
-        res = []
-        for user in self.users.find():
-            res.append(user)
-        return res
-
-
-    def getUserInfo(self, key):
-        ytLink = [item for item in filter(lambda x: x.get('name') == key, self.cache)][0]['ytLink']
-        return ytLink 
-    
         

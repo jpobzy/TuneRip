@@ -1,8 +1,7 @@
-import axios from "axios";
 import React, { useState } from "react";
-import '../assets/UploadImg.css'
+import axios from "axios";
 
-export default function UploadImg() {
+export default function UploadTxt() {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const onFileChange = (event) =>{
@@ -16,7 +15,7 @@ export default function UploadImg() {
         formData.append('file', selectedFile);
 
 
-        const response = await axios.post("http://localhost:8080/uploadImg", formData, {
+        const response = await axios.post("http://localhost:8080/uploadTxt", formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         }})
@@ -48,14 +47,12 @@ export default function UploadImg() {
     }
 
   return (
-    <div >
-        <h3>File Upload using React!</h3>
+    <div>
         <div>
-            <input type="file" onChange={onFileChange} />
+            <input type='file' onChange={onFileChange} />
             <button onClick={onFileUpload}>Upload!</button>
         </div>
-        {fileData()} 
-
+        {fileData()}
     </div>
   )
 }

@@ -63,6 +63,13 @@ def downloadImg():
         data = controller_obj.downloadImg(request.files['file'])
         return make_response(jsonify(data), 201)
     
+
+@app.route('/uploadTxt', methods=['POST'])
+def downloadTxt():
+    if request.method == 'POST':
+        data = controller_obj.downloadTxt(request.files['file'], 'downloaded')
+        return make_response(jsonify(data), 201)
+    
 @app.route('/getAlbumCoverFileNames')
 def getAlbumCoverFileNames():
     return jsonify(controller_obj.returnAlbumCoverFileNames())

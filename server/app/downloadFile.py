@@ -1,6 +1,6 @@
 from moviepy.editor import AudioFileClip
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK
+from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK, COMM
 import os, shutil, re
 # from log import log_data, log_warning, log_error
 from pytubefix import YouTube, Channel
@@ -83,13 +83,14 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     audio['TALB'] = TALB(encoding=3, text=albumCoverTitle) # Album 
     audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
     audio['TPE1'] = TPE1(encoding=3, text='YouTube Music') # Lead Artist/Performer/Soloist/Group
+    audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
 
     
     
     audio.save()
     os.remove(audio_file_path) # deletes mp4 file
-
-    os.makedirs(trackDest / 'tracks', exist_ok=True)
+    Path(trackDest / 'tracks', parents=True, exist_ok=True)
+    # os.makedirs(trackDest / 'tracks', exist_ok=True)
     shutil.move(mp3_file_path.replace('\\', '/'), trackDest /'tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
 
 
