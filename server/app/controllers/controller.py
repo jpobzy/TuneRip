@@ -15,6 +15,21 @@ class controller():
         self.db = database(self.getUserData)
         self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
+        self.checkFolders()
+
+    
+    def checkFolders(self):
+        """
+        Checks to confirm that the user pfp and cover album static folders exist
+        """
+        pfpPath = self.projRoot / f'server/static/images'
+        albumCoverPath = self.projRoot / f'server/static/albumCovers'
+
+        if not Path(pfpPath).exists():
+            Path.mkdir(pfpPath, parents=True)
+        if not Path(albumCoverPath).exists():
+            Path.mkdir(albumCoverPath, parents=True)
+        return
 
     def getUserData(self, dbClient):
         retVal = []
