@@ -6,11 +6,11 @@
 .user-container {
     
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    justify-content: center;
     gap: 1rem;
 
 
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, auto));
     max-width: 900px; /* 3 columns × 300px max per card, roughly */
     margin: 0 auto;   /* center the grid */
     width: 100%;
@@ -29,11 +29,10 @@
 
 
 .user-card {
- 
   height: 100px; 
   padding: 1rem;
   padding-top: 2rem;
-  /* background: #f9f9f9; */
+  
   background: transparent;
   border: 1px solid grey;
   border-radius: 45px; 

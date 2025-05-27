@@ -103,7 +103,10 @@ def sse():
 
 
 
-
+@app.route('/reload')
+def reloadCache():
+    response, status = controller_obj.reloadCache()
+    return make_response(jsonify({ 'message': response}), status) 
 
 
 

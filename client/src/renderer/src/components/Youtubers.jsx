@@ -28,8 +28,12 @@ export default function Youtubers({ onCardClick }) {
   }
 
   async function getUsers(){
-      const response = await axios.get('http://localhost:8080/users');
-      setUsers(response.data)
+    console.log(2)
+    const response = await axios.get('http://localhost:8080/users');
+    console.log('data')
+    console.log(response)
+    setUsers(response.data)
+    console.log(3)
   }
 
   const handleCoverClicked = async(file) =>{
@@ -44,10 +48,13 @@ export default function Youtubers({ onCardClick }) {
   async function resetAll(){
     setCardClicked(false)
     setAlbumCoverChosen(false)
+    await axios.get(`http://localhost:8080/reload`)
+    getUsers()
   }
 
 
   useEffect(()=> {
+    console.log(1)
     getUsers();
   }, []);
     

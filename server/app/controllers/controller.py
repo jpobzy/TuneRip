@@ -61,8 +61,6 @@ class controller():
         downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
         albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
         albumTitle = f'YouTube Album Prod {user}'
-        print()
-        # print(f'download path {self.projRoot}')
         trackNum = 1
         if Path(downloadPath).exists():
             trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -71,37 +69,28 @@ class controller():
         erorrCount = 0
         for video in c.videos:
             try:
-                debugMode = True ##########################################################################################
                 if self.db.checkIfTrackExists(video.video_id):
                     continue # skips track if track exists
                
                 
-                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle)
+                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, True)
                 status = 'downloaded'
-                
-                
 
                 if f'beat/instrumental ### ' in trackName:
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                 trackNum += 1
 
                 self.queue.put(trackName)
                 
-
-                
-
             except Exception as error:
                 print(error)
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
-
-
-        
-        return # currently have user, ytlink, albumcoverfilename, tracknum
+        return 
 
     def returnAlbumCoverFileNames(self):
         """
@@ -182,3 +171,7 @@ class controller():
         
         return
             
+    
+    def reloadCache(self):
+        self.db.reloadCache()
+        return 'Success', 200

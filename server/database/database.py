@@ -14,6 +14,7 @@ class database():
         self.callback = insertCallback
 
         self.loadCache()
+
         
 
     def loadCache(self):
@@ -24,7 +25,7 @@ class database():
             print('db was empty, inserting users')
             if len(self.client.list_database_names()) == 3:
                 self.db.create_collection('users')
-                self.db.create_collection('tracks')
+                self.db.create_collection('tracks')          
             
             if self.db.users.estimated_document_count() == 0:
                 return
@@ -64,6 +65,15 @@ class database():
 
     def addNewUser(self, data):
         self.users.insert_one(data)
+
+    def reloadCache(self):
+        self.cache = {}
+        for doc in self.users.find():
+            if 'name' in doc:
+                self.cache[doc['name']] = doc['ytLink']
+        return 
+
+        
 
 
 
