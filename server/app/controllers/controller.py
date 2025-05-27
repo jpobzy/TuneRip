@@ -72,11 +72,11 @@ class controller():
         for video in c.videos:
             try:
                 debugMode = True ##########################################################################################
-                if self.db.checkIfTrackExists(user, video.video_id):
+                if self.db.checkIfTrackExists(video.video_id):
                     continue # skips track if track exists
                
                 
-                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, debugMode)
+                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle)
                 status = 'downloaded'
                 
                 
@@ -137,21 +137,23 @@ class controller():
         Add a new user to the database
         """
         if not data['ytLink'].startswith('https://www.youtube.com/@'):
-            return f'Incorrect youtube link', 400
+            return {f'Incorrect youtube link' :400}
         try:
+            
             channel = Channel(data['ytLink'])
             url, imgPath = channel.thumbnail_url, f'./static/images/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
             self.db.addNewUser(dataToAdd)
+            self.db.loadCache()
 
             return 'Success', 200
 
         except Exception as error:
             print(f'ERROR USER {data['ytLink']} COULD NOT BE FOUND DUE TO ERROR {error}')
 
-            return error, 404
+            return {error: 404}
 
 
     def downloadTxt(self, file, status):

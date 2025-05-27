@@ -18,7 +18,7 @@ export default function AddUserForm() {
         body: JSON.stringify({ ytLink: user })
         });
 
-        if (res.ok) {
+        if (res.status === 200) {
             window.location.reload();
         }
        

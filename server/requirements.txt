@@ -7,3 +7,5 @@ flask-cors
 # eventlet
 colorthief
 pymongo
+
+

@@ -77,9 +77,8 @@ def getAlbumCoverFileNames():
 
 @app.route('/newUser', methods=['POST'])
 def createNewUser():
-    controller_obj.addNewUser(json.loads(request.data))
-    return '', 204
-
+    response, status = controller_obj.addNewUser(json.loads(request.data))
+    return make_response(jsonify({ 'message': response}), status) 
 
 @app.route('/downloadProgress')
 def sse():

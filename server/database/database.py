@@ -33,10 +33,7 @@ class database():
             userList = self.callback(self.db)
             self.users.insert_many(userList)
             self.tracks.create_index('trackId', unique=True)
-
-        if len(results) == 1 and results[0]['hello'] == 'world':
-            return 
-        
+       
         
         for doc in self.users.find():
             if 'name' in doc:
@@ -65,7 +62,8 @@ class database():
 
 
 
-
+    def addNewUser(self, data):
+        self.users.insert_one(data)
 
 
 
