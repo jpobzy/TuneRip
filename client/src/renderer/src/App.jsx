@@ -15,20 +15,18 @@ function App() {
 
 
   return (
-    <>
-      {showCards ? (    
+    <div>
+       {showCards ? (    
         <div className='App'>
         <Youtubers onCardClick={handleChildClick}/>
-        
-
       </div>) : (
         <div>
         <button onClick={() =>  setCardClicked(false)}> reverse</button>
       </div> 
       )
-
       }
-    </>
+    </div>
+
   )
 }
 

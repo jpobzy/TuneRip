@@ -23,16 +23,24 @@ class database():
         if len(results)==0: 
             print('db was empty, inserting users')
             if len(self.client.list_database_names()) == 3:
-                self.users.insert_one({'hello': 'world'})
+                self.db.create_collection('users')
+                self.db.create_collection('tracks')
+            
+            if self.db.users.estimated_document_count() == 0:
                 return
+
+
             userList = self.callback(self.db)
             self.users.insert_many(userList)
             self.tracks.create_index('trackId', unique=True)
 
         if len(results) == 1 and results[0]['hello'] == 'world':
             return 
+        
+        
         for doc in self.users.find():
-            self.cache[doc['name']] = doc['ytLink']
+            if 'name' in doc:
+                self.cache[doc['name']] = doc['ytLink']
 
         return
 

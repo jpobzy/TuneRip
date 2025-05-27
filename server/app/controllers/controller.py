@@ -67,18 +67,6 @@ class controller():
         if Path(downloadPath).exists():
             trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
         
-        # return
-
-        # for i in range(10):
-        #     self.queue.put(f'hello world number {i}')
-        #     time.sleep(1)
-        #     print(self.queue.queue)
-        #     # print(f'hello world number {i}')
-            
-        # # print(self.queue.queue)
-        # # print('done adding to queue')
-        # return
-
         c = Channel(ytLink)
         erorrCount = 0
         for video in c.videos:
@@ -145,6 +133,9 @@ class controller():
 
 
     def addNewUser(self, data):
+        """
+        Add a new user to the database
+        """
         if not data['ytLink'].startswith('https://www.youtube.com/@'):
             return f'Incorrect youtube link', 400
         try:
