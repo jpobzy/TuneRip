@@ -1,8 +1,13 @@
-/* .albumCoverImages {
-  position: relative;
-  display: inline-block;
-} */
-
+.album-cover-containter {
+    display: grid;
+    justify-content: center;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+    max-width: 900px; 
+    margin: 0 auto;   
+    width: 100%;
+    height: auto;
+}
 
 
 .album-cover-image {
@@ -10,7 +15,8 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
-}
+    margin-left: 20px;
+  }
 
 .album-cover-image{
     background-color: #363e42;

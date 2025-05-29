@@ -18,7 +18,7 @@ class database():
         
 
     def loadCache(self):
-        cur = self.users.find()    
+        cur = self.users.find()      
         results = list(cur) 
 
         if len(results)==0: 

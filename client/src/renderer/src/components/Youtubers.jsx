@@ -6,7 +6,8 @@ import AlbumCoversCard from './AlbumCoverCard';
 import '../assets/youtubers.css'
 import DownloadedShowcase from './DownloadedShowcase';
 import { Palette } from 'color-thief-react';
-import AddUserForm from '../components/AddUserForm'
+import AddUserForm from './addUserForm/AddUserForm'
+import FadeContent from './FadeContent';
 
 export default function Youtubers({ onCardClick }) {
 
@@ -81,9 +82,7 @@ export default function Youtubers({ onCardClick }) {
               key ={index+1}
               />
             ))}
-
             </div>
-
             <div>
               <UploadImg />
             </div>
@@ -93,20 +92,31 @@ export default function Youtubers({ onCardClick }) {
           )
         ) : (
           <div >
-              <h1 className='header'>Youtubers</h1>
-            <div className='user-container'>
-            { 
-              Object.entries(users).map((item, index) =>(
-              <YoutuberCard
-                name = {item[0]}
-                userPFP={item[0]}
-                onClick={()=>handleCardClicked(item[0])}
-                key = {index+1}
-              />
-            ))}
-            </div>
+              {/* <h1 className='header1 text-5xl font-bold mt-8 mb-5'>Youtubers</h1> */}
+                  <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
+                    {/* Anything placed inside this container will be fade into view */
+                    <div>
+                      <div className='-mt-40' >
+                        <AddUserForm />
+                      </div>
+                      <div>
+                        {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
+                          <div className='user-container'>
+                            { 
+                            Object.entries(users).map((item, index) =>(
+                            <YoutuberCard
+                            name = {item[0]}
+                            userPFP={item[0]}
+                            onClick={()=>handleCardClicked(item[0])}
+                            key = {index+1}
+                            />
+                            ))}
+                          </div>
+                      </div>
+                    </div>
+                }
+              </FadeContent>
 
-            <AddUserForm />
           </div>
         )}
       </div>

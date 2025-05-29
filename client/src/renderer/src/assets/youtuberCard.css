@@ -1,0 +1,40 @@
+.user-card {
+  height: 140px; 
+  padding: 1rem;
+  padding-top: 2rem;
+
+  background: rgba(255, 255, 255, 0.336);
+  border: 1px solid grey;
+  border-radius: 45px; 
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.header{
+    margin-top: 50px;
+}
+
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-top: -10px;
+
+}
+
+.user-card:hover {
+    background-color: #d9e8f0;
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgb(18, 140, 211);
+}
+
+h3{
+   margin-top: 8px;
+}

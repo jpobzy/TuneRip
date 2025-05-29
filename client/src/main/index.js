@@ -13,8 +13,11 @@ function createWindow() {
     alwaysOnTop: true,
     show: false,
     autoHideMenuBar: true,
+
+    
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
+      backgroundColor: '#1a1a1a',
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       webSecurity: false
