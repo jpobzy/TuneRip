@@ -8,6 +8,7 @@
     margin: 0 auto;   
     width: 100%;
     height: auto;
+    transition: all 0.2s ease-in-out;
 }
 
 
@@ -18,9 +19,27 @@
     border-radius: 4px;
     padding: 5px;
     margin-left: 20px;
+    background-color: #363e42;
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
   }
 
-.album-cover-image{
-    background-color: #363e42;
+.album-cover-image:hover {
+    box-shadow: 0 0 20px rgb(18, 140, 211); 
+
 }
 
+
+
+.img-wrapper{
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+}
+
+
+.img-wrapper:hover{
+    transform: scale(1.15);
+}
+
+
+  

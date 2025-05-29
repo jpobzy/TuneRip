@@ -1,0 +1,14 @@
+.custom-upload-button {
+  display: center;
+  background: rgba(255, 255, 255, 0.336);
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.ant-btn.custom-upload-button:hover {
+  scale: 2px;
+  background-color: #d9e8f0 !important;
+  /* color: rgb(18, 140, 211) !important; */
+  /* transform: scale(1.15); */
+  /* -mt-20 mb-15 */
+}

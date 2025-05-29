@@ -10,8 +10,7 @@ function DownloadedShowcase({albumCoverSrc, palette}) {
     };
 
     useEffect(() => {
-    const sse = new EventSource('http://localhost:8080/downloadProgress',
-        { withCredentials: true });
+    const sse = new EventSource('http://localhost:8080/downloadProgress', { withCredentials: true });
 
     sse.onmessage = function(data){
         const container = document.getElementById("sseContainer");
@@ -36,7 +35,8 @@ function DownloadedShowcase({albumCoverSrc, palette}) {
     return (
     <div>
         <div >
-            <div className='albumBoxWrapper'>
+            <div className='text-[40px] -mt-20 font-bold text-gray-200' >Download in progress</div>
+            <div className='albumBoxWrapper -mt-20'>
                 <div className='albumBox'>
                     <img className='albumCover' src={albumCoverSrc}></img>
                     <div id='sseContainer' className='tracksWrapper'></div>

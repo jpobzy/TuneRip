@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
-import UploadImg from './UploadImg';
-import AlbumCoversCard from './AlbumCoverCard';
 import '../assets/youtubers.css'
 import DownloadedShowcase from './DownloadedShowcase';
-import { Palette } from 'color-thief-react';
 import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './FadeContent';
-import AlbumImage from './AlbumImage';
+import AlbumImage from './AlbumCoverCard';
+import UploadButton from './UploadButton';
 
 export default function  Youtubers({ onCardClick }) {
 
@@ -36,12 +34,17 @@ export default function  Youtubers({ onCardClick }) {
     setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap)
   }
 
-  const handleCoverClicked = async(file) =>{
-    setAlbumCoverFileNames([])
-  
+  const handleAlbumCoverClicked = async(file) =>{
+    console.log('hello world')
     const response = await axios.get(`http://localhost:8080/download/${chosenUser}/${file}`);
     setCoverChosen(file)
     setAlbumCoverChosen(true)
+  }
+
+  async function getNewAlbumCover() {
+    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
+    setAlbumCoverFileNames(albumCoverResponse.data.files)
+    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap)
   }
 
 
@@ -69,32 +72,35 @@ export default function  Youtubers({ onCardClick }) {
             </div>
           ) : (
           <div >
+            <div className='-mt-30 mb-10'>
+              <UploadButton refresh={getNewAlbumCover} />
+            </div>
             <div>
-               {<h1 className='header1 text-5xl font-bold -mt-20 mb-15 text-gray-200'>Choose an album cover</h1>}
+               {<h1 className='header1 text-5xl font-bold mb-15 text-gray-200'>Choose an album cover</h1>} 
             </div>
             <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(
               <AlbumImage 
               filename={filename[1]}
-              onclick={()=>handleCoverClicked(filename[1])}
+              cardClicked={()=>handleAlbumCoverClicked(filename[1])}
               key ={index+1}
               />
             ))}
             </div>
-            <div>
-              <UploadImg />
-            </div>
+      
           </div>
      
           
           )
         ) : (
           <div >
+
                   <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
                     {/* Anything placed inside this container will be fade into view */
                     <div>
                       <div className='-mt-40' >
                         <AddUserForm />
+                        
                       </div>
                       <div>
                         {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
