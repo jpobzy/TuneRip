@@ -1,6 +1,7 @@
 .album-cover-containter {
     display: grid;
     justify-content: center;
+    
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(200px, auto));
     max-width: 900px; 
@@ -12,6 +13,7 @@
 
 .album-cover-image {
     height: 150px;
+    width: 150px;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
@@ -21,3 +23,4 @@
 .album-cover-image{
     background-color: #363e42;
 }
+

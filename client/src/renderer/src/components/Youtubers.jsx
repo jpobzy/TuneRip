@@ -8,8 +8,9 @@ import DownloadedShowcase from './DownloadedShowcase';
 import { Palette } from 'color-thief-react';
 import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './FadeContent';
+import AlbumImage from './AlbumImage';
 
-export default function Youtubers({ onCardClick }) {
+export default function  Youtubers({ onCardClick }) {
 
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
@@ -23,18 +24,16 @@ export default function Youtubers({ onCardClick }) {
   const handleCardClicked = async(username) => {
     setCardClicked(true);
     setChosenUser(username)
-    const response = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
-    setAlbumCoverFileNames(response.data.files)
-    setAlbumCoverGradientsMap(response.data.paletteMap)
+
   }
 
   async function getUsers(){
-    console.log(2)
     const response = await axios.get('http://localhost:8080/users');
-    console.log('data')
-    console.log(response)
     setUsers(response.data)
-    console.log(3)
+
+    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
+    setAlbumCoverFileNames(albumCoverResponse.data.files)
+    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap)
   }
 
   const handleCoverClicked = async(file) =>{
@@ -55,7 +54,6 @@ export default function Youtubers({ onCardClick }) {
 
 
   useEffect(()=> {
-    console.log(1)
     getUsers();
   }, []);
     
@@ -66,17 +64,17 @@ export default function Youtubers({ onCardClick }) {
       <div >
         {cardClicked ? (
           albumCoverChosen ? (
-            // <DownloadedShodwcase albumCoverSrc={albumCoverGradientsMap[coverChosen]}/>
             <div>
                 {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>}
-            
             </div>
-           
           ) : (
           <div >
+            <div>
+               {<h1 className='header1 text-5xl font-bold -mt-20 mb-15 text-gray-200'>Choose an album cover</h1>}
+            </div>
             <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(
-              <AlbumCoversCard
+              <AlbumImage 
               filename={filename[1]}
               onclick={()=>handleCoverClicked(filename[1])}
               key ={index+1}
@@ -92,7 +90,6 @@ export default function Youtubers({ onCardClick }) {
           )
         ) : (
           <div >
-              {/* <h1 className='header1 text-5xl font-bold mt-8 mb-5'>Youtubers</h1> */}
                   <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
                     {/* Anything placed inside this container will be fade into view */
                     <div>

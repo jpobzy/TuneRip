@@ -50,7 +50,7 @@ export default function AddUserForm() {
             }}
           >
             <Search
-              placeholder="Paste Youtuber URL Here"
+              placeholder="Paste Youtuber Channel URL Here"
               allowClear
               enterButton={
                 <Button
