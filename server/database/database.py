@@ -25,15 +25,17 @@ class database():
             print('db was empty, inserting users')
             if len(self.client.list_database_names()) == 3:
                 self.db.create_collection('users')
-                self.db.create_collection('tracks')          
+                self.db.create_collection('tracks')
+
+                self.tracks.create_index('trackId')
+                self.tracks.create_index('whenRecordAdded')     
             
             if self.db.users.estimated_document_count() == 0:
                 return
 
-
             userList = self.callback(self.db)
             self.users.insert_many(userList)
-            self.tracks.create_index('trackId', unique=True)
+
        
         
         for doc in self.users.find():
@@ -75,9 +77,8 @@ class database():
 
         
 
-
-
-
+    def getRecentlyAddedTracks(self, trackAmount):
+        return [track for track in self.tracks.find({}, {'_id': 0}).sort('whenRecordAdded', -1).limit(trackAmount)]
 
 
 

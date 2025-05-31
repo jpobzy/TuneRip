@@ -31,6 +31,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
     valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
     valid_title = re.sub(r'\[.*?\]', '', valid_title) 
+    valid_title = valid_title.strip()
 
     
     if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():

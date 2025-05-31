@@ -7,6 +7,7 @@ import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
+
 UPLOAD_FOLDER = './static/images'
 ALBUM_COVER_FOLDER = './static/albumCovers'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -124,9 +125,12 @@ def sse():
 @app.route('/reload')
 def reloadCache():
     response, status = controller_obj.reloadCache()
-    return make_response(jsonify({ 'message': response}), status) 
+    return  jsonify(response)
 
-
+@app.route('/history')
+def history():
+    historyList, status = controller_obj.getHistory()
+    return jsonify(historyList)
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

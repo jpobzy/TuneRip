@@ -66,8 +66,8 @@ class controller():
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
 
-
-        if 'list=PL' in url:
+        count=  0
+        if url and 'list=PL' in url:
             
             playlist = Playlist(url)
 
@@ -78,6 +78,7 @@ class controller():
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             erorrCount = 0
+            
             for video in playlist.video_urls:
                 try:
                     if self.db.checkIfTrackExists(video):
@@ -91,10 +92,11 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                     trackNum += 1
 
                     self.queue.put(trackName)
+
                     
                 except Exception as error:
                     print(error)
@@ -102,8 +104,7 @@ class controller():
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
 
-
-        elif url.startswith('https://www.youtube.com/watch?v='):
+        elif url and url.startswith('https://www.youtube.com/watch?v='):
             video = YouTube(url)
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
@@ -124,7 +125,7 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                # self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -134,8 +135,6 @@ class controller():
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
-
-
 
         else:
             ytLink = self.db.cache[user]
@@ -163,7 +162,7 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -264,3 +263,6 @@ class controller():
         self.db.reloadCache()
         return 'Success', 200
     
+
+    def getHistory(self):
+        return self.db.getRecentlyAddedTracks(20), 200
