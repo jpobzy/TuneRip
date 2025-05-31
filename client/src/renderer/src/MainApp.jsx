@@ -5,9 +5,9 @@ import './assets/app.css'
 import React, { useEffect, useState } from 'react'
 import { AnimatedBackground } from 'animated-backgrounds';
 import Aurora from './components/background/Aurora'
-import { Button, Space, DatePicker, version } from 'antd';
+import { Button, Space, DatePicker, version, App } from 'antd';
 
-function App() {
+function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
 
@@ -29,6 +29,7 @@ function App() {
 
        {showCards ? (    
         <div className='App'>
+        
         <Youtubers onCardClick={handleChildClick}/>
       </div>) : (
         <div>
@@ -46,4 +47,4 @@ function App() {
   )
 }
 
-export default App
+export default MainApp

@@ -1,7 +1,7 @@
 from app.downloadFile import download_video
 # from oldcode.validator import validate_path
 import os
-from pytubefix import YouTube, Channel
+from pytubefix import YouTube, Channel, Playlist
 from database.database import database
 import urllib.request
 import yaml, re
@@ -20,7 +20,7 @@ class controller():
     
     def checkFolders(self):
         """
-        Checks to confirm that the user pfp and cover album static folders exist
+        Checks to confirm that the url pfp and cover album static folders exist
         """
         pfpPath = self.projRoot / f'server/static/images'
         albumCoverPath = self.projRoot / f'server/static/albumCovers'
@@ -54,25 +54,69 @@ class controller():
         return retVal
 
 
-    def downloadVideos(self, user, albumCoverFile):
-        ytLink = self.db.cache[user]
-        sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
-        sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-        downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
-        albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
-        albumTitle = f'YouTube Album Prod {user}'
-        trackNum = 1
-        if Path(downloadPath).exists():
-            trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+    def downloadVideos(self, request):
+        """
+        download function to either 
+            - download all videos from the user
+            - download the video url 
+            - download all videos in the playlist url 
+        """
         
-        c = Channel(ytLink)
-        erorrCount = 0
-        for video in c.videos:
-            try:
-                if self.db.checkIfTrackExists(video.video_id):
-                    continue # skips track if track exists
-               
+        url = request.args.get('url')
+        user = request.args.get('user')
+        albumCoverFile = request.args.get('albumCover')
+
+
+        if 'list=PL' in url:
+            
+            playlist = Playlist(url)
+
+            downloadPath = self.projRoot / f"downloads/custom"
+            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumTitle = f'YouTube Album Prod custom'
+            trackNum = 1
+            if Path(downloadPath).exists():
+                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+            erorrCount = 0
+            for video in playlist.video_urls:
+                try:
+                    if self.db.checkIfTrackExists(video):
+                        continue # skips track if track exists
                 
+                    
+                    trackName = download_video(video, trackNum, downloadPath, albumCoverPath, albumTitle, True)
+                    status = 'downloaded'
+
+                    if f'beat/instrumental ### ' in trackName:
+                        trackName = trackName.replace('beat/instrumental ### ', '')
+                        status = 'filtered'
+
+                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    trackNum += 1
+
+                    self.queue.put(trackName)
+                    
+                except Exception as error:
+                    print(error)
+                    erorrCount += 1
+                    if erorrCount == 3:
+                        raise Exception(f'Too many errors cause this to fail')
+
+
+        elif url.startswith('https://www.youtube.com/watch?v='):
+            video = YouTube(url)
+            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
+            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
+            downloadPath = self.projRoot / f"downloads/custom"
+            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumTitle = f'YouTube Album Prod {url}'
+            trackNum = 1
+            erorrCount = 0
+            if Path(downloadPath).exists():
+                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+        
+            
+            try:
                 trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, True)
                 status = 'downloaded'
 
@@ -80,7 +124,7 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                # self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -90,7 +134,48 @@ class controller():
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
-        return 
+
+
+
+        else:
+            ytLink = self.db.cache[user]
+            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
+            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
+            downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
+            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumTitle = f'YouTube Album Prod {user}'
+            trackNum = 1
+            if Path(downloadPath).exists():
+                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+            
+            c = Channel(ytLink)
+            erorrCount = 0
+            for video in c.videos:
+                try:
+                    if self.db.checkIfTrackExists(video.video_id):
+                        continue # skips track if track exists
+                
+                    
+                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, True)
+                    status = 'downloaded'
+
+                    if f'beat/instrumental ### ' in trackName:
+                        trackName = trackName.replace('beat/instrumental ### ', '')
+                        status = 'filtered'
+
+                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    trackNum += 1
+
+                    self.queue.put(trackName)
+                    
+                except Exception as error:
+                    print(error)
+                    erorrCount += 1
+                    if erorrCount == 3:
+                        raise Exception(f'Too many errors cause this to fail')
+
+
+        return 'Success', 200
 
     def returnAlbumCoverFileNames(self):
         """
@@ -115,7 +200,7 @@ class controller():
 
     def downloadImg(self, file):
         """
-        Takes an image file the user upload it and saves it locally on the backend
+        Takes an image file the url upload it and saves it locally on the backend
         """
         file.save(self.projRoot / f'server/static/albumCovers/{file.filename}')
         return {'message': 'File Saved', 'code': 'SUCCESS'}
@@ -123,7 +208,7 @@ class controller():
 
     def addNewUser(self, data):
         """
-        Add a new user to the database
+        Add a new url to the database
         """
         if not data['ytLink'].startswith('https://www.youtube.com/@'):
             return {f'Incorrect youtube link' :400}
@@ -159,12 +244,12 @@ class controller():
                 continue
             try:
                 video = YouTube(url)
-                user = video.author
+                url = video.author
                 trackId = video.video_id
                 trackName = video.title
                 albumTitle = None
                 albumCoverFile = None
-                self.db.insertTrackIntoDB(user, albumTitle, trackName, trackId, status, albumCoverFile)
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile)
             except Exception as error:
                 print(f'ERROR TRACK {url} COULD NOT BE FOUND DUE TO {error}')
                 return
@@ -173,5 +258,9 @@ class controller():
             
     
     def reloadCache(self):
+        """
+        Reloads the database cache, useful when a new url has been added
+        """
         self.db.reloadCache()
         return 'Success', 200
+    

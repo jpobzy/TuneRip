@@ -3,22 +3,27 @@ import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button } from 'antd';
 
 
-export default function AddUserForm() {
+export default function AddUserForm({setSearchURL}) {
   const { Search } = Input;
   const [user, setUser] = useState('');
 
   async function onSearch(value) {
     console.log('Search input:', value);
 
-    const res = await fetch('http://localhost:8080/newUser', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ytLink: value }),
-    });
-
-    if (res.status === 200) {
-      window.location.reload();
+    if (value.includes("@") ){
+      const res = await fetch('http://localhost:8080/newUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ytLink: value }),
+      });
+      if (res.status === 200) {
+        window.location.reload();
+      }
+    } else {
+       setSearchURL(value);
     }
+
+
   }
 
   return (

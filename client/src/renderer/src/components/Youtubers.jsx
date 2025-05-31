@@ -7,6 +7,7 @@ import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './FadeContent';
 import AlbumImage from './AlbumCoverCard';
 import UploadButton from './UploadButton';
+import { message } from 'antd';
 
 export default function  Youtubers({ onCardClick }) {
 
@@ -15,8 +16,9 @@ export default function  Youtubers({ onCardClick }) {
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
   const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
   const [chosenUser, setChosenUser] = useState([]);
-  const [coverChosen, setCoverChosen] = useState([])
+  const [coverChosen, setCoverChosen] = useState('')
   const [albumCoverGradientsMap, setAlbumCoverGradientsMap] = useState({})
+  const [searchUrl, setSearchURL] = useState([])
 
 
   const handleCardClicked = async(username) => {
@@ -27,33 +29,52 @@ export default function  Youtubers({ onCardClick }) {
 
   async function getUsers(){
     const response = await axios.get('http://localhost:8080/users');
-    setUsers(response.data)
+    setUsers(response.data);
 
-    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
-    setAlbumCoverFileNames(albumCoverResponse.data.files)
-    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap)
+    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
+    setAlbumCoverFileNames(albumCoverResponse.data.files);
+    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
   }
 
   const handleAlbumCoverClicked = async(file) =>{
-    console.log('hello world')
-    const response = await axios.get(`http://localhost:8080/download/${chosenUser}/${file}`);
-    setCoverChosen(file)
-    setAlbumCoverChosen(true)
+      const response = await axios.get(`http://localhost:8080/download/`, {params: {
+          url: searchUrl,
+          user: chosenUser,
+          albumCover: file
+        }});
+    setCoverChosen(file);
+    setAlbumCoverChosen(true);
+    setSearchURL('');
+    setChosenUser(null);
+
   }
 
   async function getNewAlbumCover() {
-    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames')
-    setAlbumCoverFileNames(albumCoverResponse.data.files)
-    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap)
+    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
+    setAlbumCoverFileNames(albumCoverResponse.data.files);
+    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
   }
 
 
   async function resetAll(){
-    setCardClicked(false)
-    setAlbumCoverChosen(false)
-    await axios.get(`http://localhost:8080/reload`)
-    getUsers()
+    setCardClicked(false);
+    setAlbumCoverChosen(false);
+    await axios.get(`http://localhost:8080/reload`);
+    getUsers();
   }
+
+
+  async function downloadVideo(videosearchURL){
+      if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') || videosearchURL.includes('list=PL')){
+      setCardClicked(true);
+      setSearchURL(videosearchURL);
+      }else{
+        await Promise.resolve();
+        message.error(`${videosearchURL} is not a valid URL`)
+      }
+  }
+
+
 
 
   useEffect(()=> {
@@ -99,8 +120,9 @@ export default function  Youtubers({ onCardClick }) {
                     {/* Anything placed inside this container will be fade into view */
                     <div>
                       <div className='-mt-40' >
-                        <AddUserForm />
-                        
+                        <AddUserForm 
+                        setSearchURL={downloadVideo}
+                        />
                       </div>
                       <div>
                         {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}

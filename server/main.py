@@ -27,16 +27,19 @@ def hello_world():
     return "hello world"
 
 
-@app.route("/users")
+@app.route("/users", methods=['GET'])
 def getUsers():
+    """
+    Sends users from users db 
+    """
     cache = controller_obj.db.cache 
     return jsonify(cache)
 
 
-@app.route('/getImage/<string:route>')
+@app.route('/getImage/<string:route>', methods=['GET'])
 def get_image(route):
     """
-    get request for user pfp images
+    Sends the requested image file
     """
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
@@ -50,11 +53,21 @@ def getAlbumCover(route):
     return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
-@app.route('/download/<string:user>/<string:albumcoverfilename>')
-def downloadUser(user, albumcoverfilename):
-    controller_obj.downloadVideos(user, albumcoverfilename)
-    print(f'downloding for user {user}, with album cover {albumcoverfilename}')    
-    return {'Success': True}
+
+
+@app.route('/download/')
+def download():
+    """
+    downloads users choice of given user or individial video or playlist
+    """
+    response, statusCode = controller_obj.downloadVideos(request)
+    return make_response(response, statusCode)
+
+
+
+
+
+
 
 
 @app.route('/uploadImg', methods=['POST'])
@@ -77,6 +90,11 @@ def getAlbumCoverFileNames():
 
 @app.route('/newUser', methods=['POST'])
 def createNewUser():
+    response, status = controller_obj.addNewUser(json.loads(request.data))
+    return make_response(jsonify({ 'message': response}), status) 
+
+@app.route('/newVideo', methods=['POST'])
+def addNewVideo():
     response, status = controller_obj.addNewUser(json.loads(request.data))
     return make_response(jsonify({ 'message': response}), status) 
 
