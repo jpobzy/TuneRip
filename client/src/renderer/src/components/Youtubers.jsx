@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { forwardRef, useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
@@ -8,8 +8,9 @@ import FadeContent from './FadeContent';
 import AlbumImage from './AlbumCoverCard';
 import UploadButton from './UploadButton';
 import { message } from 'antd';
+import { useImperativeHandle, useRef } from 'react';
 
-export default function  Youtubers({ onCardClick }) {
+const Youtubers = forwardRef((props, ref) => {
 
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
@@ -19,7 +20,11 @@ export default function  Youtubers({ onCardClick }) {
   const [coverChosen, setCoverChosen] = useState('')
   const [albumCoverGradientsMap, setAlbumCoverGradientsMap] = useState({})
   const [searchUrl, setSearchURL] = useState([])
+  const inputRef = useRef(null);
 
+  useImperativeHandle(ref, () => ({
+    resetAll
+  }));
 
   const handleCardClicked = async(username) => {
     setCardClicked(true);
@@ -61,6 +66,7 @@ export default function  Youtubers({ onCardClick }) {
     setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
     getUsers();
+    console.log('reset to home')
   }
 
 
@@ -83,7 +89,7 @@ export default function  Youtubers({ onCardClick }) {
     
   return (
     <div>
-    
+
 
       <div >
         {cardClicked ? (
@@ -153,4 +159,6 @@ export default function  Youtubers({ onCardClick }) {
 
     </div>
   )
-}
+})
+
+export default Youtubers
