@@ -97,3 +97,7 @@ class database():
         self.downloadSettings['genre'] = data['genre']
         self.downloadSettings['album'] = data['album']
         print(self.downloadSettings)
+
+    def getDownloadCount(self):
+        return self.tracks.count_documents({})
+    

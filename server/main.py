@@ -140,6 +140,9 @@ def resetDownloadSettings():
     return 'Success', 200
 
 
+@app.route('/downloadCount')
+def getDownloadCount():
+    return jsonify(controller_obj.getDownloadCount())
 
 
 if __name__ == "__main__":

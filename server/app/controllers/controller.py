@@ -277,3 +277,7 @@ class controller():
     def resetDownloadSettings(self):
         self.db.resetDownloadSettings()
         return 'Success', 200
+    
+
+    def getDownloadCount(self):
+        return self.db.getDownloadCount()
