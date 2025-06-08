@@ -1,13 +1,13 @@
 from moviepy.editor import AudioFileClip
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK, COMM
+from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK, COMM, TCON
 import os, shutil, re
 # from log import log_data, log_warning, log_error
 from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', debug_mode=False):
+def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', download_settings=None, debug_mode=False):
     count = 0
     
     vid = YouTube(url) # set both to true 
@@ -23,15 +23,36 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     audio_download = vid.streams.get_audio_only()    
    
 
-    valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
-    valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
-    valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
-    valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
-    valid_title = valid_title.replace("[Lyric Video]", '').replace(' (Unreleased) ', '')
-    valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
-    valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
-    valid_title = re.sub(r'\[.*?\]', '', valid_title) 
-    valid_title = valid_title.strip()
+    # grab download settings if they exist
+    if download_settings['title'] == '':
+        valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
+        valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
+        valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
+        valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
+        valid_title = valid_title.replace("[Lyric Video]", '').replace(' (Unreleased) ', '')
+        valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
+        valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
+        valid_title = re.sub(r'\[.*?\]', '', valid_title) 
+        valid_title = valid_title.strip()
+    else:
+        valid_title = download_settings['title']
+
+    if download_settings['artist'] == '':
+        artist = 'YouTube Music'
+    else:
+        artist = download_settings['artist']
+
+    if download_settings['genre'] == '':
+        genre = ''
+    else:
+        genre = download_settings['genre']
+
+    if download_settings['album'] != '':
+       albumCoverTitle = download_settings['album'] 
+
+
+
+
 
     
     if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
@@ -83,9 +104,9 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     audio['TIT2'] = TIT2(encoding=3, text=valid_title) # Title
     audio['TALB'] = TALB(encoding=3, text=albumCoverTitle) # Album 
     audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
-    audio['TPE1'] = TPE1(encoding=3, text='YouTube Music') # Lead Artist/Performer/Soloist/Group
+    audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
     audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
-
+    audio['TCON'] = TCON(encoding=3, text=f'{genre}')
     
     
     audio.save()
@@ -100,7 +121,3 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     
     # log_data('Download Completed\n')
     return valid_title
-
-
-
-

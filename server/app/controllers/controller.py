@@ -61,6 +61,8 @@ class controller():
             - download the video url 
             - download all videos in the playlist url 
         """
+        debugMode = False
+
         
         url = request.args.get('url')
         user = request.args.get('user')
@@ -85,7 +87,7 @@ class controller():
                         continue # skips track if track exists
                 
                     
-                    trackName = download_video(video, trackNum, downloadPath, albumCoverPath, albumTitle, True)
+                    trackName = download_video(video, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings,  debugMode)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -118,7 +120,7 @@ class controller():
         
             
             try:
-                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, True)
+                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, debugMode)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -155,7 +157,7 @@ class controller():
                         continue # skips track if track exists
                 
                     
-                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, True)
+                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, debugMode)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -266,3 +268,12 @@ class controller():
 
     def getHistory(self):
         return self.db.getRecentlyAddedTracks(20), 200
+    
+    
+    def changeDownloadSettings(self, data):
+        self.db.updateDownloadSettings(data['data'])
+        return 'Success', 200
+    
+    def resetDownloadSettings(self):
+        self.db.resetDownloadSettings()
+        return 'Success', 200

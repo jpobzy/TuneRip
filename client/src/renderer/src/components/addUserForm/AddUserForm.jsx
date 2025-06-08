@@ -55,7 +55,7 @@ export default function AddUserForm({setSearchURL}) {
             }}
           >
             <Search
-              placeholder="Paste Youtuber Channel URL Here"
+              placeholder="Paste Youtuber Channel/Video URL Here"
               allowClear
               enterButton={
                 <Button
@@ -76,7 +76,7 @@ export default function AddUserForm({setSearchURL}) {
               onChange={(e) => setUser(e.target.value)}
               onSearch={onSearch}
               prefix={<UserOutlined />}
-              style={{ width: 390 }}
+              style={{ width: 500 }}
             />
           </ConfigProvider>
         </label>

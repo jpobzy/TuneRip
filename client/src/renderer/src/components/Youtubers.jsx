@@ -7,8 +7,9 @@ import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './FadeContent';
 import AlbumImage from './AlbumCoverCard';
 import UploadButton from './UploadButton';
-import { message } from 'antd';
+import { message, Collapse } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
+import DownloadSettingsForm from './downloadSettings/downloadSettingsForm';
 
 const Youtubers = forwardRef((props, ref) => {
 
@@ -21,6 +22,7 @@ const Youtubers = forwardRef((props, ref) => {
   const [albumCoverGradientsMap, setAlbumCoverGradientsMap] = useState({})
   const [searchUrl, setSearchURL] = useState([])
   const inputRef = useRef(null);
+  const [isTrack, setIsTrack] = useState(false)
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -29,7 +31,7 @@ const Youtubers = forwardRef((props, ref) => {
   const handleCardClicked = async(username) => {
     setCardClicked(true);
     setChosenUser(username)
-
+    setIsTrack(false);
   }
 
   async function getUsers(){
@@ -71,14 +73,24 @@ const Youtubers = forwardRef((props, ref) => {
 
 
   async function downloadVideo(videosearchURL){
-      if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') || videosearchURL.includes('list=PL')){
-      setCardClicked(true);
-      setSearchURL(videosearchURL);
+      if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') ){
+        setCardClicked(true);
+        setIsTrack(true);
+        setSearchURL(videosearchURL);
+      }else if (videosearchURL.includes('list=PL')){
+        setCardClicked(true);
+        setSearchURL(videosearchURL);
       }else{
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
       }
   }
+
+  const downloadItems= [{
+    key: '1',
+    label: 'Download Settings',
+    children: <DownloadSettingsForm isTrack={isTrack} />
+  }];
 
 
 
@@ -104,6 +116,9 @@ const Youtubers = forwardRef((props, ref) => {
             </div>
             <div>
                {<h1 className='header1 text-5xl font-bold mb-15 text-gray-200'>Choose an album cover</h1>} 
+            </div>
+            <div className='downloadSettingsForm mt-10 mx-auto mb-10 w-150'> 
+              <Collapse items={downloadItems} defaultActiveKey={['0']} />
             </div>
             <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(

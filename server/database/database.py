@@ -10,12 +10,19 @@ class database():
         self.db  = self.client['youtube']
         self.users = self.db['users']
         self.tracks = self.db['tracks']
+        self.defaultDownloadSettings = {
+            'title': '',
+            'artist': '',
+            'genre': '',
+            'album': '',
+            'trackDest': ''
+        }
+        self.downloadSettings = self.defaultDownloadSettings
 
         self.callback = insertCallback
 
         self.loadCache()
 
-        
 
     def loadCache(self):
         cur = self.users.find()      
@@ -59,14 +66,13 @@ class database():
         return
 
 
-
     def checkIfTrackExists(self, trackId):
         return True if self.tracks.find_one({'trackId': trackId}) != None else False
 
 
-
     def addNewUser(self, data):
         self.users.insert_one(data)
+
 
     def reloadCache(self):
         self.cache = {}
@@ -76,23 +82,18 @@ class database():
         return 
 
         
-
     def getRecentlyAddedTracks(self, trackAmount):
         return [track for track in self.tracks.find({}, {'_id': 0}).sort('whenRecordAdded', -1).limit(trackAmount)]
 
 
+    def resetDownloadSettings(self):
+        self.downloadSettings = self.defaultDownloadSettings
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-        
+    def updateDownloadSettings(self, data):
+        if 'title' in data:
+            self.downloadSettings['title'] = data['title']
+        self.downloadSettings['artist'] = data['artist']
+        self.downloadSettings['genre'] = data['genre']
+        self.downloadSettings['album'] = data['album']
+        print(self.downloadSettings)
