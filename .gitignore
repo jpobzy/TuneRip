@@ -1,0 +1,6 @@
+downloads
+albumCovers/
+images/
+__pycache__
+databaseFormat.txt
+server/database/__pycache__

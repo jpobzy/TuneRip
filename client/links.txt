@@ -1,0 +1,18 @@
+tabs - https://ui.shadcn.com/docs/components/tabs
+    https://daisyui.com/components/tab/
+
+progress bar - https://ui.shadcn.com/docs/components/progress
+input - https://ui.shadcn.com/docs/components/input
+data table - https://ui.shadcn.com/docs/components/data-table 
+
+
+nightmode icon - https://daisyui.com/components/swap/ 
+    https://daisyui.com/components/theme-controller/
+
+
+loading - https://daisyui.com/components/loading/
+https://daisyui.com/components/progress/
+
+
+
+skeleton - https://daisyui.com/components/skeleton/

@@ -1,0 +1,36 @@
+
+.loading{
+    position: right;
+}
+
+
+.user-container {
+    display: grid;
+    justify-content: center;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+    max-width: 800px; 
+    margin: 0 auto;   /* center the grid */
+    /* width: 100%; */
+    /* max-height: 400px; */
+   /* overflow: hidden; */
+}
+
+
+.downloadSettingsForm{
+  background: rgba(255, 255, 255, 0.336);
+  /* border: 1px solid grey; */
+}
+
+
+
+@media (min-width: 800px) {
+  .user-container {
+    max-width: 2000px;
+    
+  }
+}
+
+
+
+
