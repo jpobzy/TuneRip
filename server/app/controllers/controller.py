@@ -2,7 +2,8 @@ from app.downloadFile import download_video
 # from oldcode.validator import validate_path
 import os
 from pytubefix import YouTube, Channel, Playlist
-from database.database import database
+# from database.database import database
+from database.database2 import database
 import urllib.request
 import yaml, re
 from pathlib import Path
@@ -12,7 +13,8 @@ from colorthief import ColorThief
 
 class controller():
     def __init__(self):
-        self.db = database(self.getUserData)
+        # self.db = database(self.getUserData)
+        self.db = database()
         self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
         self.checkFolders()
@@ -20,15 +22,20 @@ class controller():
     
     def checkFolders(self):
         """
-        Checks to confirm that the url pfp and cover album static folders exist
+        Checks to confirm that the url pfp, cover album, downloads static folders exist
         """
         pfpPath = self.projRoot / f'server/static/images'
         albumCoverPath = self.projRoot / f'server/static/albumCovers'
+        downloadsPath = self.projRoot / f'downloads'
 
         if not Path(pfpPath).exists():
             Path.mkdir(pfpPath, parents=True)
+
         if not Path(albumCoverPath).exists():
             Path.mkdir(albumCoverPath, parents=True)
+
+        if not Path(downloadsPath).exists():
+            Path.mkdir(downloadsPath, parents=True)
         return
 
     def getUserData(self, dbClient):
@@ -164,7 +171,7 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -222,6 +229,14 @@ class controller():
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
             self.db.addNewUser(dataToAdd)
             self.db.loadCache()
+
+
+            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
+            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
+            downloadsPath = self.projRoot / f'downloads/{sanitizedUser}'
+
+            if not Path(downloadsPath).exists():
+                Path.mkdir(downloadsPath, parents=True)
 
             return 'Success', 200
 
