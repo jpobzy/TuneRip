@@ -1,0 +1,27 @@
+tooltip to show information on how to use settings:
+    https://ant.design/components/tooltip
+
+
+
+
+
+
+
+
+show when all tracks are successfully downloaded or not
+    https://ant.design/components/result
+
+show when the user wants to edit/remove records in the database
+    https://ant.design/components/popconfirm
+
+
+
+app tour, can show what each section is and how it works:
+    https://ant.design/components/tour
+
+
+show tracks and allow user to remove/delete from db,
+    https://ant.design/components/table
+
+show users and allow user to delete them:
+    https://ant.design/components/table

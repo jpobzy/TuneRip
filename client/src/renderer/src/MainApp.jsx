@@ -10,13 +10,15 @@ import Dock from './components/dock/Dock'
 import { VscHome, VscAccount, VscArchive, VscSettingsGear } from 'react-icons/vsc';
 import History from './components/history/History'
 import { useRef, } from 'react'
+import Settings from './components/Settings'
 
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [page, setPage] = useState("Home");
+  // const [page, setPage] = useState("Home");
+  const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
   const handleChildClick = (data) => {
@@ -37,7 +39,7 @@ function MainApp() {
     { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
     // { icon: <VscAccount size={18} />, label: 'Profile', onClick: () => alert('Profile!') },
-    // { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => alert('Settings!') },
+    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
   ];
 
   return (
@@ -51,6 +53,7 @@ function MainApp() {
       {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
        {/* {page === 'Home' && <div className='mainApp'><Youtubers ref={ref} onCardClick={handleChildClick} /></div>} */}
       {page === 'History' && <div className='mainApp'><History /></div>}
+      {page === 'Settings' && <Settings/>}
 
     {
       <div className='dock-wrapper flex justify-center items-center '>

@@ -1,0 +1,39 @@
+
+
+.ant-input-outlined.ant-input-disabled{
+    background-color: rgb(255, 255, 255, 0.336);
+}
+
+:where(.ant-input-outlined).ant-input-disabled:hover {
+  background-color: rgb(255, 255, 255, 0.336); 
+  cursor: not-allowed;                 
+}
+
+:where(.ant-input-affix-wrapper-disabled):hover {
+  background-color: red;
+  cursor: not-allowed;
+}
+
+:where(.css-dev-only-do-not-override-1aimng7).ant-input-outlined.ant-input-disabled:hover:not([disabled]){
+    background-color: rgb(255, 255, 255, 0.336);
+    border-color: white;
+}
+
+ 
+/* upload files section */
+/* .ant-upload-drag {
+    background-color:  rgba(1, 2, 9, 0.336);
+} */
+
+.ant-upload-wrapper .ant-upload-drag{
+    background-color: white;
+}
+/* :where(.css-dev-only-do-not-override-hzbaja).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover{
+    background-color: red;
+} */
+
+
+
+.ant-upload-wrapper .ant-upload-disabled{
+    background-color: rgb(255, 255, 255, 0.336);
+}

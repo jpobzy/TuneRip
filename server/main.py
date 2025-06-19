@@ -145,5 +145,17 @@ def getDownloadCount():
     return jsonify(controller_obj.getDownloadCount())
 
 
+@app.route('/filter', methods=['POST'])
+def filter():
+    if request.method == 'POST':
+        response, statusCode  = controller_obj.addTracksToFilter(request)
+    return response, statusCode
+
+
+@app.route('/hello')
+def testing():
+    return 'hello world', 200
+
+
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

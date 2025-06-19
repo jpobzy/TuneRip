@@ -5,9 +5,9 @@ from pytubefix import YouTube, Channel, Playlist
 # from database.database import database
 from database.database2 import database
 import urllib.request
-import yaml, re
+import yaml, re, json
 from pathlib import Path
-import time, queue
+import time, queue, time
 from colorthief import ColorThief
 
 
@@ -27,6 +27,7 @@ class controller():
         pfpPath = self.projRoot / f'server/static/images'
         albumCoverPath = self.projRoot / f'server/static/albumCovers'
         downloadsPath = self.projRoot / f'downloads'
+        customDownloadPath = self.projRoot / f'downloads/custom'
 
         if not Path(pfpPath).exists():
             Path.mkdir(pfpPath, parents=True)
@@ -36,6 +37,9 @@ class controller():
 
         if not Path(downloadsPath).exists():
             Path.mkdir(downloadsPath, parents=True)
+
+        if not Path(customDownloadPath).exists():
+            Path.mkdir(customDownloadPath, parents=True)
         return
 
     def getUserData(self, dbClient):
@@ -124,7 +128,7 @@ class controller():
             erorrCount = 0
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-        
+
             
             try:
                 trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, debugMode)
@@ -134,7 +138,7 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                # self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -171,7 +175,7 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    # self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -296,3 +300,55 @@ class controller():
 
     def getDownloadCount(self):
         return self.db.getDownloadCount()
+    
+
+    def addTracksToFilter(self, request):
+        if 'file' in request.files:
+            print('files pending')
+            failures = set()
+            file = request.files['file']
+            contents = file.readlines()
+            counter = 0
+            tracks = [track.decode("utf-8") for track in contents if (len(track.decode("utf-8")) > 0  and (track.decode("utf-8").startswith('https://www.youtube.com/watch?') or track.decode("utf-8").startswith('https://youtu.be/')))]
+            
+
+            for track in tracks:
+                if track.startswith('https://www.youtube.com/watch?v=') and self.db.checkIfTrackExists(track.replace('https://www.youtube.com/watch?v=', '')):
+                    print(f'skipping track {track}')
+                    continue
+                elif track.startswith('https://youtu.be/') and self.db.checkIfTrackExists(track.replace('https://youtu.be/', '').split('?')[0]):
+                    continue  
+               
+                try:
+                    video = YouTube(track)
+                    if self.db.checkIfTrackExists(video.video_id):
+                        # double check
+                        continue
+
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '')
+                    counter+=1
+                    if counter % 30 == 0:
+                        time.sleep(60)
+                    print(f'added track {track} with title {video.title}')
+                except:
+                    failures.add(track)
+                    continue
+
+            return ("Success", 200) if len(failures) == 0 else (f'Failed to add tracks: {failures}', 400)
+        else:
+            exists = ('Track already exists', 304)
+            success = ('Track has been added to the DB', 200)
+            track = str(json.loads(request.data)['ytLink'].strip())
+            if track.startswith('https://www.youtube.com/watch?v=') and self.db.checkIfTrackExists(track.replace('https://www.youtube.com/watch?v=', '')):
+                return exists
+            elif track.startswith('https://youtu.be/') and self.db.checkIfTrackExists(track.replace('https://youtu.be/', '').split('?')[0]):
+                return exists 
+            elif track.startswith('https://youtube.com/watch?v=') and self.db.checkIfTrackExists(track.replace('https://youtube.com/watch?v=', '')):
+                return exists 
+            else:
+                try:
+                    video = YouTube(track)
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '')
+                    return success
+                except Exception as error:
+                    return f'ERROR {error}', 400

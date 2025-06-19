@@ -4,9 +4,9 @@ import MainApp from './MainApp'
 import { App } from 'antd';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <App>
       <MainApp />
     </App>
-  </StrictMode>
+  // </StrictMode>
 )

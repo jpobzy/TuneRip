@@ -1,8 +1,7 @@
 import sqlite3
-# con = sqlite3.connect("users")
-# cur = con.cursor()
-# cur.execute("CREATE TABLE movie(title, year, score)")
+from pathlib import Path
 from datetime import datetime
+db_path = Path(__file__).parents[1] / "TuneRipDatabase.db"
 
 class database():
     def __init__(self):
@@ -20,7 +19,7 @@ class database():
 
 
     def loadCache(self):
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
@@ -38,7 +37,7 @@ class database():
         """"
         adds user into users db, format:
         """
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
         cur.execute(f"""
             INSERT INTO users VALUES
@@ -58,7 +57,7 @@ class database():
             'albumCoverImageFile': albumCoverFile,
             # 'whenRecordAdded': datetime.datetime.now()
         }
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
         time = datetime.now()
         cur.execute(f"""
@@ -70,15 +69,17 @@ class database():
         return
 
     def checkIfTrackExists(self, trackId):
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
-        cur.execute(f"SELECT trackId from tracks WHERE trackId='{trackId}'")
+        # print(f"SELECT trackId from tracks WHERE trackId='{trackId}'")
+        cur.execute(f"SELECT trackId from tracks WHERE trackId=?", (trackId.strip(),))
         res = True if cur.fetchone() != None else False
-        database.close()
+        
+        # database.close()
         return res
 
     def reloadCache(self):
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
         for record in cur.execute("SELECT * FROM users"):
             self.cache[str(record[0])] =  record[1]
@@ -86,7 +87,7 @@ class database():
         return 
     
     def getRecentlyAddedTracks(self, trackAmount):
-        database = sqlite3.connect("TuneRipDatabase.db")
+        database = sqlite3.connect(db_path)
         cur = database.cursor()
         res = cur.execute(f"SELECT * FROM tracks ORDER BY whenRecordAdded DESC LIMIT {trackAmount}")
         ret = []
@@ -107,5 +108,4 @@ class database():
         self.downloadSettings['album'] = data['album']
         return
 
-db = database()
 

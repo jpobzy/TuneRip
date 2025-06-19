@@ -4,3 +4,8 @@ images/
 __pycache__
 databaseFormat.txt
 server/database/__pycache__
+server/database/test.py
+server/TuneRipDatabase.db
+server/pytest.ini
+/server/tests
+server/__init__.py
