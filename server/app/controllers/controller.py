@@ -138,7 +138,7 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                # self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -175,7 +175,7 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -269,7 +269,7 @@ class controller():
                 trackName = video.title
                 albumTitle = None
                 albumCoverFile = None
-                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile)
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url)
             except Exception as error:
                 print(f'ERROR TRACK {url} COULD NOT BE FOUND DUE TO {error}')
                 return
@@ -324,8 +324,7 @@ class controller():
                     if self.db.checkIfTrackExists(video.video_id):
                         # double check
                         continue
-
-                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '')
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
                     counter+=1
                     if counter % 30 == 0:
                         time.sleep(60)
@@ -348,7 +347,35 @@ class controller():
             else:
                 try:
                     video = YouTube(track)
-                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '')
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
                     return success
                 except Exception as error:
                     return f'ERROR {error}', 400
+                
+
+    def getRecords(self, query):
+        """
+        Returns specified records in the db
+        """
+        page, limit = query.decode('utf-8').split('&')
+        page, limit =  int(page.split('=')[1]), int(limit.split('=')[1])
+        offset = (page - 1) * 10
+        print(f'limit: {limit}, offset: {offset}')
+        return self.db.getRecords(limit - 1, offset)
+
+
+
+    def getData(self):
+        """
+        get all unique users from DB, used for table to show all unique users when you want to filter for a specific user
+        """
+        return self.db.getAllUniqueUsers()
+
+    def getRecordsFromUser(self, query):
+        """
+        gets all records for a specific user in DB, used for table filtering
+        """
+        page, limit, user = query.decode('utf-8').split('&')
+        page, limit, user =  int(page.split('=')[1]), int(limit.split('=')[1]), user.split('=')[1]
+        offset = (page - 1) * 10
+        return self.db.getRecordsFromUser(user, limit, offset)

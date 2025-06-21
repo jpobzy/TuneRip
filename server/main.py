@@ -157,5 +157,41 @@ def testing():
     return 'hello world', 200
 
 
+
+@app.route('/getData')
+def getInitialRecords():
+    """
+    For records, query should have "limit" and "page" keys
+    """
+    return jsonify(controller_obj.getRecords(request.query_string))
+
+@app.route('/getusers')
+def getData():
+    """
+    For filters
+    """
+    return jsonify(controller_obj.getData())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/getrecordsfromuser')
+def getUserData():
+    # print(request.query_string)
+    return jsonify(controller_obj.getRecordsFromUser(request.query_string))
+
+
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

@@ -24,7 +24,7 @@ class database():
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
             cur.execute("CREATE TABLE users(name, ytLink)")
-            cur.execute("CREATE TABLE tracks(user, albumTitle, trackName, trackId, status, albumCoverFile, whenRecordAdded)")
+            cur.execute("CREATE TABLE tracks(user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
 
         for record in cur.execute("SELECT * FROM users"):
             self.cache[str(record[0])] =  record[1]
@@ -47,7 +47,7 @@ class database():
         database.close()
         return
 
-    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile):
+    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile, link):
         data = {
             'user': user,
             'albumTitle': albumTitle,
@@ -59,11 +59,12 @@ class database():
         }
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        time = datetime.now()
-        cur.execute(f"""
-            INSERT INTO tracks VALUES
-                ('{user}', '{albumTitle}', '{trackName}', '{trackId}', '{status}', '{albumCoverFile}', '{time}')        
-            """)
+        whenRecordAdded = datetime.now()
+        
+        cur.execute("""
+            INSERT INTO tracks (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded))
+    
         database.commit()
         database.close()
         return
@@ -109,3 +110,52 @@ class database():
         return
 
 
+    def getRecords(self, limit, offset):
+        database = sqlite3.connect(db_path)
+        cur = database.cursor()
+        query = cur.execute("SELECT * FROM tracks LIMIT ? OFFSET ?", (limit, offset))
+        ret = []
+        for record in query:
+            ret.append({
+                'user' : record[0],
+                'albumTitle' : record[1],
+                'trackName' : record[2],
+                'trackId' : record[3],
+                'status' : record[4],
+                'albumCoverFile' : record[5],
+                'link' : record[6],
+                'whenRecordAdded' : record[7],
+            })
+        database.close()
+        return ret
+
+    def getAllUniqueUsers(self):
+        database = sqlite3.connect(db_path)
+        cur = database.cursor()
+        query = cur.execute("SELECT DISTINCT user FROM tracks")
+        ret = []
+        for record in query:
+            ret.append({'text': record[0], 'value': record[0]})
+        database.close()
+        return ret
+       
+
+
+    def getRecordsFromUser(self, user, limit, offset):
+        database = sqlite3.connect(db_path)
+        cur = database.cursor()
+        query = cur.execute("SELECT * FROM tracks WHERE user=? LIMIT ? OFFSET ?", (user, limit, offset))
+        ret = []
+        for record in query:
+            ret.append({
+                'user' : record[0],
+                'albumTitle' : record[1],
+                'trackName' : record[2],
+                'trackId' : record[3],
+                'status' : record[4],
+                'albumCoverFile' : record[5],
+                'link' : record[6],
+                'whenRecordAdded' : record[7],
+            })
+        database.close()
+        return ret

@@ -1,4 +1,6 @@
 import FilterForm from "./filterFrom/FilterForm";
+import TrackTable from "./table/TrackTable";
+import Amongus from "./table/Amongus";
 
 function Settings(){
 
@@ -9,6 +11,8 @@ function Settings(){
             </div>
             <div className="text-center">
                 <FilterForm/>
+                <TrackTable/>
+                {/* <Amongus /> */}
             </div>
         </div>
     )
