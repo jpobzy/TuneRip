@@ -1,6 +1,6 @@
 import FilterForm from "./filterFrom/FilterForm";
 import TrackTable from "./table/TrackTable";
-import Amongus from "./table/Amongus";
+// import Amongus from "./table/Amongus";
 
 function Settings(){
 

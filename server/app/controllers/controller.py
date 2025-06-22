@@ -72,7 +72,7 @@ class controller():
             - download all videos in the playlist url 
         """
         debugMode = False
-        addToDB = False
+        addToDB = True
 
         
         url = request.args.get('url')

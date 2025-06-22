@@ -10,7 +10,7 @@ function createWindow() {
     height: 670,
     minWidth: 300,
     minHeight: 500,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     show: false,
     autoHideMenuBar: true,
 

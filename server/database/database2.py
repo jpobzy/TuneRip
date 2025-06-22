@@ -90,7 +90,7 @@ class database():
         """
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        query = cur.execute(f"SELECT * FROM tracks DESC LIMIT {trackAmount}")
+        query = cur.execute(f"SELECT * FROM tracks WHERE status <> ? ORDER BY ? DESC LIMIT ?", ('Filter', 'whenRecordAdded', trackAmount))
         retval = []
         for record in query:
             retval.append({'trackName':record[2], 'user':record[0]})
@@ -164,7 +164,7 @@ class database():
     def getDownloadCount(self):
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        res = cur.execute("SELECT COUNT(*) FROM tracks")
+        res = cur.execute("SELECT COUNT(*) FROM tracks WHERE status <> ?", ('Filter',))
         data = res.fetchall()
         database.close()       
         return data[0][0]

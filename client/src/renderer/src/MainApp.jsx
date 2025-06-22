@@ -18,7 +18,7 @@ function MainApp() {
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   // const [page, setPage] = useState("Home");
-  const [page, setPage] = useState("Settings");
+  const [page, setPage] = useState("Home");
   const ref = useRef(null);
 
   const handleChildClick = (data) => {
@@ -66,10 +66,7 @@ function MainApp() {
         /> 
         
       </div>
-
     }
-
-
     </div>
   )
 }
