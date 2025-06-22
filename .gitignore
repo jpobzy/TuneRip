@@ -9,3 +9,4 @@ server/TuneRipDatabase.db
 server/pytest.ini
 /server/tests
 server/__init__.py
+/build

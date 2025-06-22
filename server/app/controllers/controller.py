@@ -13,7 +13,6 @@ from colorthief import ColorThief
 
 class controller():
     def __init__(self):
-        # self.db = database(self.getUserData)
         self.db = database()
         self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
@@ -47,7 +46,7 @@ class controller():
         for key, val in self.db.cache.items():
             try:
                 channel = Channel(val, 'WEB')
-                url, imgPath = channel.thumbnail_url, f'./static/images/{channel.channel_name}.jpg'
+                url, imgPath = channel.thumbnail_url, self.projRoot / f'static/images/{channel.channel_name}.jpg'
                 # urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
                 retVal.append({
@@ -73,6 +72,7 @@ class controller():
             - download all videos in the playlist url 
         """
         debugMode = False
+        addToDB = False
 
         
         url = request.args.get('url')
@@ -85,7 +85,7 @@ class controller():
             playlist = Playlist(url)
 
             downloadPath = self.projRoot / f"downloads/custom"
-            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod custom'
             trackNum = 1
             if Path(downloadPath).exists():
@@ -105,7 +105,8 @@ class controller():
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                    if addToDB:
+                        self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -122,7 +123,7 @@ class controller():
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             downloadPath = self.projRoot / f"downloads/custom"
-            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {url}'
             trackNum = 1
             erorrCount = 0
@@ -138,7 +139,8 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
+                if addToDB:
+                    self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -154,7 +156,7 @@ class controller():
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
-            albumCoverPath = f'./static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {user}'
             trackNum = 1
             if Path(downloadPath).exists():
@@ -174,8 +176,8 @@ class controller():
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
-
-                    self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
+                    if addToDB:
+                        self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -191,22 +193,10 @@ class controller():
 
     def returnAlbumCoverFileNames(self):
         """
-        Returns a list of a dict of all album cover files for the front end to request 
-        as well as the image palettes for the gradient background to make loading gradients quicker
-        DICT FORMATreturnAlbumCoverFileNames: 
-        {'files': [1.jpg, 2.jpg, 3...], 
-        'paletteMap': {'1.jpg': [(52, 19, 30), (213, 131, 105), (92, 180, 153), (98, 77, 167)]}
-        }
+        Returns a dict containing a list of all album cover files for the front end to request 
         """
-        
-        Path('static/albumCovers').exists()
-        
-        files = [file.name for file in Path('static/albumCovers').iterdir()]
-        paltetteMap = {}
-        for file in Path('static/albumCovers').iterdir():
-            paltetteMap[file.name] = ColorThief(file).get_palette(color_count=4)
-
-        return {'files' : files, 'paletteMap': paltetteMap}
+        files = [file.name for file in Path(self.projRoot / f'server/static/albumCovers/').iterdir()]
+        return {'files' : files}
 
 
 
@@ -227,12 +217,13 @@ class controller():
         try:
             
             channel = Channel(data['ytLink'])
-            url, imgPath = channel.thumbnail_url, f'./static/images/{channel.channel_name}.jpg'
+            url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/images/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
             self.db.addNewUser(dataToAdd)
             self.db.loadCache()
+            print('1', flush=True)
 
 
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)

@@ -2,71 +2,12 @@ import React from 'react';
 import { Space, Table, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
-// (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)
-
-
-const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    // render: text => <a>{text}</a>,
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
-
-
-const olddata = [
-  {
-    key: '1',
-    user: 'John Brown',
-    albumtitle: 'test',
-    tracktitle: 'New York No. 1 Lake Park',
-    albumCoverFile:'aaaaaaaaaaaaaaaa',
-    status:'filter',
-    trackid: '123345',
-    whenRecordAdded: 'dsamdasdaskmad',
-    link: 'yt.com/12321321312'
-  },
-//   {
-//     key: '2',
-//     name: 'Jim Green',
-//     age: 42,
-//     address: 'London No. 1 Lake Park',
-//   },
-//   {
-//     key: '3',
-//     name: 'Joe Black',
-//     age: 32,
-//     address: 'Sydney No. 1 Lake Park',
-//   },
-];
-
+import { Input, ConfigProvider, Button } from 'antd';
 
 function TrackTable(){
 
-  const [users, setUsers] = useState([])
-  const [records, setRecords] = useState({}) // format: {1: [records]}
+  const [users, setUsers] = useState([]) // for user filter
+  const [records, setRecords] = useState() // format: {1: [records]}
   const [page, setPage] = useState(1)
 
   // const [pageSize, setPageSize] = useState(100)
@@ -122,10 +63,20 @@ function TrackTable(){
     dataIndex: '',
     key: 'x',
     fixed: 'right',
-    render: () => <a>Delete</a>,
+      render: (_, record) => (
+      <Space size="middle">
+        <a onClick={()=>deleteRecord(record)}>Delete</a>
+      </Space>
+    ),
+
   },
   ]
 
+  function deleteRecord(record){
+      console.log('hello world', record)
+
+
+  }
 
   async function populateUsers(){
     const res = await axios.get('http://localhost:8080/getusers')
@@ -137,7 +88,7 @@ function TrackTable(){
       params: {'page': 1, 'limit': 100}
     }
     )
-    setRecords({1: res.data})
+    setRecords(res.data)
   }
   
 
@@ -150,14 +101,18 @@ function TrackTable(){
     console.log(records.length)
   }
 
+
+  function helper(){
+    console.log(records)
+  }
+
   const onChange = (pagination, filters, sorter, extra) => {
     // console.log('params', pagination);
     // console.log(pagination['current'])
     // console.log(records[pagination['current']])
     // console.log(records)
-    
-    setPage(pagination['current'])
-    getMoreRecords()
+  
+    // getMoreRecords()
   };
 
       const dataSource = Array.from({ length: 100 }).map((_, i) => ({
@@ -172,13 +127,15 @@ function TrackTable(){
       <div className='mx-auto w-[800px]'>
       <Table 
         columns={cols} 
-        dataSource={records[page]} 
+        dataSource={records} 
         // dataSource={records[pagnation['current']]} 
-        pagination={true}
+        // pagination={true}
         scroll={{ x: 'max-content' }}  
         onChange={onChange}
         />;
       </div>
+
+        {/* <Button type="primary" onClick={()=> helper()}>Go back</Button>, */}
     </div>
   )
 }

@@ -39,10 +39,7 @@ class database():
         """
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        cur.execute(f"""
-            INSERT INTO users VALUES
-                            ('{data['name']}', '{data['ytLink']}')        
-        """)
+        cur.execute(f"INSERT INTO users VALUES (?, ?)", (data['name'], data['ytLink']))
         database.commit()
         database.close()
         return
@@ -88,14 +85,17 @@ class database():
         return 
     
     def getRecentlyAddedTracks(self, trackAmount):
+        """"
+        for /history req
+        """
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        res = cur.execute(f"SELECT * FROM tracks ORDER BY whenRecordAdded DESC LIMIT {trackAmount}")
-        ret = []
-        for record in res:
-            ret.append(record)
+        query = cur.execute(f"SELECT * FROM tracks DESC LIMIT {trackAmount}")
+        retval = []
+        for record in query:
+            retval.append({'trackName':record[2], 'user':record[0]})
         database.close()
-        return record
+        return retval
     
     def resetDownloadSettings(self):
         self.downloadSettings = self.defaultDownloadSettings
@@ -159,3 +159,12 @@ class database():
             })
         database.close()
         return ret
+
+
+    def getDownloadCount(self):
+        database = sqlite3.connect(db_path)
+        cur = database.cursor()
+        res = cur.execute("SELECT COUNT(*) FROM tracks")
+        data = res.fetchall()
+        database.close()       
+        return data[0][0]

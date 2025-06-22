@@ -6,10 +6,12 @@ from flask import Flask, render_template, Response, stream_with_context
 import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
+from pathlib import Path
 
+projRoot = Path(__file__).parent
 
-UPLOAD_FOLDER = './static/images'
-ALBUM_COVER_FOLDER = './static/albumCovers'
+UPLOAD_FOLDER = projRoot / 'static/images'
+ALBUM_COVER_FOLDER = projRoot / 'static/albumCovers'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
@@ -152,11 +154,6 @@ def filter():
     return response, statusCode
 
 
-@app.route('/hello')
-def testing():
-    return 'hello world', 200
-
-
 
 @app.route('/getData')
 def getInitialRecords():
@@ -171,18 +168,6 @@ def getData():
     For filters
     """
     return jsonify(controller_obj.getData())
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
