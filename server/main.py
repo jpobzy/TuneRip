@@ -6,10 +6,12 @@ from flask import Flask, render_template, Response, stream_with_context
 import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
+from pathlib import Path
 
+projRoot = Path(__file__).parent
 
-UPLOAD_FOLDER = './static/images'
-ALBUM_COVER_FOLDER = './static/albumCovers'
+UPLOAD_FOLDER = projRoot / 'static/images'
+ALBUM_COVER_FOLDER = projRoot / 'static/albumCovers'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
@@ -143,6 +145,37 @@ def resetDownloadSettings():
 @app.route('/downloadCount')
 def getDownloadCount():
     return jsonify(controller_obj.getDownloadCount())
+
+
+@app.route('/filter', methods=['POST'])
+def filter():
+    if request.method == 'POST':
+        response, statusCode  = controller_obj.addTracksToFilter(request)
+    return response, statusCode
+
+
+
+@app.route('/getData')
+def getInitialRecords():
+    """
+    For records, query should have "limit" and "page" keys
+    """
+    return jsonify(controller_obj.getRecords(request.query_string))
+
+@app.route('/getusers')
+def getData():
+    """
+    For filters
+    """
+    return jsonify(controller_obj.getData())
+
+
+
+
+@app.route('/getrecordsfromuser')
+def getUserData():
+    # print(request.query_string)
+    return jsonify(controller_obj.getRecordsFromUser(request.query_string))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,6 @@
+/* Target the actual input element inside the Ant Design wrapper */
+input.ant-input:disabled {
+  background-color: #f0e68c !important;
+  color: #9e0c0c !important;
+  opacity: 1 !important;
+}

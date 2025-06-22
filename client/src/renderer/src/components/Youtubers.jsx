@@ -40,7 +40,7 @@ const Youtubers = forwardRef((props, ref) => {
 
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
-    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
+    // setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
   }
 
   const handleAlbumCoverClicked = async(file) =>{
@@ -59,7 +59,6 @@ const Youtubers = forwardRef((props, ref) => {
   async function getNewAlbumCover() {
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
-    setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
   }
 
 
@@ -107,7 +106,9 @@ const Youtubers = forwardRef((props, ref) => {
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
-                {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>}
+                {/* {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>} */}
+                {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} />}
+
             </div>
           ) : (
           <div >
