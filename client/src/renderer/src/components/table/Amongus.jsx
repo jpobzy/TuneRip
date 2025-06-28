@@ -1,119 +1,49 @@
-import React from 'react';
-import { Table } from 'antd';
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Button, Flex, Table } from 'antd';
 
-function Amongus(){
+const columns = [
+  { title: 'Name', dataIndex: 'name' },
+  { title: 'Age', dataIndex: 'age' },
+  { title: 'Address', dataIndex: 'address' },
+];
 
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      filters: [
-        {
-          text: 'Joe',
-          value: 'Joe',
-        },
-        {
-          text: 'Category 1',
-          value: 'Category 1',
-          children: [
-            {
-              text: 'Yellow',
-              value: 'Yellow',
-            },
-            {
-              text: 'Pink',
-              value: 'Pink',
-            },
-          ],
-        },
-        {
-          text: 'Category 2',
-          value: 'Category 2',
-          children: [
-            {
-              text: 'Green',
-              value: 'Green',
-            },
-            {
-              text: 'Black',
-              value: 'Black',
-            },
-          ],
-        },
-      ],
-      filterMode: 'tree',
-      filterSearch: true,
-      onFilter: (value, record) => record.name.includes(value),
-      width: '30%',
-    },
-    {
-      title: 'Age',
-      dataIndex: 'age',
-      sorter: (a, b) => a.age - b.age,
-    },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      filters: [
-        {
-          text: 'London',
-          value: 'London',
-        },
-        {
-          text: 'New York',
-          value: 'New York',
-        },
-      ],
-      onFilter: (value, record) => record.address.includes(value),
-      filterSearch: true,
-      width: '40%',
-    },
-  ];
-  
-  const data = [
-    {
-      key: '1',
-      name: 'John Brown',
-      age: 32,
-      address: 'New York No. 1 Lake Park',
-    },
-    {
-      key: '2',
-      name: 'Jim Green',
-      age: 42,
-      address: 'London No. 1 Lake Park',
-    },
-    {
-      key: '3',
-      name: 'Joe Black',
-      age: 32,
-      address: 'Sydney No. 1 Lake Park New York',
-    },
-    {
-      key: '4',
-      name: 'Jim Red',
-      age: 32,
-      address: 'London No. 2 Lake Park',
-    },
-  ];
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
+const dataSource = Array.from({ length: 46 }).map((_, i) => ({
+  key: i,
+  name: `Edward King ${i}`,
+  age: 32,
+  address: `London, Park Lane no. ${i}`,
+}));
+
+const Amongus = () => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const start = () => {
+    setLoading(true);
+    // ajax request after empty completing
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
-
-
-
-
-
-
-
-  useEffect(()=>{
-
-  },[]);
-
+  const onSelectChange = newSelectedRowKeys => {
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+  const hasSelected = selectedRowKeys.length > 0;
   return (
-    <Table columns={columns} dataSource={data} onChange={onChange} />
-  )
-}
-
+    <Flex gap="middle" vertical>
+      <Flex align="center" gap="middle">
+        <Button type="primary" onClick={start} disabled={!hasSelected} loading={loading}>
+          Reload
+        </Button>
+        {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}
+      </Flex>
+      <Table rowSelection={rowSelection} columns={columns} dataSource={dataSource} />
+    </Flex>
+  );
+};
 export default Amongus;

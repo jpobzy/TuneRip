@@ -370,3 +370,27 @@ class controller():
         page, limit, user =  int(page.split('=')[1]), int(limit.split('=')[1]), user.split('=')[1]
         offset = (page - 1) * 10
         return self.db.getRecordsFromUser(user, limit, offset)
+
+
+    def deleteRecord(self, query):
+        """
+        Deletes one record in DB, chosen in Table.jsx
+        """
+        return  self.db.deleteRecord(query['link'].split('https://youtube.com/watch?v=')[1])
+    
+
+    def deleteMultipleRecords(self, query):
+        """
+        Deletes multiple records in DB, chosen in Table.jsx
+        """
+        tracksNotFound = []
+        for record in query['records']:
+            message, status = self.db.deleteRecord(record['trackId'])
+            if status == 204:
+                tracksNotFound.append(record['trackName'])
+
+        if len(tracksNotFound) > 0:
+            return f'Failed to find and remove {tracksNotFound}', 204
+        else:
+            return 'All chosen tracks deleted from DB', 200
+

@@ -113,10 +113,13 @@ class database():
     def getRecords(self, limit, offset):
         database = sqlite3.connect(db_path)
         cur = database.cursor()
-        query = cur.execute("SELECT * FROM tracks LIMIT ? OFFSET ?", (limit, offset))
+        # query = cur.execute("SELECT * FROM tracks LIMIT ? OFFSET ?", (limit, offset))
+        query = cur.execute("SELECT * FROM tracks")
         ret = []
+        keyNum = 0
         for record in query:
             ret.append({
+                'key': keyNum,
                 'user' : record[0],
                 'albumTitle' : record[1],
                 'trackName' : record[2],
@@ -126,6 +129,7 @@ class database():
                 'link' : record[6],
                 'whenRecordAdded' : record[7],
             })
+            keyNum += 1
         database.close()
         return ret
 
@@ -168,3 +172,19 @@ class database():
         data = res.fetchall()
         database.close()       
         return data[0][0]
+    
+    def deleteRecord(self, trackid):
+        database = sqlite3.connect(db_path)
+        cur = database.cursor()
+        track = cur.execute('SELECT * FROM tracks WHERE trackId = ?', (trackid,))
+        data = track.fetchall()
+        if data == []:
+            database.close()
+            return 'Record not found', 204
+        else:
+            print('deleting')
+            cur.execute("DELETE FROM tracks WHERE trackId=?", (trackid,))
+            database.commit()
+            return 'Data deleted', 200
+
+        

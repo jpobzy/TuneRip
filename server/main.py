@@ -177,6 +177,15 @@ def getUserData():
     # print(request.query_string)
     return jsonify(controller_obj.getRecordsFromUser(request.query_string))
 
+@app.route('/deleteRecord', methods=['DELETE'])
+def deleteRecord():
+    return controller_obj.deleteRecord(json.loads(request.data))
+
+@app.route('/deleteMultipleRecord', methods=['DELETE'])
+def deleteMultipleRecords():
+    return controller_obj.deleteMultipleRecords(json.loads(request.data))
+
+
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

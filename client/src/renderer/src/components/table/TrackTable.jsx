@@ -1,18 +1,58 @@
-import React from 'react';
-import { Space, Table, Tag } from 'antd';
+import React, { use } from 'react';
+import { Space, Table, Popconfirm, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Input, ConfigProvider, Button } from 'antd';
+import { Input, ConfigProvider, Button, Flex } from 'antd';
+
+import { App } from 'antd';
 
 function TrackTable(){
 
   const [users, setUsers] = useState([]) // for user filter
   const [records, setRecords] = useState() // format: {1: [records]}
-  const [page, setPage] = useState(1)
+  const [open, setOpen] = useState(true);
+  const [condition, setCondition] = useState(true)
+  const { message } = App.useApp();
+  const [recordsToDelete, setRecordsToDelete] = useState([])
+  const [isLoading, setLoading] = useState(false)
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  // const [pageSize, setPageSize] = useState(100)
-  // const [totalRecords, setTotalRecords] = useState(0)
-  // const [loading, setLoading] = useState(false)
+
+  const deleteSelected = async() => {
+    setLoading(true)
+    const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
+    console.log(req.status)
+    if (req.status === 204){
+      message.info('No track was found');
+    }else if (req.status === 200){
+      if (recordsToDelete.length > 1){
+        message.success(`Selected records have been deleted`);       
+      } else {
+        message.success(`Selected record have been deleted`);
+      }
+      getRecords();
+    }
+    setLoading(false)
+  }
+
+
+  const confirm = async (record) =>{
+    setLoading(true)
+    const req = await axios.delete('http://localhost:8080/deleteRecord', {data: {'link': record.link}})
+    if (req.status === 204){
+      message.info('No track was found');
+    }else if (req.status === 200){
+      message.success(`Record with URL ${record.link} has been deleted`)
+      getRecords();
+    }
+    setLoading(false)
+  };
+
+  const cancel = () => {
+    setOpen(false);
+    message.error('clicked on cancel');
+  };
+
 
   const cols = [
   {
@@ -65,18 +105,24 @@ function TrackTable(){
     fixed: 'right',
       render: (_, record) => (
       <Space size="middle">
-        <a onClick={()=>deleteRecord(record)}>Delete</a>
+        {/* <a onClick={()=>deleteRecord(record)}>Delete</a> */}
+      <Popconfirm
+        title="Delete the task"
+        description="Are you sure to delete this task?"
+        // open={open}
+        // onOpenChange={() => handleOpenChange(record)}
+        onConfirm={() => confirm(record)}
+        onCancel={cancel}
+        okText="Yes"
+        cancelText="No"
+      >
+        <a >Delete</a>
+      </Popconfirm>
       </Space>
     ),
 
   },
   ]
-
-  function deleteRecord(record){
-      console.log('hello world', record)
-
-
-  }
 
   async function populateUsers(){
     const res = await axios.get('http://localhost:8080/getusers')
@@ -86,56 +132,49 @@ function TrackTable(){
   async function getRecords(){
     const res = await axios.get('http://localhost:8080/getData',{
       params: {'page': 1, 'limit': 100}
-    }
-    )
-    setRecords(res.data)
+    });
+    setRecords(res.data);
   }
   
 
   useEffect(()=>{ 
-    populateUsers()
-    getRecords()
+    populateUsers();
+    getRecords();
   },[])
 
-  function getMoreRecords(){
-    console.log(records.length)
+
+  const rowSelection = {
+
+    onChange : (selectedRowKeys, selectedRows) => {
+      console.log('selectedRowKeys changed: ', selectedRows);
+      setRecordsToDelete(selectedRows);
+    } 
   }
 
-
-  function helper(){
-    console.log(records)
-  }
-
-  const onChange = (pagination, filters, sorter, extra) => {
-    // console.log('params', pagination);
-    // console.log(pagination['current'])
-    // console.log(records[pagination['current']])
-    // console.log(records)
-  
-    // getMoreRecords()
-  };
-
-      const dataSource = Array.from({ length: 100 }).map((_, i) => ({
-      key: i,
-      user: `Edward King ${i}`,
-      age: 32,
-      address: `London, Park Lane no. ${i}`,
-    }));
 
   return (
     <div>
-      <div className='mx-auto w-[800px]'>
-      <Table 
-        columns={cols} 
-        dataSource={records} 
-        // dataSource={records[pagnation['current']]} 
-        // pagination={true}
-        scroll={{ x: 'max-content' }}  
-        onChange={onChange}
-        />;
-      </div>
+      <div className=''>
+        <div className='relative right-[330px] h-[50px]'>
+            <Button type="primary" onClick={deleteSelected}>
+              Delete selected
+            </Button>            
+        </div>
+ 
 
-        {/* <Button type="primary" onClick={()=> helper()}>Go back</Button>, */}
+       
+
+        <div className='mx-auto  w-[800px]'>
+          <Table 
+            rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
+            loading={isLoading}
+            columns={cols} 
+            dataSource={records} 
+            scroll={{ x: 'max-content' }}  
+            />;
+        </div>
+
+      </div>
     </div>
   )
 }
