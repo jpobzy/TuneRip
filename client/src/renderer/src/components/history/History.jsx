@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import AnimatedList from './animatedList/AnimatedList'
-import '../../assets/history/history.css'
+import './history.css'
 import { useState } from 'react';
 import axios from 'axios';
 import CountUp from './trackInfo/TrackCount';

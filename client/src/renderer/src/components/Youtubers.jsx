@@ -2,14 +2,15 @@ import React, { forwardRef, useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
-import DownloadedShowcase from './DownloadedShowcase';
+import DownloadedShowcase from './downloadShowcase/DownloadedShowcase';
 import AddUserForm from './addUserForm/AddUserForm'
-import FadeContent from './FadeContent';
-import AlbumImage from './AlbumCoverCard';
-import UploadButton from './UploadButton';
+import FadeContent from './fade/FadeContent';
+import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
+import UploadButton from './uploadImagesButton/UploadButton';
 import { message, Collapse } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/downloadSettingsForm';
+import { Switch } from 'antd';
 
 const Youtubers = forwardRef((props, ref) => {
 
@@ -23,6 +24,8 @@ const Youtubers = forwardRef((props, ref) => {
   const [searchUrl, setSearchURL] = useState([])
   const inputRef = useRef(null);
   const [isTrack, setIsTrack] = useState(false)
+  const [edit, setEdit] = useState(false)
+  const [reloadUserDataBool, setReload] = useState(false) 
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -123,7 +126,7 @@ const Youtubers = forwardRef((props, ref) => {
             </div>
             <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(
-              <AlbumImage 
+              <AlbumCoverCard 
               filename={filename[1]}
               cardClicked={()=>handleAlbumCoverClicked(filename[1])}
               key ={index+1}
@@ -151,12 +154,14 @@ const Youtubers = forwardRef((props, ref) => {
                           <div className='user-container'>
                             { 
                             Object.entries(users).map((item, index) =>(
-                            <YoutuberCard
-                            name = {item[0]}
-                            userPFP={item[0]}
-                            onClick={()=>handleCardClicked(item[0])}
-                            key = {index+1}
-                            />
+                              <YoutuberCard
+                              name = {item[0]}
+                              userPFP={item[0]}
+                              onClick={()=>handleCardClicked(item[0])}
+                              edit = {edit}
+                              key = {index+1}
+                              setReload={setUsers}
+                              />
                             ))}
                           </div>
                       </div>
@@ -167,12 +172,11 @@ const Youtubers = forwardRef((props, ref) => {
           </div>
         )}
       </div>
-
-      {<div>
-        <button onClick={() => resetAll()}> reverse</button>
-      </div> }
-
-
+      {Object.keys(users).length > 0  &&  !cardClicked && 
+        <div className='mt-[20px]'>
+          <Switch onChange={() => setEdit(!edit)} />        
+        </div>      
+      }
     </div>
   )
 })

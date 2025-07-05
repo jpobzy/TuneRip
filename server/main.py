@@ -8,11 +8,11 @@ from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
 from pathlib import Path
 
-projRoot = Path(__file__).parent
+basePath = Path.home() / 'Documents' / 'TuneRip'
 
-UPLOAD_FOLDER = projRoot / 'static/images'
-ALBUM_COVER_FOLDER = projRoot / 'static/albumCovers'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = basePath / 'server/static/images'
+ALBUM_COVER_FOLDER = basePath / 'server/static/albumCovers'
+DATABASE_FOLDER = basePath / 'server/database'
 
 
 
@@ -20,10 +20,10 @@ app = Flask(__name__)
 CORS(app, origins='*')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALBUM_COVER_FOLDER'] = ALBUM_COVER_FOLDER
-
+app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 # path_env = 'MUSIC_PATH'
 
-controller_obj = controller()
+controller_obj = controller(app.config['DATABASE_FOLDER'])
 
 @app.route("/")
 def hello_world():
@@ -185,6 +185,10 @@ def deleteRecord():
 def deleteMultipleRecords():
     return controller_obj.deleteMultipleRecords(json.loads(request.data))
 
+
+@app.route('/deleteUser', methods=['DELETE'])
+def deleteUser():
+    return controller_obj.deleteUser(json.loads(request.data))
 
 
 if __name__ == "__main__":

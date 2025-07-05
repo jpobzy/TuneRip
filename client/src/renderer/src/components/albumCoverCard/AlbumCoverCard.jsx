@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Skeleton } from '@mui/material';
-import '../assets/albumCoverImages.css'
+import './albumCoverImages.css'
 
 export default function AlbumCoverCard({filename, cardClicked}) {
     const [loaded, setLoaded] = useState(false);

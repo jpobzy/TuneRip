@@ -1,11 +1,12 @@
 import React from 'react';
 import { UploadOutlined } from '@ant-design/icons';
 import { Button, message, Upload } from 'antd';
-import '../assets/test.css'
+import './uploadButton.css'
 
 export default function UploadButton({refresh}){
     const props = {
     name: 'file',
+    multiple: true,
     action: 'http://localhost:8080/uploadImg',
     headers: {
       authorization: 'authorization-text',

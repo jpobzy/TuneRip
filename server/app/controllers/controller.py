@@ -12,33 +12,37 @@ from colorthief import ColorThief
 
 
 class controller():
-    def __init__(self):
-        self.db = database()
-        self.projRoot = Path(__file__).parents[3]
-        self.queue = queue.Queue()
+    def __init__(self, databaseFolderRoute):
         self.checkFolders()
+        self.db = database(databaseFolderRoute)
+        # self.projRoot = Path(__file__).parents[3]
+        self.queue = queue.Queue()
+
 
     
+    def pathMaker(self, path):
+        """
+        Lazy way to create paths
+        """
+        if not Path(path).exists():
+            Path.mkdir(path)
+        return
+
     def checkFolders(self):
         """
         Checks to confirm that the url pfp, cover album, downloads static folders exist
         """
-        pfpPath = self.projRoot / f'server/static/images'
-        albumCoverPath = self.projRoot / f'server/static/albumCovers'
-        downloadsPath = self.projRoot / f'downloads'
-        customDownloadPath = self.projRoot / f'downloads/custom'
-
-        if not Path(pfpPath).exists():
-            Path.mkdir(pfpPath, parents=True)
-
-        if not Path(albumCoverPath).exists():
-            Path.mkdir(albumCoverPath, parents=True)
-
-        if not Path(downloadsPath).exists():
-            Path.mkdir(downloadsPath, parents=True)
-
-        if not Path(customDownloadPath).exists():
-            Path.mkdir(customDownloadPath, parents=True)
+        basePath = Path.home() / 'Documents' / 'TuneRip'
+        self.projRoot = basePath
+        self.pathMaker(basePath)
+        self.pathMaker(basePath / 'server')
+        self.pathMaker(basePath / 'server/static')
+        self.pathMaker(basePath / 'server/static/images')
+        self.pathMaker(basePath / 'server/static/albumCovers')
+        self.pathMaker(basePath / 'downloads')
+        self.pathMaker(basePath / 'downloads/custom')
+        self.pathMaker(basePath / 'downloads/custom')
+        self.pathMaker(basePath / 'server/database')
         return
 
     def getUserData(self, dbClient):
@@ -46,8 +50,8 @@ class controller():
         for key, val in self.db.cache.items():
             try:
                 channel = Channel(val, 'WEB')
-                url, imgPath = channel.thumbnail_url, self.projRoot / f'static/images/{channel.channel_name}.jpg'
-                # urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
+                url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/images/{channel.channel_name}.jpg'
+                urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
                 retVal.append({
                                'name':  channel.channel_name, 
@@ -324,7 +328,7 @@ class controller():
                     failures.add(track)
                     continue
 
-            return ("Success", 200) if len(failures) == 0 else (f'Failed to add tracks: {failures}', 400)
+            return ("Success", 200) if len(failures) == 0 else (f'Failed to add tracks: {failures}', 422)
         else:
             exists = ('Track already exists', 304)
             success = ('Track has been added to the DB', 200)
@@ -376,7 +380,7 @@ class controller():
         """
         Deletes one record in DB, chosen in Table.jsx
         """
-        return  self.db.deleteRecord(query['link'].split('https://youtube.com/watch?v=')[1])
+        return self.db.deleteRecord(query['link'].split('https://youtube.com/watch?v=')[1])
     
 
     def deleteMultipleRecords(self, query):
@@ -394,3 +398,12 @@ class controller():
         else:
             return 'All chosen tracks deleted from DB', 200
 
+    def deleteUser(self, query):
+        """
+        Deletes the given user from the Users table
+        """
+        response, status = self.db.deleteUser(query['user'])
+        self.reloadCache()
+        os.remove(self.projRoot / f'server/static/images/{query['user']}.jpg')
+        return response, status 
+        # return 'ok', 200

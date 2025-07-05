@@ -1,4 +1,3 @@
-import Versions from './components/Versions'
 import electronLogo from './assets/electron.svg'
 import Youtubers from './components/Youtubers'
 import './assets/mainApp.css'
@@ -17,8 +16,8 @@ function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  // const [page, setPage] = useState("Home");
-  const [page, setPage] = useState("Settings");
+  const [page, setPage] = useState("Home");
+  // const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
   const handleChildClick = (data) => {

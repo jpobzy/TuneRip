@@ -1,10 +1,10 @@
 import sqlite3
 from pathlib import Path
 from datetime import datetime
-db_path = Path(__file__).parents[1] / "TuneRipDatabase.db"
+# self.db_path = Path(__file__).parents[1] / "TuneRipDatabase.db"
 
 class database():
-    def __init__(self):
+    def __init__(self, databaseFolderRoute):
         self.cache = {}
         self.defaultDownloadSettings = {
             'title': '',
@@ -13,13 +13,15 @@ class database():
             'album': '',
             'trackDest': ''
         }
+        self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
 
         self.downloadSettings = self.defaultDownloadSettings
         self.loadCache()
+        
 
 
     def loadCache(self):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
@@ -28,7 +30,6 @@ class database():
 
         for record in cur.execute("SELECT * FROM users"):
             self.cache[str(record[0])] =  record[1]
-
         return 
     
 
@@ -37,7 +38,7 @@ class database():
         """"
         adds user into users db, format:
         """
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         cur.execute(f"INSERT INTO users VALUES (?, ?)", (data['name'], data['ytLink']))
         database.commit()
@@ -54,7 +55,7 @@ class database():
             'albumCoverImageFile': albumCoverFile,
             # 'whenRecordAdded': datetime.datetime.now()
         }
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         whenRecordAdded = datetime.now()
         
@@ -67,28 +68,30 @@ class database():
         return
 
     def checkIfTrackExists(self, trackId):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         # print(f"SELECT trackId from tracks WHERE trackId='{trackId}'")
         cur.execute(f"SELECT trackId from tracks WHERE trackId=?", (trackId.strip(),))
         res = True if cur.fetchone() != None else False
-        
-        # database.close()
+        database.close()
         return res
 
     def reloadCache(self):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
+        self.cache = {}
         for record in cur.execute("SELECT * FROM users"):
+            print(f'record is: {record}')
             self.cache[str(record[0])] =  record[1]
         database.close()
+        print(f'after reloading, cahce is {self.cache}')
         return 
     
     def getRecentlyAddedTracks(self, trackAmount):
         """"
         for /history req
         """
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         query = cur.execute(f"SELECT * FROM tracks WHERE status <> ? ORDER BY ? DESC LIMIT ?", ('Filter', 'whenRecordAdded', trackAmount))
         retval = []
@@ -111,7 +114,7 @@ class database():
 
 
     def getRecords(self, limit, offset):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         # query = cur.execute("SELECT * FROM tracks LIMIT ? OFFSET ?", (limit, offset))
         query = cur.execute("SELECT * FROM tracks")
@@ -134,7 +137,7 @@ class database():
         return ret
 
     def getAllUniqueUsers(self):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         query = cur.execute("SELECT DISTINCT user FROM tracks")
         ret = []
@@ -146,7 +149,7 @@ class database():
 
 
     def getRecordsFromUser(self, user, limit, offset):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         query = cur.execute("SELECT * FROM tracks WHERE user=? LIMIT ? OFFSET ?", (user, limit, offset))
         ret = []
@@ -166,7 +169,7 @@ class database():
 
 
     def getDownloadCount(self):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         res = cur.execute("SELECT COUNT(*) FROM tracks WHERE status <> ?", ('Filter',))
         data = res.fetchall()
@@ -174,7 +177,7 @@ class database():
         return data[0][0]
     
     def deleteRecord(self, trackid):
-        database = sqlite3.connect(db_path)
+        database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         track = cur.execute('SELECT * FROM tracks WHERE trackId = ?', (trackid,))
         data = track.fetchall()
@@ -185,6 +188,23 @@ class database():
             print('deleting')
             cur.execute("DELETE FROM tracks WHERE trackId=?", (trackid,))
             database.commit()
+            database.close()
             return 'Data deleted', 200
 
-        
+    def deleteUser(self, name):
+        """
+        Deletes the given user in "users" table
+        """        
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        user = cur.execute('SELECT * FROM users WHERE name = ?', (name,))
+        data = user.fetchall()
+        if data == []:
+            database.close()
+            return 'User not found', 204
+        else:
+            cur.execute('DELETE FROM users WHERE name=?', (name, ))
+            database.commit()
+            database.close()
+            return "Success", 200
+            

@@ -10,3 +10,11 @@ server/pytest.ini
 /server/tests
 server/__init__.py
 /build
+server/TuneRipDatabase.db
+server/TuneRipDatabase.db
+*.db
+*.db
+*.db
+*.pyc
+/oldcode
+/filestodelete
