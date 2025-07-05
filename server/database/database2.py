@@ -5,7 +5,7 @@ from datetime import datetime
 
 class database():
     def __init__(self, databaseFolderRoute):
-        self.cache = {}
+        self.userCache = {}
         self.defaultDownloadSettings = {
             'title': '',
             'artist': '',
@@ -25,11 +25,11 @@ class database():
         cur = database.cursor()
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
-            cur.execute("CREATE TABLE users(name, ytLink)")
+            cur.execute("CREATE TABLE users(name, ytLink, previousAlbumCoverUsed)")
             cur.execute("CREATE TABLE tracks(user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
 
         for record in cur.execute("SELECT * FROM users"):
-            self.cache[str(record[0])] =  record[1]
+            self.userCache[str(record[0])] =  record[1]
         return 
     
 
@@ -40,7 +40,7 @@ class database():
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        cur.execute(f"INSERT INTO users VALUES (?, ?)", (data['name'], data['ytLink']))
+        cur.execute(f"INSERT INTO users VALUES (?, ?, ?)", (data['name'], data['ytLink'], None))
         database.commit()
         database.close()
         return
@@ -79,12 +79,11 @@ class database():
     def reloadCache(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        self.cache = {}
+        self.userCache = {}
         for record in cur.execute("SELECT * FROM users"):
             print(f'record is: {record}')
-            self.cache[str(record[0])] =  record[1]
+            self.userCache[str(record[0])] =  record[1]
         database.close()
-        print(f'after reloading, cahce is {self.cache}')
         return 
     
     def getRecentlyAddedTracks(self, trackAmount):
@@ -208,3 +207,13 @@ class database():
             database.close()
             return "Success", 200
             
+    def updateUsersImgUsed(self, user, file):
+        """
+        Updates the users last image used in users table
+        """
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        cur.execute('UPDATE users SET previousAlbumCoverUsed = ? WHERE name = ?', (file, user))
+        database.commit()
+        database.close()
+        return 

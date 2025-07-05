@@ -35,8 +35,7 @@ def getUsers():
     """
     Sends users from users db 
     """
-    cache = controller_obj.db.cache 
-    return jsonify(cache)
+    return jsonify(controller_obj.db.userCache)
 
 
 @app.route('/getImage/<string:route>', methods=['GET'])
@@ -189,6 +188,12 @@ def deleteMultipleRecords():
 @app.route('/deleteUser', methods=['DELETE'])
 def deleteUser():
     return controller_obj.deleteUser(json.loads(request.data))
+
+@app.route('/updateuser', methods=['PUT'])
+def updateUser():
+    print((request.args))
+    # return controller_obj.updateUserImg(json.loads(request.data))
+    return 'ok'
 
 
 if __name__ == "__main__":

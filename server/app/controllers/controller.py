@@ -47,7 +47,7 @@ class controller():
 
     def getUserData(self, dbClient):
         retVal = []
-        for key, val in self.db.cache.items():
+        for key, val in self.db.userCache.items():
             try:
                 channel = Channel(val, 'WEB')
                 url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/images/{channel.channel_name}.jpg'
@@ -75,15 +75,14 @@ class controller():
             - download the video url 
             - download all videos in the playlist url 
         """
-        debugMode = False
-        addToDB = True
+        debugMode = True
+        addToDB = False
 
         
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
 
-        count=  0
         if url and 'list=PL' in url:
             
             playlist = Playlist(url)
@@ -156,7 +155,7 @@ class controller():
                     raise Exception(f'Too many errors cause this to fail')
 
         else:
-            ytLink = self.db.cache[user]
+            ytLink = self.db.userCache[user]
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
@@ -192,7 +191,7 @@ class controller():
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
 
-
+        self.updateUserImg(user, albumCoverFile)
         return 'Success', 200
 
     def returnAlbumCoverFileNames(self):
@@ -274,7 +273,7 @@ class controller():
     
     def reloadCache(self):
         """
-        Reloads the database cache, useful when a new url has been added
+        Reloads the database userCache, useful when a new url has been added
         """
         self.db.reloadCache()
         return 'Success', 200
@@ -406,4 +405,11 @@ class controller():
         self.reloadCache()
         os.remove(self.projRoot / f'server/static/images/{query['user']}.jpg')
         return response, status 
-        # return 'ok', 200
+
+
+    def updateUserImg(self, user, filename):
+        """
+        Updates users last img used in db
+        """
+        self.db.updateUsersImgUsed(user, filename)
+        return "Success", 200

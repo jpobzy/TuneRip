@@ -40,7 +40,6 @@ const Youtubers = forwardRef((props, ref) => {
   async function getUsers(){
     const response = await axios.get('http://localhost:8080/users');
     setUsers(response.data);
-
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
     // setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
@@ -129,7 +128,7 @@ const Youtubers = forwardRef((props, ref) => {
               <AlbumCoverCard 
               filename={filename[1]}
               cardClicked={()=>handleAlbumCoverClicked(filename[1])}
-              key ={index+1}
+              key = {index+1}
               />
             ))}
             </div>
