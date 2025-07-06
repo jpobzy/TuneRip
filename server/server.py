@@ -169,8 +169,6 @@ def getData():
     return jsonify(controller_obj.getData())
 
 
-
-
 @app.route('/getrecordsfromuser')
 def getUserData():
     # print(request.query_string)
@@ -188,12 +186,6 @@ def deleteMultipleRecords():
 @app.route('/deleteUser', methods=['DELETE'])
 def deleteUser():
     return controller_obj.deleteUser(json.loads(request.data))
-
-@app.route('/updateuser', methods=['PUT'])
-def updateUser():
-    print((request.args))
-    # return controller_obj.updateUserImg(json.loads(request.data))
-    return 'ok'
 
 
 if __name__ == "__main__":

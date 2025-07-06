@@ -2,8 +2,7 @@ from app.downloadFile import download_video
 # from oldcode.validator import validate_path
 import os
 from pytubefix import YouTube, Channel, Playlist
-# from database.database import database
-from database.database2 import database
+from database.database import database
 import urllib.request
 import yaml, re, json
 from pathlib import Path
@@ -45,29 +44,6 @@ class controller():
         self.pathMaker(basePath / 'server/database')
         return
 
-    def getUserData(self, dbClient):
-        retVal = []
-        for key, val in self.db.userCache.items():
-            try:
-                channel = Channel(val, 'WEB')
-                url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/images/{channel.channel_name}.jpg'
-                urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
-
-                retVal.append({
-                               'name':  channel.channel_name, 
-                            #    'imgPath': imgPath,
-                                'ytLink': val,
-                            #    'directory_path': val['directory_path'].encode('unicode_escape').decode(),
-                            #    'albumCoverPath' : (val['albumCoverPath'].encode('unicode_escape').decode() if 'albumCoverPath' in val and len(val['albumCoverPath']) > 0 else "")
-                               })
-
-            except Exception as error :
-                print(f"ERROR UNABLE TO FIND USER {key} with error {error}")
-                continue
-
-        return retVal
-
-
     def downloadVideos(self, request):
         """
         download function to either 
@@ -83,6 +59,10 @@ class controller():
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
 
+        self.updateUserImg(user, albumCoverFile)
+        return 'Success', 200
+    
+    
         if url and 'list=PL' in url:
             
             playlist = Playlist(url)
@@ -155,7 +135,7 @@ class controller():
                     raise Exception(f'Too many errors cause this to fail')
 
         else:
-            ytLink = self.db.userCache[user]
+            ytLink = self.db.userCache[user][0]
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             downloadPath = self.projRoot / f"downloads/{sanitizedUser}"

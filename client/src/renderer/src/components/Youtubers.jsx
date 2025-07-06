@@ -26,6 +26,11 @@ const Youtubers = forwardRef((props, ref) => {
   const [isTrack, setIsTrack] = useState(false)
   const [edit, setEdit] = useState(false)
   const [reloadUserDataBool, setReload] = useState(false) 
+  const [prevImg, setPrevImg] = useState(null)
+
+  const [useSkeleton, setSkeleton] = useState(true)
+  const [imgLoadCount, setLoadCount] = useState(0);
+  const [nums, setNums] = useState(0);
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -35,6 +40,7 @@ const Youtubers = forwardRef((props, ref) => {
     setCardClicked(true);
     setChosenUser(username)
     setIsTrack(false);
+    setPrevImg(users[username][1])
   }
 
   async function getUsers(){
@@ -42,7 +48,6 @@ const Youtubers = forwardRef((props, ref) => {
     setUsers(response.data);
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
-    // setAlbumCoverGradientsMap(albumCoverResponse.data.paletteMap);
   }
 
   const handleAlbumCoverClicked = async(file) =>{
@@ -69,7 +74,7 @@ const Youtubers = forwardRef((props, ref) => {
     setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
     getUsers();
-    console.log('reset to home')
+    // console.log('reset to home')
   }
 
 
@@ -128,43 +133,41 @@ const Youtubers = forwardRef((props, ref) => {
               <AlbumCoverCard 
               filename={filename[1]}
               cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+              previousImg={prevImg}
               key = {index+1}
               />
             ))}
             </div>
-      
+            <button onClick={()=>console.log(`users.length: ${albumCoverLoadedCount}`)}>hello world</button>
           </div>
-     
-          
           )
         ) : (
           <div >
-
-                  <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
-                    {/* Anything placed inside this container will be fade into view */
-                    <div>
-                      <div className='-mt-40' >
-                        <AddUserForm 
-                        setSearchURL={downloadVideo}
-                        />
+              <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
+                {/* Anything placed inside this container will be fade into view */
+                <div>
+                  <div className='-mt-40' >
+                    <AddUserForm 
+                    setSearchURL={downloadVideo}
+                    />
+                  </div>
+                  <div>
+                    {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
+                      <div className='user-container'>
+                        { 
+                        Object.entries(users).map((item, index) =>(
+                          <YoutuberCard
+                          name = {item[0]}
+                          userPFP={item[0]}
+                          onClick={()=>handleCardClicked(item[0])}
+                          edit = {edit}
+                          key = {index+1}
+                          setReload={setUsers}
+                          />
+                        ))}
                       </div>
-                      <div>
-                        {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
-                          <div className='user-container'>
-                            { 
-                            Object.entries(users).map((item, index) =>(
-                              <YoutuberCard
-                              name = {item[0]}
-                              userPFP={item[0]}
-                              onClick={()=>handleCardClicked(item[0])}
-                              edit = {edit}
-                              key = {index+1}
-                              setReload={setUsers}
-                              />
-                            ))}
-                          </div>
-                      </div>
-                    </div>
+                  </div>
+                </div>
                 }
               </FadeContent>
 
@@ -176,6 +179,8 @@ const Youtubers = forwardRef((props, ref) => {
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
+
+
     </div>
   )
 })

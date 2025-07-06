@@ -29,7 +29,7 @@ class database():
             cur.execute("CREATE TABLE tracks(user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
 
         for record in cur.execute("SELECT * FROM users"):
-            self.userCache[str(record[0])] =  record[1]
+            self.userCache[str(record[0])] =  (record[1], record[2])
         return 
     
 
@@ -82,7 +82,7 @@ class database():
         self.userCache = {}
         for record in cur.execute("SELECT * FROM users"):
             print(f'record is: {record}')
-            self.userCache[str(record[0])] =  record[1]
+            self.userCache[str(record[0])] =  (record[1], record[2])
         database.close()
         return 
     
