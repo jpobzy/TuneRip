@@ -18,3 +18,6 @@ server/TuneRipDatabase.db
 *.pyc
 /oldcode
 /filestodelete
+/oldcode
+oldcode/__pycache__/ansi_colors.cpython-313.pyc
+*.pyc

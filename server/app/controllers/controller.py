@@ -393,3 +393,14 @@ class controller():
         """
         self.db.updateUsersImgUsed(user, filename)
         return "Success", 200
+    
+    def deleteImg(self, query):
+        """
+        Deletes the given file from the possible cover album folder
+        """
+        file = query['filename']
+        filepath =  Path.home() / f'Documents/TuneRip/server/static/albumCovers/{file}'
+        if Path(filepath).exists():
+            os.remove(filepath)
+        return 'Success', 200 
+        

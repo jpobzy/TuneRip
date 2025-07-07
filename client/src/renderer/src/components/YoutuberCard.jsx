@@ -17,7 +17,7 @@ export default function YoutuberCard({name, userPFP, onClick, edit}) {
   }
 
   return (
-    <div>
+    <div className='relative'>
       {edit && 
         <Popconfirm
           title={`Delete the user "${name}" ?`}

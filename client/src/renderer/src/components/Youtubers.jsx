@@ -27,10 +27,9 @@ const Youtubers = forwardRef((props, ref) => {
   const [edit, setEdit] = useState(false)
   const [reloadUserDataBool, setReload] = useState(false) 
   const [prevImg, setPrevImg] = useState(null)
+  const [editImgCard, setEditImgCard] = useState(false)
 
-  const [useSkeleton, setSkeleton] = useState(true)
-  const [imgLoadCount, setLoadCount] = useState(0);
-  const [nums, setNums] = useState(0);
+
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -134,11 +133,20 @@ const Youtubers = forwardRef((props, ref) => {
               filename={filename[1]}
               cardClicked={()=>handleAlbumCoverClicked(filename[1])}
               previousImg={prevImg}
+              edit={editImgCard}
+              refresh={getNewAlbumCover}
               key = {index+1}
               />
             ))}
             </div>
-            <button onClick={()=>console.log(`users.length: ${albumCoverLoadedCount}`)}>hello world</button>
+
+          { Object.keys(albumCoverFileNames).length > 0 &&
+            <div className='mt-[20px]'> 
+              <Switch onChange={() => setEditImgCard(!editImgCard)} />        
+            </div>      
+          }
+
+
           </div>
           )
         ) : (

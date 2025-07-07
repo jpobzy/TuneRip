@@ -188,5 +188,10 @@ def deleteUser():
     return controller_obj.deleteUser(json.loads(request.data))
 
 
+@app.route('/deleteimg', methods=['DELETE'])
+def deleteImg():
+    return controller_obj.deleteImg(json.loads(request.data))
+
+
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
