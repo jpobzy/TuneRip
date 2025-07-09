@@ -124,7 +124,7 @@ class database():
                 'key': keyNum,
                 'user' : record[0],
                 'albumTitle' : record[1],
-                'trackName' : record[2],
+                'tracktitle' : record[2],
                 'trackId' : record[3],
                 'status' : record[4],
                 'albumCoverFile' : record[5],
@@ -175,17 +175,17 @@ class database():
         database.close()       
         return data[0][0]
     
-    def deleteRecord(self, trackid):
+    def deleteRecord(self, trackId):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        track = cur.execute('SELECT * FROM tracks WHERE trackId = ?', (trackid,))
+        track = cur.execute('SELECT * FROM tracks WHERE trackId = ?', (trackId,))
         data = track.fetchall()
         if data == []:
             database.close()
             return 'Record not found', 204
         else:
             print('deleting')
-            cur.execute("DELETE FROM tracks WHERE trackId=?", (trackid,))
+            cur.execute("DELETE FROM tracks WHERE trackId=?", (trackId,))
             database.commit()
             database.close()
             return 'Data deleted', 200

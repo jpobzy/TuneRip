@@ -193,5 +193,10 @@ def deleteImg():
     return controller_obj.deleteImg(json.loads(request.data))
 
 
+@app.route('/killserver')
+def killswitch():
+    pid = os.getpid()
+    os.kill(pid, 9)
+
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Skeleton } from '@mui/material';
 import './albumCoverImages.css'
 import { Popconfirm } from 'antd';
 import minusIcon from '../../assets/minusIcon.svg'
@@ -32,7 +31,7 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                 }
         
                 <div className={edit ? 'editing ' : ''}>
-                    <div className={previousImg == filename ? 'prev-img prev-img-wrapper': 'img-wrapper album-cover-image'} onClick={null}>
+                    <div className={previousImg == filename ? 'prev-img prev-img-wrapper': 'img-wrapper album-cover-image'} onClick={cardClicked}>
                         
                         <img
                         className='image'

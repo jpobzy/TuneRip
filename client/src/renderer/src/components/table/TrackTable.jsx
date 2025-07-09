@@ -80,8 +80,8 @@ function TrackTable(){
   },
   {
     title: 'Track Id',
-    dataIndex: 'trackid',
-    key: 'trackid'
+    dataIndex: 'trackId',
+    key: 'trackId'
   },
   {
     title: 'Status',
@@ -95,8 +95,8 @@ function TrackTable(){
   },
   {
     title: 'Album Title',
-    dataIndex: 'albumtitle',
-    key: 'albumtitle'
+    dataIndex: 'albumTitle',
+    key: 'albumTitle'
   },
   {
     title: 'Action',

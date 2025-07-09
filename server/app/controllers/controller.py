@@ -38,10 +38,10 @@ class controller():
         self.pathMaker(basePath / 'server/static')
         self.pathMaker(basePath / 'server/static/images')
         self.pathMaker(basePath / 'server/static/albumCovers')
-        self.pathMaker(basePath / 'downloads')
-        self.pathMaker(basePath / 'downloads/custom')
-        self.pathMaker(basePath / 'downloads/custom')
         self.pathMaker(basePath / 'server/database')
+        self.pathMaker(basePath / 'downloads')
+        self.pathMaker(basePath / 'downloads/playlists')
+        self.pathMaker(basePath / 'downloads/customTracks')
         return
 
     def downloadVideos(self, request):
@@ -51,37 +51,43 @@ class controller():
             - download the video url 
             - download all videos in the playlist url 
         """
-        debugMode = True
-        addToDB = False
-
+        ############# TOGGLE DEBUG HERE ################
+        skipDownload = False
+        addToDB = True
+        #############################################
         
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
-
-        self.updateUserImg(user, albumCoverFile)
-        return 'Success', 200
-    
-    
+        
         if url and 'list=PL' in url:
-            
             playlist = Playlist(url)
+            playlistRoute = self.projRoot / 'downloads/playlists'
+            downloadPath = playlistRoute / playlist.title 
+            if not Path(downloadPath).exists():
+                os.mkdir(downloadPath)
 
-            downloadPath = self.projRoot / f"downloads/custom"
+            return
+
+
+
+            downloadPath = self.projRoot / f"downloads/playlists"
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod custom'
             trackNum = 1
+
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             erorrCount = 0
             
             for video in playlist.video_urls:
                 try:
-                    if self.db.checkIfTrackExists(video):
+                    video = YouTube(video)
+                    if self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists
                 
                     
-                    trackName = download_video(video, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings,  debugMode)
+                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings,  skipDownload)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -89,7 +95,7 @@ class controller():
                         status = 'filtered'
 
                     if addToDB:
-                        self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile)
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -99,7 +105,7 @@ class controller():
                     print(error)
                     erorrCount += 1
                     if erorrCount == 3:
-                        raise Exception(f'Too many errors cause this to fail')
+                        raise Exception(f'Too many errors cause this to fail. Last url is {video}')
 
         elif url and url.startswith('https://www.youtube.com/watch?v='):
             video = YouTube(url)
@@ -115,7 +121,7 @@ class controller():
 
             
             try:
-                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, debugMode)
+                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, skipDownload)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -123,7 +129,7 @@ class controller():
                     status = 'filtered'
 
                 if addToDB:
-                    self.db.insertTrackIntoDB(url, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
+                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 trackNum += 1
 
                 self.queue.put(trackName)
@@ -153,14 +159,14 @@ class controller():
                         continue # skips track if track exists
                 
                     
-                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, debugMode)
+                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, skipDownload)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
                     if addToDB:
-                        self.db.insertTrackIntoDB(user, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
                     self.queue.put(trackName)
@@ -403,4 +409,15 @@ class controller():
         if Path(filepath).exists():
             os.remove(filepath)
         return 'Success', 200 
+    
         
+
+    # {'key': 12, 
+    #  'user': 'Tame Impala - Topic', 
+    #  'albumTitle': 'YouTube Album Prod custom', 
+    #  'trackName': 'New Person, Same Old Mistakes', 
+    #  'trackId': 'tEXYfT_G0W0', 
+    #  'status': 'downloaded', 
+    #  'albumCoverFile': '9.jpg', 
+    #  'link': 'https://youtube.com/watch?v=tEXYfT_G0W0', 
+    #  'whenRecordAdded': '2025-07-08 20:20:51.956203'}
