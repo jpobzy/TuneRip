@@ -5,20 +5,15 @@ import {
     DatePicker,
     Form,
     Input,
-    message
+    message,
 } from 'antd'
 import axios from 'axios'
 
 
 
-function DownloadSettingsForm({isTrack}){
+function DownloadSettingsForm({isTrack, setDownloadSettings}){
     const [componentDisabled, setComponentDisabled] = useState(true);
-
-    const [downloadSettings, setDownloadSettings] = useState({
-        'artist': '',
-        'genre': '',
-        'album': ''
-    });
+    const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     
     const onFinish = async() => {
         const res = await fetch('http://localhost:8080/changeDownloadSettings', {
@@ -35,45 +30,82 @@ function DownloadSettingsForm({isTrack}){
 
     const disableComponents = async (e) => {
         setComponentDisabled(e.target.checked)
-        await axios.get('http://localhost:8080/resetDownloadSettings')
-        if (!componentDisabled){
-            message.success('Default Settings Enabled');
+        if (e.target.checked === true){
+            setDownloadSettings({})
         }
-        
+    }
+
+    const setSkip = (e) => {
+        setSkipComponentDisabled(e.target.checked)
+            
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            skipDownloadingPrevDownload: e.target.checked 
+        };
+        if (e.target.checked === false){
+            delete newSettings['skipDownloadingPrevDownload'];
+        }   
+        return newSettings;
+    })
     }
 
 
     const setTitle = (e) => {
-        setDownloadSettings(prev => ({
-            ...prev,
-            title: e.target.value
-        }))
+        setDownloadSettings(prev => {
+            const newSettings = {
+                ...prev,
+                trackTitle: e.target.value 
+            };
+            if (e.target.value.length === 0){
+                delete newSettings['trackTitle'];
+            }   
+            return newSettings;
+        })
     }
     
     const setArtist = (e) => {
-        setDownloadSettings(prev => ({
-            ...prev,
-            artist: e.target.value
-        }))
+        setDownloadSettings(prev => {
+            const newSettings = {
+                ...prev,
+                artist: e.target.value 
+            };
+            if (e.target.value.length === 0){
+                delete newSettings['artist'];
+            }   
+            return newSettings;
+        })
     }
 
 
 
     const setGenre = (e) => {
-        setDownloadSettings(prev => ({
-            ...prev,
-            genre: e.target.value
-        }))
+        setDownloadSettings(prev => {
+            const newSettings = {
+                ...prev,
+                genre: e.target.value 
+            };
+            if (e.target.value.length === 0){
+                delete newSettings['genre'];
+            }   
+            return newSettings;
+        })
     }
 
 
 
 
     const setAlbum = (e) => {
-        setDownloadSettings(prev => ({
-            ...prev,
-            album: e.target.value
-        }))
+        setDownloadSettings(prev => {
+            const newSettings = {
+                ...prev,
+                album: e.target.value 
+            };
+            if (e.target.value.length === 0){
+                delete newSettings['album'];
+            }   
+            return newSettings;
+        })
     }
 
 
@@ -102,16 +134,26 @@ function DownloadSettingsForm({isTrack}){
             name="title"
             onChange={(e) => setTitle(e)}
             >
-          <Input />
+          <Input placeholder='Default: <Video title>'/>
         </Form.Item>
         }
+
+        {!isTrack &&
+            <Checkbox
+                checked={skipComponentDisabled}
+                onChange={(e) => setSkip(e)}
+            >
+                Skip downloading track if its already downloaded
+            </Checkbox>        
+        }
+
 
         <Form.Item 
             label="Artist"
             name="artist"
             onChange={(e) => setArtist(e)}
             >
-          <Input />
+          <Input placeholder='Default: Youtube Music' />
         </Form.Item>
         
         <Form.Item 
@@ -119,7 +161,7 @@ function DownloadSettingsForm({isTrack}){
             name="genre"
             onChange={(e) => setGenre(e)}
             >
-          <Input />
+          <Input placeholder='Default: None'/>
         </Form.Item>
 
 
@@ -129,15 +171,7 @@ function DownloadSettingsForm({isTrack}){
             name="album"
             onChange={(e) => setAlbum(e)}
             >
-          <Input />
-        </Form.Item>
-
-
-        <Form.Item 
-            label={null}>
-            <Button type='primary' htmlType='submit'>
-                Submit
-            </Button>
+          <Input placeholder='Default: YouTube Album Prod <YT channel>' />
         </Form.Item>
 
       </Form>

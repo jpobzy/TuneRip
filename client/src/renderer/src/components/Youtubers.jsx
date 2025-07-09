@@ -9,7 +9,7 @@ import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
 import { message, Collapse } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
-import DownloadSettingsForm from './downloadSettings/downloadSettingsForm';
+import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
 import { Switch } from 'antd';
 
 const Youtubers = forwardRef((props, ref) => {
@@ -28,7 +28,7 @@ const Youtubers = forwardRef((props, ref) => {
   const [reloadUserDataBool, setReload] = useState(false) 
   const [prevImg, setPrevImg] = useState(null)
   const [editImgCard, setEditImgCard] = useState(false)
-
+  const [downloadSettings, setDownloadSettings] = useState({});
 
 
   useImperativeHandle(ref, () => ({
@@ -53,7 +53,8 @@ const Youtubers = forwardRef((props, ref) => {
       const response = await axios.get(`http://localhost:8080/download/`, {params: {
           url: searchUrl,
           user: chosenUser,
-          albumCover: file
+          albumCover: file,
+          ...downloadSettings
         }});
     setCoverChosen(file);
     setAlbumCoverChosen(true);
@@ -78,7 +79,9 @@ const Youtubers = forwardRef((props, ref) => {
 
 
   async function downloadVideo(videosearchURL){
+    //https://www.youtube.com/playlist?list=PLQLeP-y1PipMahmS_f1vCSKNvNee3ytnG
       if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') ){
+        console.log('link is track')
         setCardClicked(true);
         setIsTrack(true);
         setSearchURL(videosearchURL);
@@ -91,10 +94,13 @@ const Youtubers = forwardRef((props, ref) => {
       }
   }
 
+
+
+
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} />
+    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings}/>
   }];
 
 
@@ -127,6 +133,7 @@ const Youtubers = forwardRef((props, ref) => {
             <div className='downloadSettingsForm mt-10 mx-auto mb-10 w-150'> 
               <Collapse items={downloadItems} defaultActiveKey={['0']} />
             </div>
+
             <div className='album-cover-containter'>
             {Object.entries(albumCoverFileNames).map((filename, index)=>(
               <AlbumCoverCard 

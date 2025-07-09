@@ -41,9 +41,9 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                         onLoad={() => setLoaded(true)}
                         />
     
-                        {/* {previousImg == filename && 
-                            <div className='text-[16px] mx-auto text-white font-bold'>Previously used</div>
-                        }     */}
+                        {previousImg == filename && 
+                            <div className='text-[16px] mx-auto text-white font-bold'>Last used</div>
+                        }    
                     </div>
                 </div>
 

@@ -129,18 +129,6 @@ def history():
     return jsonify(historyList)
 
 
-@app.route('/changeDownloadSettings', methods=['POST'])
-def changeDownloadSettings():
-    response, status = controller_obj.changeDownloadSettings(json.loads(request.data))
-    return jsonify(response)
-
-
-@app.route('/resetDownloadSettings')
-def resetDownloadSettings():
-    controller_obj.resetDownloadSettings()
-    return 'Success', 200
-
-
 @app.route('/downloadCount')
 def getDownloadCount():
     return jsonify(controller_obj.getDownloadCount())

@@ -6,16 +6,7 @@ from datetime import datetime
 class database():
     def __init__(self, databaseFolderRoute):
         self.userCache = {}
-        self.defaultDownloadSettings = {
-            'title': '',
-            'artist': '',
-            'genre': '',
-            'album': '',
-            'trackDest': ''
-        }
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
-
-        self.downloadSettings = self.defaultDownloadSettings
         self.loadCache()
         
 
@@ -98,18 +89,6 @@ class database():
             retval.append({'trackName':record[2], 'user':record[0]})
         database.close()
         return retval
-    
-    def resetDownloadSettings(self):
-        self.downloadSettings = self.defaultDownloadSettings
-        return
-
-    def updateDownloadSettings(self, data):
-        if 'title' in data:
-            self.downloadSettings['title'] = data['title']
-        self.downloadSettings['artist'] = data['artist']
-        self.downloadSettings['genre'] = data['genre']
-        self.downloadSettings['album'] = data['album']
-        return
 
 
     def getRecords(self, limit, offset):

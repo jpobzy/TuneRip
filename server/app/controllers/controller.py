@@ -17,7 +17,6 @@ class controller():
         # self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
 
-
     
     def pathMaker(self, path):
         """
@@ -43,6 +42,9 @@ class controller():
         self.pathMaker(basePath / 'downloads/playlists')
         self.pathMaker(basePath / 'downloads/customTracks')
         return
+    
+
+
 
     def downloadVideos(self, request):
         """
@@ -52,28 +54,30 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        skipDownload = False
-        addToDB = True
+        debugModeSkipDownload = False # true to skip downloading
+        debugModeAddToDB = False # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
-        
+
+        trackTitle = request.args.get('trackTitle')
+        artist = request.args.get('artist')
+        genre = request.args.get('genre')
+        albumTitle = request.args.get('album')
+        skipDownload = False if request.args.get('skipDownloadingPrevDownload') == None else True
+
         if url and 'list=PL' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
-            downloadPath = playlistRoute / playlist.title 
+            downloadPath = playlistRoute / f'{playlist.title} by {playlist.owner}'
+
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
 
-            return
-
-
-
-            downloadPath = self.projRoot / f"downloads/playlists"
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod custom'
+            albumTitle = f'YouTube Album Prod {playlist.owner}' if albumTitle == None else albumTitle
             trackNum = 1
 
             if Path(downloadPath).exists():
@@ -83,18 +87,18 @@ class controller():
             for video in playlist.video_urls:
                 try:
                     video = YouTube(video)
-                    if self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists
+                    if skipDownload and self.db.checkIfTrackExists(video.video_id):
+                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
                     
-                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings,  skipDownload)
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
 
-                    if addToDB:
+                    if not debugModeAddToDB:
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
@@ -107,13 +111,14 @@ class controller():
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
 
+        
         elif url and url.startswith('https://www.youtube.com/watch?v='):
             video = YouTube(url)
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-            downloadPath = self.projRoot / f"downloads/custom"
+            downloadPath = self.projRoot / f"downloads/customTracks"
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {url}'
+            albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             trackNum = 1
             erorrCount = 0
             if Path(downloadPath).exists():
@@ -121,14 +126,14 @@ class controller():
 
             
             try:
-                trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, skipDownload)
+                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                if addToDB:
+                if not debugModeAddToDB:
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 trackNum += 1
 
@@ -146,7 +151,7 @@ class controller():
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {user}'
+            albumTitle = f'YouTube Album Prod {user}' if albumTitle == None else albumTitle
             trackNum = 1
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -155,17 +160,17 @@ class controller():
             erorrCount = 0
             for video in c.videos:
                 try:
-                    if self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists
+                    if skipDownload and self.db.checkIfTrackExists(video.video_id):
+                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
                     
-                    trackName = download_video(video.watch_url, trackNum, downloadPath, albumCoverPath, albumTitle, self.db.downloadSettings, skipDownload)
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
-                    if addToDB:
+                    if not debugModeAddToDB:
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
@@ -176,8 +181,8 @@ class controller():
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
-
-        self.updateUserImg(user, albumCoverFile)
+        if user != None:
+            self.updateUserImg(user, albumCoverFile)
         return 'Success', 200
 
     def returnAlbumCoverFileNames(self):
@@ -267,15 +272,6 @@ class controller():
 
     def getHistory(self):
         return self.db.getRecentlyAddedTracks(20), 200
-    
-    
-    def changeDownloadSettings(self, data):
-        self.db.updateDownloadSettings(data['data'])
-        return 'Success', 200
-    
-    def resetDownloadSettings(self):
-        self.db.resetDownloadSettings()
-        return 'Success', 200
     
 
     def getDownloadCount(self):
@@ -410,14 +406,3 @@ class controller():
             os.remove(filepath)
         return 'Success', 200 
     
-        
-
-    # {'key': 12, 
-    #  'user': 'Tame Impala - Topic', 
-    #  'albumTitle': 'YouTube Album Prod custom', 
-    #  'trackName': 'New Person, Same Old Mistakes', 
-    #  'trackId': 'tEXYfT_G0W0', 
-    #  'status': 'downloaded', 
-    #  'albumCoverFile': '9.jpg', 
-    #  'link': 'https://youtube.com/watch?v=tEXYfT_G0W0', 
-    #  'whenRecordAdded': '2025-07-08 20:20:51.956203'}

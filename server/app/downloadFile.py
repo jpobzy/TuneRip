@@ -7,7 +7,7 @@ from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumCoverTitle='', download_settings=None, debug_mode=False):
+def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False):
     count = 0
     
     vid = YouTube(url) # set both to true 
@@ -24,7 +24,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
    
 
     # grab download settings if they exist
-    if download_settings['title'] == '':
+    if trackTitle == None:
         valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
         valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
         valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
@@ -35,23 +35,17 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
         valid_title = re.sub(r'\[.*?\]', '', valid_title) 
         valid_title = valid_title.strip()
     else:
-        valid_title = download_settings['title']
+        valid_title = trackTitle
 
-    if download_settings['artist'] == '':
+    if artist == None:
         artist = 'YouTube Music'
     else:
-        artist = download_settings['artist']
+        artist = artist
 
-    if download_settings['genre'] == '':
+    if genre == None:
         genre = ''
     else:
-        genre = download_settings['genre']
-
-    if download_settings['album'] != '':
-       albumCoverTitle = download_settings['album'] 
-
-
-
+        genre = genre
 
 
     
@@ -60,7 +54,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
         print(f'Beat video found, skipping {vid.title}')
         return f'beat/instrumental ### {vid.title}'
     
-    if debug_mode == True: ##################################################################################################
+    if debugModeSkipDownload == True: ##################################################################################################
         # print_colored_text('red', f'Title is {re.sub(r'\[.*?\]', '', valid_title)}')
         # print_colored_text('red', f'track number is  trackNum}')
         # print_colored_text('red', 'DEBUG IS ENABLED, SKIPPING TRACK BEING DOWNLOADED')
@@ -72,6 +66,13 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     #####################################################################################################
 
     # log_data(f'Downloading track {valid_title}', False)
+
+    #check if file exists already
+    if Path(trackDst / f'{valid_title}.mp3').exists():
+        os.remove(trackDst / f'{valid_title}.mp3') 
+
+
+
     audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
     
     # Convert to MP3 using moviepy
@@ -102,7 +103,7 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     audio.tags.add(apic)
     
     audio['TIT2'] = TIT2(encoding=3, text=valid_title) # Title
-    audio['TALB'] = TALB(encoding=3, text=albumCoverTitle) # Album 
+    audio['TALB'] = TALB(encoding=3, text=albumTitle) # Album 
     audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
     audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
     audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
@@ -111,14 +112,14 @@ def download_video(url='', trackNum=None, trackDest='', albumCoverSrc='', albumC
     
     audio.save()
     os.remove(audio_file_path) # deletes mp4 file
-    shutil.move(mp3_file_path, trackDest )
-    # Path(trackDest / 'tracks', parents=True, exist_ok=True)
-    # # os.makedirs(trackDest / 'tracks', exist_ok=True)
-    # shutil.move(mp3_file_path.replace('\\', '/'), trackDest /'tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
+    shutil.move(mp3_file_path, trackDst )
+    # Path(trackDst / 'tracks', parents=True, exist_ok=True)
+    # # os.makedirs(trackDst / 'tracks', exist_ok=True)
+    # shutil.move(mp3_file_path.replace('\\', '/'), trackDst /'tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
 
 
-    # os.makedirs(trackDest + '//tracks', exist_ok=True)
-    # shutil.move(mp3_file_path.replace('\\', '/'), trackDest + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
+    # os.makedirs(trackDst + '//tracks', exist_ok=True)
+    # shutil.move(mp3_file_path.replace('\\', '/'), trackDst + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
     
     # log_data('Download Completed\n')
     return valid_title
