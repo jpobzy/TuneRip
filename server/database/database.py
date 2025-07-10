@@ -94,7 +94,6 @@ class database():
     def getRecords(self, limit, offset):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        # query = cur.execute("SELECT * FROM tracks LIMIT ? OFFSET ?", (limit, offset))
         query = cur.execute("SELECT * FROM tracks")
         ret = []
         keyNum = 0

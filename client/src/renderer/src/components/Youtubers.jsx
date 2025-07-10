@@ -11,6 +11,7 @@ import { message, Collapse } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
 import { Switch } from 'antd';
+import DownloadScreen from './downloadingScreen/DownloadScreen';
 
 const Youtubers = forwardRef((props, ref) => {
 
@@ -29,7 +30,8 @@ const Youtubers = forwardRef((props, ref) => {
   const [prevImg, setPrevImg] = useState(null)
   const [editImgCard, setEditImgCard] = useState(false)
   const [downloadSettings, setDownloadSettings] = useState({});
-
+  const [loading, setLoading] = useState(true)
+  const [responseData, setResponseData] = useState({})
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -50,17 +52,22 @@ const Youtubers = forwardRef((props, ref) => {
   }
 
   const handleAlbumCoverClicked = async(file) =>{
-      const response = await axios.get(`http://localhost:8080/download/`, {params: {
-          url: searchUrl,
-          user: chosenUser,
-          albumCover: file,
-          ...downloadSettings
-        }});
+    setLoading(true)
     setCoverChosen(file);
     setAlbumCoverChosen(true);
     setSearchURL('');
     setChosenUser(null);
-
+    const response = await axios.get(`http://localhost:8080/download/`, {params: {
+        url: searchUrl,
+        user: chosenUser,
+        albumCover: file,
+        ...downloadSettings
+      }});
+    if (response.status === 207){
+      setResponseData(
+        {'data': response.data, 'statusCode': response.status}
+      )
+    }
   }
 
   async function getNewAlbumCover() {
@@ -112,15 +119,18 @@ const Youtubers = forwardRef((props, ref) => {
     
   return (
     <div>
-
+      {/* <br /> */}
 
       <div >
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
                 {/* {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>} */}
-                {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} />}
-
+                {/* {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} />} */}
+              <div className='mx-auto'>
+                <DownloadScreen loading={loading} responseData={responseData}/>                
+              </div>
+              <button onClick={()=> setLoading(!loading)} >loading</button>
             </div>
           ) : (
           <div >
@@ -195,7 +205,7 @@ const Youtubers = forwardRef((props, ref) => {
         </div>      
       }
 
-
+      <button onClick={()=> {setCardClicked(true), setAlbumCoverChosen(true)}}>click me</button>
     </div>
   )
 })

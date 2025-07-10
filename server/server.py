@@ -185,6 +185,21 @@ def deleteImg():
 def killswitch():
     pid = os.getpid()
     os.kill(pid, 9)
+    return
+
+@app.route('/test')
+def testingstuff():
+    data = set()
+    data.add('http://youtube.com/123141324')
+    data.add('http://youtube.com/dsadsadsa')
+    data.add('http://youtube.com/1234ssadas')
+
+    return jsonify({
+        'message': 'Some tracks failed to download',
+        'failedTracks': list(data)
+    }), 207
+
+
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
