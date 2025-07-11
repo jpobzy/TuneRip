@@ -8,7 +8,7 @@ import yaml, re, json
 from pathlib import Path
 import time, queue, time
 from colorthief import ColorThief
-
+from datetime import datetime
 
 class controller():
     def __init__(self, databaseFolderRoute):
@@ -44,6 +44,24 @@ class controller():
         return
     
 
+    def handleDownloadError(self, error):
+        """
+        Creates a debug file so that user can see what error they encounter when downloading
+        """
+        if not Path(self.projRoot / 'debug').exists():
+            self.pathMaker(self.projRoot / 'debug')
+        
+        fileNumber = sum(1 for _ in Path(self.projRoot / 'debug').iterdir())
+        fileRoute = self.projRoot / 'debug' / f'debug{fileNumber}.txt'
+        fileData = f'[{datetime.now()}] {error}'
+        if Path(fileRoute).exists:
+            with open(fileRoute, 'a') as file:
+                file.write(fileData)
+        else:
+            with open(fileRoute, 'w') as file:
+                file.write(fileData)
+        file.close()
+        return
 
 
     def downloadVideos(self, request):
@@ -54,8 +72,8 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = False # true to skip downloading
-        debugModeAddToDB = False # true to skip adding to database
+        debugModeSkipDownload = True # true to skip downloading
+        debugModeAddToDB = True # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
@@ -67,7 +85,7 @@ class controller():
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
         skipDownload = False if request.args.get('skipDownloadingPrevDownload') == None else True
-
+        
         if url and 'list=PL' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
@@ -90,7 +108,6 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
-                    
                     trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
                     status = 'downloaded'
 
@@ -107,10 +124,12 @@ class controller():
                     
                 except Exception as error:
                     print(error)
+                    self.handleDownloadError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
-
+                    
+            return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
         
         elif url and url.startswith('https://www.youtube.com/watch?v='):
             video = YouTube(url)
@@ -141,10 +160,12 @@ class controller():
                 
             except Exception as error:
                 print(error)
+                self.handleDownloadError(error)
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
-
+            return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
+        
         else:
             ytLink = self.db.userCache[user][0]
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
@@ -178,12 +199,13 @@ class controller():
                     
                 except Exception as error:
                     print(error)
+                    self.handleDownloadError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
-        if user != None:
+            
             self.updateUserImg(user, albumCoverFile)
-        return 'Success', 200
+            return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
 
     def returnAlbumCoverFileNames(self):
         """
@@ -310,6 +332,7 @@ class controller():
                     continue
 
             return ("Success", 200) if len(failures) == 0 else (f'Failed to add tracks: {failures}', 422)
+        
         else:
             exists = ('Track already exists', 304)
             success = ('Track has been added to the DB', 200)
@@ -372,7 +395,7 @@ class controller():
         for record in query['records']:
             message, status = self.db.deleteRecord(record['trackId'])
             if status == 204:
-                tracksNotFound.append(record['trackName'])
+                tracksNotFound.append(record)
 
         if len(tracksNotFound) > 0:
             return f'Failed to find and remove {tracksNotFound}', 204

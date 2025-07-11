@@ -3,15 +3,12 @@ import { Space, Table, Popconfirm, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input, ConfigProvider, Button, Flex } from 'antd';
-
 import { App } from 'antd';
 
-function TrackTable(){
 
+function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
   const [records, setRecords] = useState() // format: {1: [records]}
-  const [open, setOpen] = useState(true);
-  const [condition, setCondition] = useState(true)
   const { message } = App.useApp();
   const [recordsToDelete, setRecordsToDelete] = useState([])
   const [isLoading, setLoading] = useState(false)
@@ -49,7 +46,6 @@ function TrackTable(){
   };
 
   const cancel = () => {
-    setOpen(false);
     message.error('clicked on cancel');
   };
 
@@ -105,12 +101,9 @@ function TrackTable(){
     fixed: 'right',
       render: (_, record) => (
       <Space size="middle">
-        {/* <a onClick={()=>deleteRecord(record)}>Delete</a> */}
       <Popconfirm
         title="Delete the task"
         description="Are you sure to delete this task?"
-        // open={open}
-        // onOpenChange={() => handleOpenChange(record)}
         onConfirm={() => confirm(record)}
         onCancel={cancel}
         okText="Yes"
@@ -136,11 +129,14 @@ function TrackTable(){
     setRecords(res.data);
   }
   
-
   useEffect(()=>{ 
     populateUsers();
     getRecords();
-  },[])
+    if (refreshRecords){
+      getRecords();
+      setRefresh(false)
+    }
+  },[refreshRecords])
 
 
   const rowSelection = {

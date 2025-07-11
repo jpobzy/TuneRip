@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {
     Button,
     Checkbox,
@@ -11,7 +11,7 @@ import axios from 'axios'
 
 
 
-function DownloadSettingsForm({isTrack, setDownloadSettings}){
+function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload}){
     const [componentDisabled, setComponentDisabled] = useState(true);
     const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     
@@ -36,7 +36,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings}){
     }
 
     const setSkip = (e) => {
-        setSkipComponentDisabled(e.target.checked)
+        setskipDownload(e.target.checked)
             
         setDownloadSettings(prev => {
         const newSettings = {
@@ -109,9 +109,6 @@ function DownloadSettingsForm({isTrack, setDownloadSettings}){
     }
 
 
-
-
-
     return (
         <div className='downnload-form'>
         <Checkbox checked={componentDisabled} onChange={e => disableComponents(e)}>
@@ -140,7 +137,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings}){
 
         {!isTrack &&
             <Checkbox
-                checked={skipComponentDisabled}
+                checked={skipDownload}
                 onChange={(e) => setSkip(e)}
             >
                 Skip downloading track if its already downloaded
@@ -175,6 +172,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings}){
         </Form.Item>
 
       </Form>
+
         </div>
     );
 };

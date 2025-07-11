@@ -7,7 +7,7 @@ import { InboxOutlined } from '@ant-design/icons';
 import { message, Upload, Collapse, Result} from 'antd';
 
 
-export default function FilterForm({}) {
+export default function FilterForm({setRefresh}) {
   const { Search } = Input;
   const [user, setUser] = useState('');
   const [loading, setLoading] = useState(false)
@@ -23,9 +23,10 @@ export default function FilterForm({}) {
         body: JSON.stringify({ ytLink: value }),
       });
       if (res.status === 200 || res.status === 304) {
-        setLoading(false)
-        setUser('')
-        setFilterSuccess(true)
+        setLoading(false);
+        setUser('');
+        setFilterSuccess(true);
+        setRefresh(true);
       }
     } else if (value.length > 0){
         message.error(`Input ${value} is not a valid link`)
@@ -44,9 +45,10 @@ export default function FilterForm({}) {
         }
         if (status === 'done') {
             message.success(`${info.file.name} file uploaded successfully.`);
-            setLoading(false)
-            setUser('')
-            setFilterSuccess(true)
+            setLoading(false);
+            setUser('');
+            setFilterSuccess(true);
+            setRefresh(true);
         } else if (status === 'error') {
             message.error(`${info.file.name} file upload failed.`);
         }
@@ -61,6 +63,9 @@ export default function FilterForm({}) {
   return (
     <div>
       <br />
+      <button onClick={()=> setRefresh(true)}>
+        click me
+      </button>
 
             {filterSuccess ?
             <Result
@@ -133,8 +138,6 @@ export default function FilterForm({}) {
                             <p className="ant-upload-hint">
                             Support for a single or bulk upload. 
                             </p>
-
-                        
                         </Dragger>
                     </div>
                 </div>
@@ -144,8 +147,8 @@ export default function FilterForm({}) {
      
 
 
-  <Button type="primary" onClick={()=> setLoading(false)}>Primary Button</Button>
-    <Button type="primary" onClick={()=> setLoading(true)}>Disable Button</Button>
+  {/* <Button type="primary" onClick={()=> setLoading(false)}>Primary Button</Button>
+    <Button type="primary" onClick={()=> setLoading(true)}>Disable Button</Button> */}
 
 
     </div>

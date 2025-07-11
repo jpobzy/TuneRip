@@ -32,16 +32,19 @@ const Youtubers = forwardRef((props, ref) => {
   const [downloadSettings, setDownloadSettings] = useState({});
   const [loading, setLoading] = useState(true)
   const [responseData, setResponseData] = useState({})
-
+  const [skipDownload, setskipDownload] = useState(false);
+  
   useImperativeHandle(ref, () => ({
     resetAll
   }));
 
   const handleCardClicked = async(username) => {
+    setskipDownload(true)
     setCardClicked(true);
     setChosenUser(username)
     setIsTrack(false);
     setPrevImg(users[username][1])
+    setDownloadSettings({'skipDownloadingPrevDownload': true})
   }
 
   async function getUsers(){
@@ -55,19 +58,40 @@ const Youtubers = forwardRef((props, ref) => {
     setLoading(true)
     setCoverChosen(file);
     setAlbumCoverChosen(true);
+    try{
+      const response = await axios.get(`http://localhost:8080/download/`, {params: {
+          url: searchUrl,
+          user: chosenUser,
+          albumCover: file,
+          ...downloadSettings
+        }});
+
+      if (response.status === 207){
+        setLoading(false)
+        setResponseData(
+          {'data': response.data, 'statusCode': response.status}
+        )
+      }else if (response.status === 200){
+        setLoading(false)
+        setResponseData(
+          {'data': response.data, 'statusCode': response.status}
+        )
+      }
+    }catch (err){
+      console.log('error:')
+      console.log(err)
+      setLoading(false)
+      setResponseData(
+        {'data': {'message': 'Something in the backend failed, please check the logs in the debug folder'}, 'statusCode': 400}
+      )      
+    }  
+
+    
+    // reset values 
     setSearchURL('');
     setChosenUser(null);
-    const response = await axios.get(`http://localhost:8080/download/`, {params: {
-        url: searchUrl,
-        user: chosenUser,
-        albumCover: file,
-        ...downloadSettings
-      }});
-    if (response.status === 207){
-      setResponseData(
-        {'data': response.data, 'statusCode': response.status}
-      )
-    }
+    setDownloadSettings({})
+    setskipDownload(false)
   }
 
   async function getNewAlbumCover() {
@@ -107,7 +131,7 @@ const Youtubers = forwardRef((props, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings}/>
+    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload}/>
   }];
 
 
@@ -130,7 +154,7 @@ const Youtubers = forwardRef((props, ref) => {
               <div className='mx-auto'>
                 <DownloadScreen loading={loading} responseData={responseData}/>                
               </div>
-              <button onClick={()=> setLoading(!loading)} >loading</button>
+              {/* <button onClick={()=> setLoading(!loading)} >loading</button> */}
             </div>
           ) : (
           <div >
@@ -205,7 +229,7 @@ const Youtubers = forwardRef((props, ref) => {
         </div>      
       }
 
-      <button onClick={()=> {setCardClicked(true), setAlbumCoverChosen(true)}}>click me</button>
+      {/* <button onClick={()=> {setCardClicked(true), setAlbumCoverChosen(true)}}>click me</button> */}
     </div>
   )
 })
