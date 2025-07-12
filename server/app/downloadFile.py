@@ -112,14 +112,5 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     
     audio.save()
     os.remove(audio_file_path) # deletes mp4 file
-    shutil.move(mp3_file_path, trackDst )
-    # Path(trackDst / 'tracks', parents=True, exist_ok=True)
-    # # os.makedirs(trackDst / 'tracks', exist_ok=True)
-    # shutil.move(mp3_file_path.replace('\\', '/'), trackDst /'tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
-
-
-    # os.makedirs(trackDst + '//tracks', exist_ok=True)
-    # shutil.move(mp3_file_path.replace('\\', '/'), trackDst + '//tracks') # move file into tracks folder since this pytube fix may not support saving file in diff dir
-    
-    # log_data('Download Completed\n')
+    shutil.move(mp3_file_path, trackDst)
     return valid_title

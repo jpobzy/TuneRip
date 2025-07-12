@@ -16,6 +16,7 @@ class controller():
         self.db = database(databaseFolderRoute)
         # self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
+        self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir())
 
     
     def pathMaker(self, path):
@@ -51,8 +52,8 @@ class controller():
         if not Path(self.projRoot / 'debug').exists():
             self.pathMaker(self.projRoot / 'debug')
         
-        fileNumber = sum(1 for _ in Path(self.projRoot / 'debug').iterdir())
-        fileRoute = self.projRoot / 'debug' / f'debug{fileNumber}.txt'
+        
+        fileRoute = self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'
         fileData = f'[{datetime.now()}] {error}'
         if Path(fileRoute).exists:
             with open(fileRoute, 'a') as file:
@@ -72,8 +73,8 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = True # true to skip downloading
-        debugModeAddToDB = True # true to skip adding to database
+        debugModeSkipDownload = False # true to skip downloading
+        debugModeAddToDB = False # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
@@ -253,7 +254,7 @@ class controller():
 
         except Exception as error:
             print(f'ERROR USER {data['ytLink']} COULD NOT BE FOUND DUE TO ERROR {error}')
-
+            self.handleDownloadError(error)
             return {error: 404}
 
 
@@ -279,6 +280,7 @@ class controller():
                 self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url)
             except Exception as error:
                 print(f'ERROR TRACK {url} COULD NOT BE FOUND DUE TO {error}')
+                self.handleDownloadError(error)
                 return
         
         return
@@ -327,11 +329,12 @@ class controller():
                     if counter % 30 == 0:
                         time.sleep(60)
                     print(f'added track {track} with title {video.title}')
-                except:
+                except Exception as err:
+                    self.handleDownloadError(err)
                     failures.add(track)
                     continue
 
-            return ("Success", 200) if len(failures) == 0 else (f'Failed to add tracks: {failures}', 422)
+            return ({"message": "Succcess"}, 200) if len(failures) == 0 else ({"message" : f'Failed to add tracks: {failures}'}, 207)
         
         else:
             exists = ('Track already exists', 304)
@@ -349,7 +352,8 @@ class controller():
                     self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
                     return success
                 except Exception as error:
-                    return f'ERROR {error}', 400
+                    self.handleDownloadError(error)
+                    return {'message': f'Youtube link was invalid due to {error}'}, 207
                 
 
     def getRecords(self, query):

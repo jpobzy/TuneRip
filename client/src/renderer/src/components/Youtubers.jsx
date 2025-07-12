@@ -21,7 +21,6 @@ const Youtubers = forwardRef((props, ref) => {
   const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
   const [chosenUser, setChosenUser] = useState([]);
   const [coverChosen, setCoverChosen] = useState('')
-  const [albumCoverGradientsMap, setAlbumCoverGradientsMap] = useState({})
   const [searchUrl, setSearchURL] = useState([])
   const inputRef = useRef(null);
   const [isTrack, setIsTrack] = useState(false)
@@ -105,7 +104,6 @@ const Youtubers = forwardRef((props, ref) => {
     setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
     getUsers();
-    // console.log('reset to home')
   }
 
 
@@ -149,8 +147,6 @@ const Youtubers = forwardRef((props, ref) => {
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
-                {/* {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} palette={albumCoverGradientsMap[coverChosen]}/>} */}
-                {/* {albumCoverGradientsMap?.[coverChosen]?.length > 0 &&  <DownloadedShowcase albumCoverSrc={`http://localhost:8080/getAlbumCovers/${coverChosen}`} />} */}
               <div className='mx-auto'>
                 <DownloadScreen loading={loading} responseData={responseData}/>                
               </div>

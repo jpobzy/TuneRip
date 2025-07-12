@@ -11,8 +11,13 @@ function Settings(){
                 Settings
             </div>
             <div className="text-center">
-                <FilterForm setRefresh={setRefresh}/>
-                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+                <div>
+                    <FilterForm setRefresh={setRefresh}/>
+                </div>
+                <div className="mt-[30px]">
+                   <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+                </div>
+                
                 {/* <Amongus /> */}
             </div>
         </div>

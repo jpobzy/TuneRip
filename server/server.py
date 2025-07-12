@@ -136,6 +136,7 @@ def getDownloadCount():
 
 @app.route('/filter', methods=['POST'])
 def filter():
+    # return  {'message': "error cant find track due to"}, 207
     if request.method == 'POST':
         response, statusCode  = controller_obj.addTracksToFilter(request)
     return response, statusCode
@@ -159,7 +160,6 @@ def getData():
 
 @app.route('/getrecordsfromuser')
 def getUserData():
-    # print(request.query_string)
     return jsonify(controller_obj.getRecordsFromUser(request.query_string))
 
 @app.route('/deleteRecord', methods=['DELETE'])
@@ -187,7 +187,7 @@ def killswitch():
     os.kill(pid, 9)
     return
 
-@app.route('/test')
+@app.route('/refactor')
 def testingstuff():
     data = set()
     data.add('http://youtube.com/123141324')
