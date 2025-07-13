@@ -29,7 +29,7 @@ function Crop({src}){
     const steps = [
         {
           title: 'Add an image to crop',
-          description: 'Add an image to crop editor which can be used for an album cover.',
+          description: 'Add an image to the crop editor which can be used for any album cover.',
           target: () => refAdd.current,
         },
         {
@@ -39,22 +39,22 @@ function Crop({src}){
         },
         {
           title: 'Preview the cropped image',
-          description: 'View the cropped image locally.',
+          description: 'Open the cropped image in seperate tab to preview what it will look like',
           target: () => refPreview.current,
         },
         {
           title: 'Save the cropped image',
-          description: "This saves your cropped image to the album covers folder. You'll be able to select it as a cover for future tracks.",
+          description: "Save your cropped image to the album covers folder. You'll be able to select it as a cover for future tracks.",
           target: () => refSave.current,
         },
         {
           title: 'Zoom slider',
-          description: 'Use the slider to zoom the image and refine your crop area.',
+          description: 'Use the slider to zoom the image in/out and refine your crop area.',
           target: () => refZoomSlider.current,
         },
         {
           title: 'Zoom input',
-          description: 'Input a zoom value to fine-tune your crop. Range: 1–3',
+          description: "Input a zoom value to fine-tune your crop. Range: 1–3",
           target: () => refZoomInput.current,
         },
       ];
@@ -94,7 +94,7 @@ function Crop({src}){
             const response = await axios.post('http://localhost:8080/crop',
                 formData,)
         }else{
-            message.error('There is no cropped image to upload')
+            message.error('There is no cropped image to save')
         }
     }
 

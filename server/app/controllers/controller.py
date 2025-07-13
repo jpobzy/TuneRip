@@ -166,7 +166,10 @@ class controller():
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
-            return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
+            if erorrCount > 0:
+                return {'message': f'Error when downloading, please check the log in {self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'}'}, 500
+            else:
+                return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
         
         else:
             ytLink = self.db.userCache[user][0]

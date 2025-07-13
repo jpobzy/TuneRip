@@ -60,8 +60,10 @@ def download():
     """
     downloads users choice of given user or individial video or playlist
     """
-    response, statusCode = controller_obj.downloadVideos(request)
-    return make_response(response, statusCode)
+
+    return {'message': f'Error when downloading, please check the log in {Path.home() / 'Documents' / 'TuneRip' / 'debug' / f'debug{ sum(1 for _ in Path(Path.home() / 'Documents' / 'TuneRip' / 'debug').iterdir())}.txt'}'}, 500
+    # response, statusCode = controller_obj.downloadVideos(request)
+    # return make_response(response, statusCode)
 
 
 @app.route('/uploadImg', methods=['POST'])

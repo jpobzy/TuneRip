@@ -18,7 +18,7 @@ function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [page, setPage] = useState("Crop");
+  const [page, setPage] = useState("Home");
   // const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
@@ -53,7 +53,6 @@ function MainApp() {
         speed={0.5}
       />
       {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
-       {/* {page === 'Home' && <div className='mainApp'><Youtubers ref={ref} onCardClick={handleChildClick} /></div>} */}
       {page === 'History' && <div className='mainApp'><History /></div>}
       {page === 'Settings' && <Settings/>}
       {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}

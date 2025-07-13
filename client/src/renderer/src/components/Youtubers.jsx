@@ -79,9 +79,11 @@ const Youtubers = forwardRef((props, ref) => {
     }catch (err){
       console.log('error:')
       console.log(err)
+      console.log(err.response.data.message)
       setLoading(false)
       setResponseData(
-        {'data': {'message': 'Something in the backend failed, please check the logs in the debug folder'}, 'statusCode': 400}
+        // {'data': {'message': 'Something in the backend failed, please check the logs in the debug folder'}, 'statusCode': 400}
+         {'data': {'message': err.response.data.message}, 'statusCode': err.status}
       )      
     }  
 
@@ -137,6 +139,7 @@ const Youtubers = forwardRef((props, ref) => {
 
   useEffect(()=> {
     getUsers();
+    setEditImgCard(false)
   }, []);
     
   return (
