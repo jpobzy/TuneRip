@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Popconfirm } from 'antd';
 import axios from 'axios';
 
-export default function YoutuberCard({name, userPFP, onClick, edit}) {
+export default function YoutuberCard({name, userPFP, onClick, edit, setUsers}) {
   const [hoverEnabled, setHoverEnabled] = useState(false);
 
   async function deleteUser(){
@@ -17,7 +17,7 @@ export default function YoutuberCard({name, userPFP, onClick, edit}) {
   }
 
   return (
-    <div className='relative'>
+    <div>
       {edit && 
         <Popconfirm
           title={`Delete the user "${name}" ?`}

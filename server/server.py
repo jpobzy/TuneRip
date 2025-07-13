@@ -187,17 +187,17 @@ def killswitch():
     os.kill(pid, 9)
     return
 
-@app.route('/refactor')
-def testingstuff():
-    data = set()
-    data.add('http://youtube.com/123141324')
-    data.add('http://youtube.com/dsadsadsa')
-    data.add('http://youtube.com/1234ssadas')
+@app.route('/croppreview', methods=['POST'])
+def croppreview():
+    if request.method == 'POST':
+        file = request.files['imageFile']
+        return controller_obj.croppreview(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
 
-    return jsonify({
-        'message': 'Some tracks failed to download',
-        'failedTracks': list(data)
-    }), 207
+@app.route('/crop', methods=['POST'])
+def crop():
+    if request.method == 'POST':
+        file = request.files['imageFile']
+        return controller_obj.crop(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
 
 
 
