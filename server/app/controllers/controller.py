@@ -438,18 +438,7 @@ class controller():
         return 'Success', 200 
     
     def croppreview(self, file, data):
-
-        
-        # filename = request['filename']
-        # data = request['cropdata']['croppedAreaPixels']
-
-        # filePath = Path.home() / f'Documents/TuneRip/server/static/albumCovers/{filename}' 
-        # if not Path(filePath).exists():
-        #     return 'path not found', 404
         im = Image.open(file)
-
-        # # generic from w3schools
-       
         left   = data['x'] # x
         top    = data['y'] # y
         right  = data['x'] + data['width'] #x + width
@@ -465,31 +454,8 @@ class controller():
 
 
     def crop(self, file, data):
-        # print(file.filename)  
-        # filename = file
-
-        # filePath = Path.home() / f'Documents/TuneRip/server/static/albumCovers/{filename}' 
-        # if not Path(filePath).exists():
-        #     return 'path not found', 404
-        # im = Image.open(filePath)
-
-        # # generic from w3schools
-       
-        # left   = data['x'] # x
-        # top    = data['y'] # y
-        # right  = data['x'] + data['width'] #x + width
-        # bottom = data['y'] + data['height'] # y + height
-        # # Crop box: (1365, 3413, 2048, 4096)
-        # croppedImg = im.crop((left, top, right, bottom))
-
-        # # Shows the image in image viewer
-        # path = Path(self.projRoot / f'server/static/albumCovers/{file.filename}')
-        # croppedImg.save(path)
-
 
         im = Image.open(file)
-
-        # # generic from w3schools
        
         left   = data['x'] # x
         top    = data['y'] # y
@@ -501,9 +467,11 @@ class controller():
         # print(f'path is {path}')
         # Shows the image in image viewer
         croppedImg.save(path)
-
-
-
-        
-
         return 'ok', 200
+    
+    def getAlbumTitles(self):
+        """
+        returns a list of unique album titles and the user associated with it
+        """
+        return self.db.getAlbumTitles()
+    

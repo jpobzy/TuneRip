@@ -61,9 +61,8 @@ def download():
     downloads users choice of given user or individial video or playlist
     """
 
-    return {'message': f'Error when downloading, please check the log in {Path.home() / 'Documents' / 'TuneRip' / 'debug' / f'debug{ sum(1 for _ in Path(Path.home() / 'Documents' / 'TuneRip' / 'debug').iterdir())}.txt'}'}, 500
-    # response, statusCode = controller_obj.downloadVideos(request)
-    # return make_response(response, statusCode)
+    response, statusCode = controller_obj.downloadVideos(request)
+    return make_response(response, statusCode)
 
 
 @app.route('/uploadImg', methods=['POST'])
@@ -201,6 +200,13 @@ def crop():
         file = request.files['imageFile']
         return controller_obj.crop(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
 
+
+@app.route("/getalbumtitles")
+def getAlbumTitles():
+    """
+    Sends all album titles from tracks db 
+    """
+    return jsonify(controller_obj.getAlbumTitles())
 
 
 if __name__ == "__main__":

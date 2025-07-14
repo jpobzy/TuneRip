@@ -13,12 +13,13 @@ function TrackTable({refreshRecords, setRefresh}){
   const [recordsToDelete, setRecordsToDelete] = useState([])
   const [isLoading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
+  const [albumTitles, setAlbumTitles] = useState([])
+  const [filteredUsers, setFilteredUsers] = useState([])
+  const [selectedUsers, setSelectedUsers] = useState([])
 
   const deleteSelected = async() => {
     setLoading(true)
     const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
-    console.log(req.status)
     if (req.status === 204){
       message.info('No track was found');
     }else if (req.status === 200){
@@ -49,6 +50,25 @@ function TrackTable({refreshRecords, setRefresh}){
     message.error('clicked on cancel');
   };
 
+  const filter = () => {
+    if (selectedUsers.length > 0){
+      const res = []
+      for (var i = 0; i < selectedUsers.length; i++) {
+        for (var j = 0; j < albumTitles.length; j++){
+          if (albumTitles[j]['user'] === selectedUsers[i]){
+            res.push(albumTitles[j])
+          }
+        }
+      }
+      return res
+    }else{
+      return albumTitles
+    }
+  }
+
+  const filterItems = (value, record) => {
+    return record.user.includes(value)
+  }
 
   const cols = [
   {
@@ -57,12 +77,20 @@ function TrackTable({refreshRecords, setRefresh}){
     key: 'user',
     fixed: 'left',
     filters: users,
-    onFilter: (value, record) => record.user.includes(value),
+    // onFilter: (value, record) => record.user.includes(value),
+    onFilter: filterItems
   },
   {
     title: 'Track title',
     dataIndex: 'tracktitle',
-    key: 'tracktitle'
+    key: 'tracktitle',
+  },
+  {
+    title: 'Album Title',
+    dataIndex: 'albumTitle',
+    key: 'albumTitle',
+    filters: filter(),
+    onFilter: (value, record) => record.albumTitle.includes(value)
   },
   {
     title: 'Link',
@@ -88,11 +116,6 @@ function TrackTable({refreshRecords, setRefresh}){
     title: 'Album Cover File',
     dataIndex: 'albumCoverFile',
     key: 'albumCoverFile'
-  },
-  {
-    title: 'Album Title',
-    dataIndex: 'albumTitle',
-    key: 'albumTitle'
   },
   {
     title: 'Action',
@@ -122,6 +145,11 @@ function TrackTable({refreshRecords, setRefresh}){
     setUsers(res.data)
   }
 
+  async function getCoverAlbums(){
+    const res = await axios.get('http://localhost:8080/getalbumtitles')
+    setAlbumTitles(res.data)
+  }
+
   async function getRecords(){
     const res = await axios.get('http://localhost:8080/getData',{
       params: {'page': 1, 'limit': 100}
@@ -131,6 +159,7 @@ function TrackTable({refreshRecords, setRefresh}){
   
   useEffect(()=>{ 
     populateUsers();
+    getCoverAlbums();
     getRecords();
     if (refreshRecords){
       getRecords();
@@ -140,11 +169,36 @@ function TrackTable({refreshRecords, setRefresh}){
 
 
   const rowSelection = {
-
     onChange : (selectedRowKeys, selectedRows) => {
-      console.log('selectedRowKeys changed: ', selectedRows);
       setRecordsToDelete(selectedRows);
     } 
+  }
+
+  const handleFilters = (user, albumTitle)=>{
+    // if (albumtitle && albumtitle.length > 0){
+    //   console.log(`filtered user is ${albumtitle}`)
+    // }
+    // if (user && user.length > 0){
+    //   console.log(`filtered album is ${user}`)
+    // }
+    // if (user && user.length > 0 && albumtitle && albumtitle.length > 0){
+    //   console.log('both')
+    // }else if (user && user.length === 0 && albumtitle && albumtitle.length === 0){
+    //   console.log('none')
+    // }
+    // just set a usestate var with user values, on filter for track albums if usestateval > 0 && show only the records that include the user
+    // in the user section
+    if (user && !albumTitle){
+      setSelectedUsers(user)
+    }
+    if (!user){
+      setSelectedUsers([])
+    }
+
+    if (!user && !albumTitle){
+      console.log('none')
+      setSelectedUsers([])
+    }
   }
 
 
@@ -156,12 +210,11 @@ function TrackTable({refreshRecords, setRefresh}){
               Delete selected
             </Button>            
         </div>
- 
-
-       
-
         <div className='mx-auto  w-[800px]'>
           <Table 
+              onChange={(pagination, filters, sorter, extra) => {
+                handleFilters(filters.user, filters.albumTitle)           
+              }}
             rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
             loading={isLoading}
             columns={cols} 
@@ -173,6 +226,7 @@ function TrackTable({refreshRecords, setRefresh}){
       </div>
     </div>
   )
+
 }
 
 

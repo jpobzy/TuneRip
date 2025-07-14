@@ -195,3 +195,23 @@ class database():
         database.commit()
         database.close()
         return 
+    
+
+    def getAlbumTitles(self):
+        """"
+        for /history req
+        """
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        # query = cur.execute(f"SELECT DISTINCT tracks WHERE length(albumTitle) > 0 FROM tracks")
+        # query = cur.execute(f"SELECT DISTINCT albumTitle FROM tracks")
+        query = cur.execute(f"SELECT * FROM tracks GROUP BY albumTitle")
+        
+        retval = []
+        for record in query:
+            if len(record[1]) > 1:
+                # retval.append({'albumTitle':record[1], 'user':record[0]})
+                retval.append({'text': record[1], 'value': record[1], 'user': record[0]})
+                # retval.append({'albumTitle':record[1]})
+        database.close()
+        return retval
