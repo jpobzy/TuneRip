@@ -8,11 +8,11 @@ from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
 from pathlib import Path
 
-projRoot = Path(__file__).parent
+basePath = Path.home() / 'Documents' / 'TuneRip'
 
-UPLOAD_FOLDER = projRoot / 'static/images'
-ALBUM_COVER_FOLDER = projRoot / 'static/albumCovers'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = basePath / 'server/static/images'
+ALBUM_COVER_FOLDER = basePath / 'server/static/albumCovers'
+DATABASE_FOLDER = basePath / 'server/database'
 
 
 
@@ -20,10 +20,10 @@ app = Flask(__name__)
 CORS(app, origins='*')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALBUM_COVER_FOLDER'] = ALBUM_COVER_FOLDER
-
+app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 # path_env = 'MUSIC_PATH'
 
-controller_obj = controller()
+controller_obj = controller(app.config['DATABASE_FOLDER'])
 
 @app.route("/")
 def hello_world():
@@ -35,8 +35,7 @@ def getUsers():
     """
     Sends users from users db 
     """
-    cache = controller_obj.db.cache 
-    return jsonify(cache)
+    return jsonify(controller_obj.db.userCache)
 
 
 @app.route('/getImage/<string:route>', methods=['GET'])
@@ -130,18 +129,6 @@ def history():
     return jsonify(historyList)
 
 
-@app.route('/changeDownloadSettings', methods=['POST'])
-def changeDownloadSettings():
-    response, status = controller_obj.changeDownloadSettings(json.loads(request.data))
-    return jsonify(response)
-
-
-@app.route('/resetDownloadSettings')
-def resetDownloadSettings():
-    controller_obj.resetDownloadSettings()
-    return 'Success', 200
-
-
 @app.route('/downloadCount')
 def getDownloadCount():
     return jsonify(controller_obj.getDownloadCount())
@@ -149,6 +136,7 @@ def getDownloadCount():
 
 @app.route('/filter', methods=['POST'])
 def filter():
+    # return  {'message': "error cant find track due to"}, 207
     if request.method == 'POST':
         response, statusCode  = controller_obj.addTracksToFilter(request)
     return response, statusCode
@@ -170,12 +158,54 @@ def getData():
     return jsonify(controller_obj.getData())
 
 
-
-
 @app.route('/getrecordsfromuser')
 def getUserData():
-    # print(request.query_string)
     return jsonify(controller_obj.getRecordsFromUser(request.query_string))
+
+@app.route('/deleteRecord', methods=['DELETE'])
+def deleteRecord():
+    return controller_obj.deleteRecord(json.loads(request.data))
+
+@app.route('/deleteMultipleRecord', methods=['DELETE'])
+def deleteMultipleRecords():
+    return controller_obj.deleteMultipleRecords(json.loads(request.data))
+
+
+@app.route('/deleteUser', methods=['DELETE'])
+def deleteUser():
+    return controller_obj.deleteUser(json.loads(request.data))
+
+
+@app.route('/deleteimg', methods=['DELETE'])
+def deleteImg():
+    return controller_obj.deleteImg(json.loads(request.data))
+
+
+@app.route('/killserver')
+def killswitch():
+    pid = os.getpid()
+    os.kill(pid, 9)
+    return
+
+@app.route('/croppreview', methods=['POST'])
+def croppreview():
+    if request.method == 'POST':
+        file = request.files['imageFile']
+        return controller_obj.croppreview(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
+
+@app.route('/crop', methods=['POST'])
+def crop():
+    if request.method == 'POST':
+        file = request.files['imageFile']
+        return controller_obj.crop(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
+
+
+@app.route("/getalbumtitles")
+def getAlbumTitles():
+    """
+    Sends all album titles from tracks db 
+    """
+    return jsonify(controller_obj.getAlbumTitles())
 
 
 if __name__ == "__main__":

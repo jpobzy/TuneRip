@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect } from 'react'
-import '../assets/DownloadedShowcase.css'
+import './DownloadedShowcase.css'
 
 
 function DownloadedShowcase({albumCoverSrc}) {

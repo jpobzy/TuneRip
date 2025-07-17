@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import AnimatedList from './animatedList/AnimatedList'
-import '../../assets/history/history.css'
+import './history.css'
 import { useState } from 'react';
 import axios from 'axios';
 import CountUp from './trackInfo/TrackCount';
@@ -47,9 +47,9 @@ export default function History() {
   return (
     <div>
         <div className='history-wrapper'>
-          <h1 className='header1 text-5xl font-bold -mt-15 mb-5 text-gray-200'>Download history</h1>
+          <h1 className='header1 text-5xl font-bold -mt-15 mb-5 text-gray-200 pointer-events-none'>Download history</h1>
 
-          <div className='text-[20px]'>
+          <div className='text-[20px] pointer-events-none'>
   
             <GradientText
               colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
@@ -67,20 +67,23 @@ export default function History() {
                     className="count-up-text "
                   />} tracks!
                 </GradientText>
-
+            <div className='text-white text-[18px]'>
+              Heres the most recent 20
+            </div>
           </div>
 
+            
+              {!loadingHistory && (
+                <AnimatedList
+                items={trackHistory}
+                onItemSelect={(item, index) => console.log(item, index)}
+                showGradients={true}
+                enableArrowNavigation={true}
+                displayScrollbar={true}
+                />
+                )
+              }              
 
-            {!loadingHistory && (
-            <AnimatedList
-            items={trackHistory}
-            onItemSelect={(item, index) => console.log(item, index)}
-            showGradients={true}
-            enableArrowNavigation={true}
-            displayScrollbar={true}
-            />
-            )
-            }
         </div>
     </div>
   )

@@ -2,31 +2,44 @@ import React, { useState } from 'react';
 import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button } from 'antd';
 import './FilterForm.css'
+import axios from 'axios';
 
 import { InboxOutlined } from '@ant-design/icons';
 import { message, Upload, Collapse, Result} from 'antd';
 
 
-export default function FilterForm({}) {
+export default function FilterForm({setRefresh}) {
   const { Search } = Input;
   const [user, setUser] = useState('');
   const [loading, setLoading] = useState(false)
   const { Dragger } = Upload;
   const [filterSuccess, setFilterSuccess] = useState(false)
+  const [filterError, setFilterError] = useState(false)
+  const [responseData, setResponseData] = useState({})
 
   async function onSearch(value) {
     if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
         setLoading(true)
-        const res = await fetch('http://localhost:8080/filter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ytLink: value }),
-      });
-      if (res.status === 200 || res.status === 304) {
-        setLoading(false)
-        setUser('')
-        setFilterSuccess(true)
+
+
+      const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
+        
+
+      if (response.status === 200 || response.status === 304) {
+        setResponseData(response)
+        setLoading(false);
+        setUser('');
+        setFilterSuccess(true);
+        setRefresh(true);
+      }else{
+        setResponseData(response)
+        setFilterError(true)
+        setLoading(false);
+        setUser('');
+        
+        // setResponse(response)
       }
+
     } else if (value.length > 0){
         message.error(`Input ${value} is not a valid link`)
     } 
@@ -40,13 +53,14 @@ export default function FilterForm({}) {
         const { status } = info.file;
         if (status !== 'uploading') {
             setLoading(true)
-            // console.log(info.file, info.fileList);
         }
+
         if (status === 'done') {
             message.success(`${info.file.name} file uploaded successfully.`);
-            setLoading(false)
-            setUser('')
-            setFilterSuccess(true)
+            setLoading(false);
+            setUser('');
+            setFilterSuccess(true);
+            setRefresh(true);
         } else if (status === 'error') {
             message.error(`${info.file.name} file upload failed.`);
         }
@@ -61,16 +75,30 @@ export default function FilterForm({}) {
   return (
     <div>
       <br />
+      <button onClick={()=> setRefresh(true)}>
+        click me
+      </button>
 
             {filterSuccess ?
-            <Result
-            status="success"
-            title="Tracks were added to filter!"
-            subTitle=""
-            extra={[
-            <Button type="primary" onClick={()=> setFilterSuccess(false)}>Go back</Button>,
-            ]}
-            /> : 
+                <Result
+                status="success"
+                title="Tracks were added to filter!"
+                // subTitle={`${responseData.data.message}`}
+                extra={[
+                <Button type="primary" onClick={()=> setFilterSuccess(false)}>Go back</Button>,
+                ]}
+                /> : filterError ? 
+                <div className='bg-white rounded-lg mx-auto w-[800px]'>
+                    <Result
+                        status="error"
+                        title="Submission Failed"
+                        subTitle={`${responseData.data.message}`}
+                        extra={[
+                            <Button type="primary" onClick={()=> setFilterError(false)}>Go back</Button>,
+                        ]}
+                    />
+                </div>
+                :
                 <div>
                     <form
                         className="filter-form"
@@ -133,8 +161,6 @@ export default function FilterForm({}) {
                             <p className="ant-upload-hint">
                             Support for a single or bulk upload. 
                             </p>
-
-                        
                         </Dragger>
                     </div>
                 </div>
@@ -144,8 +170,8 @@ export default function FilterForm({}) {
      
 
 
-  <Button type="primary" onClick={()=> setLoading(false)}>Primary Button</Button>
-    <Button type="primary" onClick={()=> setLoading(true)}>Disable Button</Button>
+  {/* <Button type="primary" onClick={()=> setLoading(false)}>Primary Button</Button>
+    <Button type="primary" onClick={()=> setLoading(true)}>Disable Button</Button> */}
 
 
     </div>

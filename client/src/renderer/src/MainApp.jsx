@@ -1,4 +1,3 @@
-import Versions from './components/Versions'
 import electronLogo from './assets/electron.svg'
 import Youtubers from './components/Youtubers'
 import './assets/mainApp.css'
@@ -8,17 +7,19 @@ import Aurora from './components/background/Aurora'
 import { Button, Space, DatePicker, version, App } from 'antd';
 import Dock from './components/dock/Dock'
 import { VscHome, VscAccount, VscArchive, VscSettingsGear } from 'react-icons/vsc';
+import { FaCropSimple } from "react-icons/fa6";
 import History from './components/history/History'
 import { useRef, } from 'react'
 import Settings from './components/Settings'
+import Crop from './components/crop/Crop';
 
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  // const [page, setPage] = useState("Home");
   const [page, setPage] = useState("Home");
+  // const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
   const handleChildClick = (data) => {
@@ -40,6 +41,7 @@ function MainApp() {
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
     // { icon: <VscAccount size={18} />, label: 'Profile', onClick: () => alert('Profile!') },
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
+     { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
   ];
 
   return (
@@ -51,9 +53,9 @@ function MainApp() {
         speed={0.5}
       />
       {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
-       {/* {page === 'Home' && <div className='mainApp'><Youtubers ref={ref} onCardClick={handleChildClick} /></div>} */}
       {page === 'History' && <div className='mainApp'><History /></div>}
       {page === 'Settings' && <Settings/>}
+      {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
 
     {
       <div className='dock-wrapper flex justify-center items-center '>

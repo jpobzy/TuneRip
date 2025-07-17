@@ -16,7 +16,7 @@ import {
   useState,
 } from "react";
 
-import "../../assets/dock/dock.css";
+import "./dock.css";
 
 function DockItem({
   children,
