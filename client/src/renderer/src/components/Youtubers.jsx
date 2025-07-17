@@ -228,7 +228,8 @@ const Youtubers = forwardRef((props, ref) => {
         </div>      
       }
 
-      {/* <button onClick={()=> {setCardClicked(true), setAlbumCoverChosen(true)}}>click me</button> */}
+      <button className='mb-[500px]' onClick={()=> console.log(downloadSettings)}>ddddddd me</button>
+
     </div>
   )
 })

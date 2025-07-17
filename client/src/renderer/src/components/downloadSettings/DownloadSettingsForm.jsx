@@ -1,11 +1,13 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, use} from 'react'
 import {
     Button,
     Checkbox,
-    DatePicker,
+    Popconfirm,
     Form,
     Input,
     message,
+    Space,
+    Col
 } from 'antd'
 import axios from 'axios'
 
@@ -13,8 +15,11 @@ import axios from 'axios'
 
 function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload}){
     const [componentDisabled, setComponentDisabled] = useState(true);
-    const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
-    
+    // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
+    const [createSubfolder, setCreateSubfolder] = useState(false)
+    const [subFolderInputValue, setSubFolderInputValue] = useState('')
+    const [form] = Form.useForm();
+
     const onFinish = async() => {
         const res = await fetch('http://localhost:8080/changeDownloadSettings', {
             method: 'POST',
@@ -28,10 +33,33 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
 
 
 
-    const disableComponents = async (e) => {
+    const toggleDefaultSettings = async (e) => {
+        
+
         setComponentDisabled(e.target.checked)
         if (e.target.checked === true){
-            setDownloadSettings({})
+            if (isTrack){
+                    // form.setFieldValue({'': ''})
+                    setDownloadSettings({})
+            }else{
+                setDownloadSettings({"skipDownloadingPrevDownload": true})
+                setskipDownload(true)
+                setCreateSubfolder(false)
+            }
+            
+            form.setFieldsValue({'album' : '', 'genre' : '', 'title' : '', 'artist' : '', 'dirname' : ''})
+            // if (isTrack){
+            //     form.setFieldValue({'': ''})
+            // }
+        }else{
+            if (skipDownload && createSubfolder){
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': ''})
+            }else if (skipDownload) {
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload})
+            } else if (createSubfolder){
+                setDownloadSettings({'subFolderName' : ''})
+            }
+      
         }
     }
 
@@ -108,25 +136,103 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         })
     }
 
+    const setSubFolderSettings = (e) => {
+        setCreateSubfolder(e.target.checked)
+        setSubFolderInputValue('')
+
+        setDownloadSettings(prev => {
+            const newSettings = {
+                ...prev,
+                subFolderName: ''
+
+            };
+            if (e.target.checked === false){
+                delete newSettings['subFolderName'];
+                form.setFieldsValue({'dirname': ''})
+                
+            }
+            return newSettings;
+        })       
+    }
+
+
+    const setSubfolder = (e) => {
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            subFolderName: e.target.value
+        };
+        return newSettings;
+        })
+    }
+
+    useEffect(()=>{
+        if (isTrack){
+            setskipDownload(false)
+        }
+    })
 
     return (
-        <div className='downnload-form'>
-        <Checkbox checked={componentDisabled} onChange={e => disableComponents(e)}>
+        <div className='download-form '>
+        <Checkbox checked={componentDisabled} onChange={e => toggleDefaultSettings(e)}>
             Use default settings
         </Checkbox>
-        <Form
+        <Form 
+        form={form}
         name='basic'
-        labelCol={{ span: 4 }}
-        wrapperCol={{ span: 14 }}
+        labelCol={{ span: 5 }}
+        // wrapperCol={{ span: 15 }}
         layout="horizontal"
         disabled={componentDisabled}
         style={{ maxWidth: 600 }}
         // initialValues={{remember: true}}
         onFinish={onFinish}
         autoComplete='off'
-      >
+        >
+
+            
+
+
+        {!isTrack &&
+            <Form.Item style={{marginBottom: "0px"}}>
+                <Checkbox
+                    checked={skipDownload}
+                    onChange={(e) => setSkip(e)}
+                >
+                    Skip downloading track if its already downloaded
+                </Checkbox>                     
+            </Form.Item>
+                   
+                
+        }
+        <Form.Item style={{marginBottom : "10px"}}>
+            <Checkbox
+                checked={createSubfolder}
+                onChange={(e)=> setSubFolderSettings(e)}
+            >
+                Create a subfolder and add all the tracks there
+            </Checkbox>             
+        </Form.Item>
+               
+
+
+        { createSubfolder && 
+            <div className='mx-auto'>
+                <Form.Item 
+                    wrapperCol={{ span: 15}}
+                    label="Subfolder name"
+                    name="dirname"
+                    onChange={(e) => setSubfolder(e)}
+                    >
+                <Input 
+                placeholder='Default: Album Title' />
+                </Form.Item>                
+            </div>
+        }
+        
         {isTrack && 
         <Form.Item 
+            wrapperCol={{ span: 15}}
             label="TrackTitle"
             name="title"
             onChange={(e) => setTitle(e)}
@@ -135,17 +241,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         </Form.Item>
         }
 
-        {!isTrack &&
-            <Checkbox
-                checked={skipDownload}
-                onChange={(e) => setSkip(e)}
-            >
-                Skip downloading track if its already downloaded
-            </Checkbox>        
-        }
-
-
         <Form.Item 
+            wrapperCol={{ span: 15}}
             label="Artist"
             name="artist"
             onChange={(e) => setArtist(e)}
@@ -154,6 +251,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         </Form.Item>
         
         <Form.Item 
+            wrapperCol={{ span: 15}}
             label="Genre"
             name="genre"
             onChange={(e) => setGenre(e)}
@@ -161,9 +259,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
           <Input placeholder='Default: None'/>
         </Form.Item>
 
-
-
         <Form.Item 
+            wrapperCol={{ span: 15}}
             label="Album Title"
             name="album"
             onChange={(e) => setAlbum(e)}
@@ -172,8 +269,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         </Form.Item>
 
       </Form>
-
-        </div>
+      {/* <Button onClick={()=> form.setFieldsValue({'dirname': ''})}>click me</Button> */}
+    </div>
     );
 };
 

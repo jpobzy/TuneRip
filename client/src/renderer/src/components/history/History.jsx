@@ -67,7 +67,9 @@ export default function History() {
                     className="count-up-text "
                   />} tracks!
                 </GradientText>
-
+            <div className='text-white text-[18px]'>
+              Heres the most recent 20
+            </div>
           </div>
 
             

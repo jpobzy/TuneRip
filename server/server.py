@@ -60,7 +60,6 @@ def download():
     """
     downloads users choice of given user or individial video or playlist
     """
-
     response, statusCode = controller_obj.downloadVideos(request)
     return make_response(response, statusCode)
 

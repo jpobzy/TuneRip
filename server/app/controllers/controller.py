@@ -74,24 +74,28 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = False # true to skip downloading
-        debugModeAddToDB = False # true to skip adding to database
+        debugModeSkipDownload = True # true to skip downloading
+        debugModeAddToDB = True # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
-
+        skipDownload = False if request.args.get('skipDownloadingPrevDownload') == None else True    
+        subFolderName = request.args.get('subFolderName')
         trackTitle = request.args.get('trackTitle')
         artist = request.args.get('artist')
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
-        skipDownload = False if request.args.get('skipDownloadingPrevDownload') == None else True
-        
+
         if url and 'list=PL' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
-            downloadPath = playlistRoute / f'{playlist.title} by {playlist.owner}'
+
+            if subFolderName != None:
+                downloadPath = playlistRoute / subFolderName
+            else:
+                downloadPath = playlistRoute / f'Playlist {playlist.title} by {playlist.owner}'
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
@@ -137,7 +141,15 @@ class controller():
             video = YouTube(url)
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-            downloadPath = self.projRoot / f"downloads/customTracks"
+
+            if subFolderName != None:
+                downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                if not Path(downloadPath).exists():
+                    os.mkdir(downloadPath)
+            else:
+                downloadPath = self.projRoot / f"downloads/customTracks"
+
+            
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             trackNum = 1
@@ -175,10 +187,17 @@ class controller():
             ytLink = self.db.userCache[user][0]
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-            downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {user}' if albumTitle == None else albumTitle
             trackNum = 1
+
+            if subFolderName != None:
+                downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                if not Path(downloadPath).exists():
+                    os.mkdir(downloadPath)
+            else:
+                downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
+
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             
