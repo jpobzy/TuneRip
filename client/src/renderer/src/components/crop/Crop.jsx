@@ -99,7 +99,10 @@ function Crop({src}){
     }
 
     return(
-        <div className="">
+        <div className="-mt-[50px] mb-[100px]">
+            <div className="mx-auto text-center text-[50px] text-white">
+                Crop an image
+            </div>
             <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
             <div className="flex justify-center">
                 <div ref={refAdd} className="flex w-[200px]">

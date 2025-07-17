@@ -10,8 +10,9 @@ import UploadButton from './uploadImagesButton/UploadButton';
 import { message, Collapse } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
-import { Switch } from 'antd';
+import { Switch, Button } from 'antd';
 import DownloadScreen from './downloadingScreen/DownloadScreen';
+import { useToggle } from './context/UseContext';
 
 const Youtubers = forwardRef((props, ref) => {
 
@@ -32,7 +33,8 @@ const Youtubers = forwardRef((props, ref) => {
   const [loading, setLoading] = useState(true)
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
-  
+  const {showDock, setShowDock} = useToggle()
+
   useImperativeHandle(ref, () => ({
     resetAll
   }));
@@ -55,6 +57,7 @@ const Youtubers = forwardRef((props, ref) => {
 
   const handleAlbumCoverClicked = async(file) =>{
     setLoading(true)
+    setShowDock(false)
     setCoverChosen(file);
     setAlbumCoverChosen(true);
     try{
@@ -67,22 +70,21 @@ const Youtubers = forwardRef((props, ref) => {
 
       if (response.status === 207){
         setLoading(false)
+        setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }else if (response.status === 200){
         setLoading(false)
+        setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }
     }catch (err){
-      console.log('error:')
-      console.log(err)
-      console.log(err.response.data.message)
       setLoading(false)
+      setShowDock(true)
       setResponseData(
-        // {'data': {'message': 'Something in the backend failed, please check the logs in the debug folder'}, 'statusCode': 400}
          {'data': {'message': err.response.data.message}, 'statusCode': err.status}
       )      
     }  
@@ -141,6 +143,8 @@ const Youtubers = forwardRef((props, ref) => {
     getUsers();
     setEditImgCard(false)
   }, []);
+
+
     
   return (
     <div>
@@ -227,9 +231,6 @@ const Youtubers = forwardRef((props, ref) => {
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
-
-      <button className='mb-[500px]' onClick={()=> console.log(downloadSettings)}>ddddddd me</button>
-
     </div>
   )
 })

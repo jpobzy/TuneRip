@@ -1,0 +1,14 @@
+.ant-pagination .ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination .ant-pagination-next .ant-pagination-item-link {
+  background-color: white !important;
+}
+
+
+.ant-pagination-item-container{
+    background-color: white !important;
+    border-radius: 10% !important;   
+}
+
+.ant-pagination-item{
+    background-color: white !important;
+}

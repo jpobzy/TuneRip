@@ -12,7 +12,9 @@ import History from './components/history/History'
 import { useRef, } from 'react'
 import Settings from './components/Settings'
 import Crop from './components/crop/Crop';
-
+import { ToggleProvider } from './components/context/UseContext';
+import { useToggle } from './components/context/UseContext';
+import { useContext } from 'react';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
@@ -44,6 +46,8 @@ function MainApp() {
      { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
   ];
 
+  const {showDock} = useToggle()
+
   return (
     <div className='wrapper'>
       <Aurora
@@ -52,23 +56,26 @@ function MainApp() {
         amplitude={1.0}
         speed={0.5}
       />
-      {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
-      {page === 'History' && <div className='mainApp'><History /></div>}
-      {page === 'Settings' && <Settings/>}
-      {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
+  
 
-    {
-      <div className='dock-wrapper flex justify-center items-center '>
-        <Dock
-          className='custom-dock'
-          items={items}
-          panelHeight={68}
-          baseItemSize={50}
-          magnification={70}
-        /> 
-        
-      </div>
-    }
+     
+        {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
+        {page === 'History' && <div className='mainApp'><History /></div>}
+        {page === 'Settings' && <Settings/>}
+        {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
+
+      { showDock &&
+        <div className='dock-wrapper flex justify-center items-center '>
+          <Dock
+            className='custom-dock'
+            items={items}
+            panelHeight={68}
+            baseItemSize={50}
+            magnification={70}
+          /> 
+        </div>
+      }
+
     </div>
   )
 }

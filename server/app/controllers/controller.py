@@ -43,6 +43,7 @@ class controller():
         self.pathMaker(basePath / 'downloads')
         self.pathMaker(basePath / 'downloads/playlists')
         self.pathMaker(basePath / 'downloads/customTracks')
+        self.pathMaker(basePath / 'debug')
         return
     
 
@@ -74,8 +75,8 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = True # true to skip downloading
-        debugModeAddToDB = True # true to skip adding to database
+        debugModeSkipDownload = False # true to skip downloading
+        debugModeAddToDB = False # true to skip adding to database
         #############################################
         
         url = request.args.get('url')

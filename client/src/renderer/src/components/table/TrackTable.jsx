@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input, ConfigProvider, Button, Flex } from 'antd';
 import { App } from 'antd';
-
+import './table.css'
 
 function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
