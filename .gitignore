@@ -21,3 +21,6 @@ server/TuneRipDatabase.db
 /oldcode
 oldcode/__pycache__/ansi_colors.cpython-313.pyc
 *.pyc
+/server/build
+*.exe
+*.spec

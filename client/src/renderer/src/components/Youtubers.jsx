@@ -118,7 +118,7 @@ const Youtubers = forwardRef((props, ref) => {
         setCardClicked(true);
         setIsTrack(true);
         setSearchURL(videosearchURL);
-      }else if (videosearchURL.includes('list=PL')){
+      }else if (videosearchURL.includes('playlist?list=')){
         setCardClicked(true);
         setSearchURL(videosearchURL);
       }else{

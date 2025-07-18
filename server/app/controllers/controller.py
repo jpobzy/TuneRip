@@ -75,8 +75,8 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = False # true to skip downloading
-        debugModeAddToDB = False # true to skip adding to database
+        debugModeSkipDownload = True # true to skip downloading
+        debugModeAddToDB = True # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
@@ -89,20 +89,20 @@ class controller():
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
 
-        if url and 'list=PL' in url:
+        if url and 'playlist?list=' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
 
             if subFolderName != None:
                 downloadPath = playlistRoute / subFolderName
             else:
-                downloadPath = playlistRoute / f'Playlist {playlist.title} by {playlist.owner}'
+                downloadPath = playlistRoute / f'Playlist {playlist.title}'
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
 
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {playlist.owner}' if albumTitle == None else albumTitle
+            albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
             trackNum = 1
 
             if Path(downloadPath).exists():
