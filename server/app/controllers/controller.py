@@ -75,8 +75,8 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = True # true to skip downloading
-        debugModeAddToDB = True # true to skip adding to database
+        debugModeSkipDownload = False # true to skip downloading
+        debugModeAddToDB = False # true to skip adding to database
         #############################################
         
         url = request.args.get('url')
@@ -88,6 +88,7 @@ class controller():
         artist = request.args.get('artist')
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
+        skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
@@ -115,7 +116,7 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -160,7 +161,7 @@ class controller():
 
             
             try:
-                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -210,7 +211,7 @@ class controller():
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
                     
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:

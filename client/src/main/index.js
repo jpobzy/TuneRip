@@ -1,7 +1,89 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import axios from 'axios'
+import log from 'electron-log';
+import { autoUpdater } from 'electron-updater';
+
+
+
+// #################### log section #########################
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
+autoUpdater.on('checking-for-update', () => log.info('Checking for updates...'));
+autoUpdater.on('update-available', (info) => log.info('Update available:', info.version));
+autoUpdater.on('update-not-available', (info) => log.info('No update available:', info.version));
+autoUpdater.on('error', (err) => log.error('Error in auto-updater:', err));
+autoUpdater.on('download-progress', (progress) => log.info(`Download speed: ${progress.bytesPerSecond}, Progress: ${progress.percent}%`));
+
+
+// #################### update section #########################
+let userAcknowledgedUpdate = false;
+
+autoUpdater.on('update-available', (info) => {
+  console.log('[Updater] Update available:', info.version);
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Available',
+    message: 'A new update is available. Downloading now...'
+  }).then(()=>{
+    userAcknowledgedUpdate = true
+  })
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('[Updater] Update downloaded:', info.version);
+  const waitForUserAck = () => {
+    if (userAcknowledgedUpdate){
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Update Ready',
+        message: 'Install & restart now?',
+        buttons: ['Yes', 'Later']
+      }).then(result => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall(); 
+        }
+      });    
+    }else {
+      setTimeout(waitForUserAck, 1000)
+    }
+  }
+  waitForUserAck();
+});
+
+// #################### server section #########################
+const { spawn } = require('child_process');
+const path = require('path');
+
+let flaskProcess;
+
+function startServer(){
+  const exePath = path.join(process.resourcesPath, 'server.exe');
+  // console.log('Starting Flask server at:', exePath);
+  flaskProcess = spawn(exePath);
+  flaskProcess.stdout.on('data', data => {
+    console.log(`Flask stdout: ${data.toString()}`);
+  });
+
+  flaskProcess.stderr.on('data', data => {
+    console.error(`Flask stderr: ${data.toString()}`);
+  });
+
+  flaskProcess.on('close', code => {
+    console.log(`Flask process exited with code ${code}`);
+  });
+
+  flaskProcess.on('error', err => {
+    console.error('Flask process failed:', err);
+  });
+
+  return 
+}
+
+// #################### app section #########################
 
 function createWindow() {
   // Create the browser window.
@@ -41,12 +123,21 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  // autoUpdater.check
+  if (app.isPackaged) {
+    ForUpdatesAndNotify();
+  } 
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  if (app.isPackaged){
+    startServer();
+  }
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -77,6 +168,21 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+app.on('before-quit', async (event) => {
+  if (app.isPackaged){
+    event.preventDefault(); 
+
+    try {
+      await axios.get('http://localhost:8080/killserver');
+      console.log('Server shutdown request sent');
+    } catch (err) {
+      console.error('Failed to kill server:', err);
+    }
+
+    app.exit();     
+  }
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

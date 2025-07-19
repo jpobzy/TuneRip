@@ -18,6 +18,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [subFolderInputValue, setSubFolderInputValue] = useState('')
+    const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
+
     const [form] = Form.useForm();
 
     const onFinish = async() => {
@@ -34,17 +36,16 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
 
 
     const toggleDefaultSettings = async (e) => {
-        
-
         setComponentDisabled(e.target.checked)
         if (e.target.checked === true){
             if (isTrack){
                     // form.setFieldValue({'': ''})
                     setDownloadSettings({})
             }else{
-                setDownloadSettings({"skipDownloadingPrevDownload": true})
+                setDownloadSettings({"skipDownloadingPrevDownload": true, "skipBeatsAndInstrumentals" : true})
                 setskipDownload(true)
                 setCreateSubfolder(false)
+                setSkipBeatsAndInstrumentals(true)
             }
             
             form.setFieldsValue({'album' : '', 'genre' : '', 'title' : '', 'artist' : '', 'dirname' : ''})
@@ -53,13 +54,12 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             // }
         }else{
             if (skipDownload && createSubfolder){
-                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': ''})
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }else if (skipDownload) {
-                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload})
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             } else if (createSubfolder){
-                setDownloadSettings({'subFolderName' : ''})
+                setDownloadSettings({'subFolderName' : '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }
-      
         }
     }
 
@@ -166,6 +166,19 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         })
     }
 
+    const setSkippingBeatsAndInstrumentals = (e) =>{
+        setSkipBeatsAndInstrumentals(e.target.checked)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            skipBeatsAndInstrumentals: e.target.checked
+        };
+        return newSettings;
+        })
+    }
+
+
+
     useEffect(()=>{
         if (isTrack){
             setskipDownload(false)
@@ -205,7 +218,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                    
                 
         }
-        <Form.Item style={{marginBottom : "10px"}}>
+
+        <Form.Item style={{marginBottom : "5px"}}>
             <Checkbox
                 checked={createSubfolder}
                 onChange={(e)=> setSubFolderSettings(e)}
@@ -230,6 +244,18 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             </div>
         }
         
+        {!isTrack &&
+            <Form.Item style={{marginBottom : "10px"}}>
+                <Checkbox
+                    checked={skipBeatsAndInstrumentals}
+                    onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
+                >
+                    Skip downloading beats and instrumental tracks
+                </Checkbox>             
+            </Form.Item>
+        }
+
+
         {isTrack && 
         <Form.Item 
             wrapperCol={{ span: 15}}
@@ -269,7 +295,6 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         </Form.Item>
 
       </Form>
-      {/* <Button onClick={()=> form.setFieldsValue({'dirname': ''})}>click me</Button> */}
     </div>
     );
 };

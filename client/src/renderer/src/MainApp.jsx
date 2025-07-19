@@ -15,13 +15,14 @@ import Crop from './components/crop/Crop';
 import { ToggleProvider } from './components/context/UseContext';
 import { useToggle } from './components/context/UseContext';
 import { useContext } from 'react';
+import { TourProvider } from './components/context/TourContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   const [showCards, setShowCards] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [page, setPage] = useState("Home");
-  // const [page, setPage] = useState("Settings");
+  // const [page, setPage] = useState("Home");
+  const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
   const handleChildClick = (data) => {
@@ -61,7 +62,11 @@ function MainApp() {
      
         {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
         {page === 'History' && <div className='mainApp'><History /></div>}
-        {page === 'Settings' && <Settings/>}
+        {page === 'Settings' && 
+          <TourProvider>
+            <Settings/> 
+          </TourProvider>
+        }
         {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
 
       { showDock &&

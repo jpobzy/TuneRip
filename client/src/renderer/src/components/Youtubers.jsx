@@ -2,7 +2,6 @@ import React, { forwardRef, useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
-import DownloadedShowcase from './downloadShowcase/DownloadedShowcase';
 import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
@@ -45,7 +44,7 @@ const Youtubers = forwardRef((props, ref) => {
     setChosenUser(username)
     setIsTrack(false);
     setPrevImg(users[username][1])
-    setDownloadSettings({'skipDownloadingPrevDownload': true})
+    setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true})
   }
 
   async function getUsers(){
@@ -231,6 +230,7 @@ const Youtubers = forwardRef((props, ref) => {
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
+      {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
     </div>
   )
 })
