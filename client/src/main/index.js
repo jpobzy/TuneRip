@@ -125,9 +125,10 @@ function createWindow() {
   }
 
   // autoUpdater.check
-  if (app.isPackaged) {
-    ForUpdatesAndNotify();
-  } 
+  // if (app.isPackaged) {
+  //   // ForUpdatesAndNotify();
+  //   autoUpdater.checkForUpdatesAndNotify();
+  // } 
 }
 
 
@@ -179,7 +180,6 @@ app.on('before-quit', async (event) => {
     } catch (err) {
       console.error('Failed to kill server:', err);
     }
-
     app.exit();     
   }
 });

@@ -6,11 +6,7 @@ import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, Question
 import { Flex, Tooltip } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 
-function Crop({src}){
-    
-    // const getImage = () => {
-    //     const data = axios.get('http://localhost:8080/getImage/BisenasTrackz')
-    // }
+function Crop(){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})

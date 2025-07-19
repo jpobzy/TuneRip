@@ -19,17 +19,10 @@ import { TourProvider } from './components/context/TourContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [showCards, setShowCards] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
-  // const [page, setPage] = useState("Home");
-  const [page, setPage] = useState("Settings");
+  const [page, setPage] = useState("Home");
   const ref = useRef(null);
 
-  const handleChildClick = (data) => {
-    console.log('Child said:', data);
-  };
-
-    const homeClicked = () => {
+  const homeClicked = () => {
     setPage('Home')
     if (ref.current){
       console.log('ref.current found')
@@ -38,11 +31,9 @@ function MainApp() {
     console.log('home clicked')
   }
 
-
-    const items = [
+  const items = [
     { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
-    // { icon: <VscAccount size={18} />, label: 'Profile', onClick: () => alert('Profile!') },
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
      { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
   ];
@@ -57,9 +48,6 @@ function MainApp() {
         amplitude={1.0}
         speed={0.5}
       />
-  
-
-     
         {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
         {page === 'History' && <div className='mainApp'><History /></div>}
         {page === 'Settings' && 
@@ -67,7 +55,7 @@ function MainApp() {
             <Settings/> 
           </TourProvider>
         }
-        {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
+        {page === 'Crop' && <Crop/>}
 
       { showDock &&
         <div className='dock-wrapper flex justify-center items-center '>
