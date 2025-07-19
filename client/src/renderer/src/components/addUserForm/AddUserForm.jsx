@@ -27,8 +27,7 @@ export default function AddUserForm({setSearchURL}) {
   }
 
   return (
-    <div>
-      <br />
+    <div className='searchbar'> 
       <form
         className="user-form"
         onSubmit={(e) => {

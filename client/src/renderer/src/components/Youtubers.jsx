@@ -6,15 +6,18 @@ import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
-import { message, Collapse } from 'antd';
+import { Collapse } from 'antd';
+import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
-import { Switch, Button } from 'antd';
+import { Switch, Button, Tooltip } from 'antd';
 import DownloadScreen from './downloadingScreen/DownloadScreen';
 import { useToggle } from './context/UseContext';
+import { QuestionOutlined } from '@ant-design/icons';
+import { useHomeContext } from './context/HomeContext';
 
 const Youtubers = forwardRef((props, ref) => {
-
+  const { message } = App.useApp();
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
@@ -33,6 +36,7 @@ const Youtubers = forwardRef((props, ref) => {
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
   const {showDock, setShowDock} = useToggle()
+  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef} = useHomeContext();
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -145,6 +149,8 @@ const Youtubers = forwardRef((props, ref) => {
 
 
     
+
+
   return (
     <div>
       {/* <br /> */}
@@ -197,14 +203,23 @@ const Youtubers = forwardRef((props, ref) => {
               <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
                 {/* Anything placed inside this container will be fade into view */
                 <div>
-                  <div className='-mt-40' >
-                    <AddUserForm 
-                    setSearchURL={downloadVideo}
-                    />
+                  <div className='relative'>
+                    <div className='flex -mt-[125px] justify-center '>
+                      <div className='inline-block' ref={searchBarRef}>
+                        <AddUserForm 
+                        setSearchURL={downloadVideo}
+                        />                        
+                      </div>
+                    </div>
+                    <div className='flex -mt-9 justify-center ml-[545px]'>
+                        <Tooltip title="help">
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setHomeTourEnabled(true)} />
+                        </Tooltip>                      
+                    </div>
                   </div>
                   <div>
                     {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
-                      <div className='user-container'>
+                      <div className='user-container inline-block' ref={userRef} >
                         { 
                         Object.entries(users).map((item, index) =>(
                           <YoutuberCard
@@ -226,7 +241,7 @@ const Youtubers = forwardRef((props, ref) => {
         )}
       </div>
       {Object.keys(users).length > 0  &&  !cardClicked && 
-        <div className='mt-[20px]'>
+        <div className='mt-[20px] inline-block' ref={deleteUserRef}>
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }

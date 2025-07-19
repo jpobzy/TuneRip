@@ -16,6 +16,7 @@ import { ToggleProvider } from './components/context/UseContext';
 import { useToggle } from './components/context/UseContext';
 import { useContext } from 'react';
 import { TourProvider } from './components/context/TourContext';
+import { HomeProvider } from './components/context/HomeContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
@@ -48,7 +49,14 @@ function MainApp() {
         amplitude={1.0}
         speed={0.5}
       />
-        {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
+        {page === 'Home' && 
+          <HomeProvider>
+            <div className='mainApp'>
+              <Youtubers ref={ref}/>
+            </div>           
+          </HomeProvider>
+        }
+
         {page === 'History' && <div className='mainApp'><History /></div>}
         {page === 'Settings' && 
           <TourProvider>

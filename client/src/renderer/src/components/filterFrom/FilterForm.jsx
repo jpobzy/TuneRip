@@ -6,8 +6,9 @@ import axios from 'axios';
 import { useTourContext } from '../context/TourContext';
 
 import { InboxOutlined } from '@ant-design/icons';
-import { message, Upload, Tooltip, Result} from 'antd';
+import { Upload, Tooltip, Result} from 'antd';
 import { QuestionOutlined } from '@ant-design/icons';
+import { App } from 'antd';
 
 export default function FilterForm({setRefresh}) {
   const { Search } = Input;
@@ -18,7 +19,7 @@ export default function FilterForm({setRefresh}) {
   const [filterError, setFilterError] = useState(false)
   const [responseData, setResponseData] = useState({})
   const {setEnableTour} = useTourContext();
-  
+  const { message } = App.useApp();	
   const { filterSearchBarRef, filterFilesRef } = useTourContext();
   
   async function onSearch(value) {

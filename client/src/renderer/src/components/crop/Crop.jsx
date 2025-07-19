@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
-import { Slider, message, Button, Divider, Space, Tour, InputNumber, ConfigProvider, Upload, Input } from 'antd';
+import { Slider, Button, Divider, Space, Tour, InputNumber, ConfigProvider, Upload, Input } from 'antd';
 import Cropper from "react-easy-crop";
 import axios from "axios";
 import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, QuestionCircleFilled, QuestionOutlined  } from '@ant-design/icons';
 import { Flex, Tooltip } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { App } from 'antd';
 
 function Crop(){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -19,7 +20,7 @@ function Crop(){
     const [blobURL, setBlobURL] = useState()
     const [fileData, setFileData] = useState()
     const [validFile, setValidFile] = useState(true)
-
+    const { message } = App.useApp();	
 
     const [open, setOpen] = useState(false);
     const steps = [

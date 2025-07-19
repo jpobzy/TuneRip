@@ -5,14 +5,14 @@ import MainApp from './MainApp'
 import { App as AntdApp } from "antd";
 import { ToggleProvider } from './components/context/UseContext';
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App> */}
     <AntdApp>
       <ToggleProvider>
-        <MainApp /> 
+         <MainApp />  
       </ToggleProvider>
-      
     </AntdApp>
     {/* </App> */}
    </StrictMode>

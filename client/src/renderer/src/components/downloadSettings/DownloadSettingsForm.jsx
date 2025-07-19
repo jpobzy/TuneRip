@@ -5,12 +5,11 @@ import {
     Popconfirm,
     Form,
     Input,
-    message,
     Space,
-    Col
+    Select
 } from 'antd'
 import axios from 'axios'
-
+import { App } from 'antd';
 
 
 function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload}){
@@ -19,7 +18,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [subFolderInputValue, setSubFolderInputValue] = useState('')
     const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
-
+    const [addToExistingPlaylist, setAddToExistingPlaylist] = useState(false)
+    const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
+    const { message } = App.useApp();	
     const [form] = Form.useForm();
 
     const onFinish = async() => {
@@ -137,6 +138,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     }
 
     const setSubFolderSettings = (e) => {
+        setAddToExistingPlaylist(false)
         setCreateSubfolder(e.target.checked)
         setSubFolderInputValue('')
 
@@ -178,12 +180,34 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     }
 
 
+    const getExistingPlaylists = async ()=>{
+        const req = await axios.get('http://localhost:8080/getexistingplaylists');
+        // console.log(`req is: ${JSON.stringify(req.data)}`)
+        setExistingPlaylistNames(req.data)
+    }
+
+    const handleAddToExistingPlaylist = (e) => {
+        setCreateSubfolder(false)
+        setAddToExistingPlaylist(e.target.checked)
+    }
+
+    const setAddToExistingPlaylistSettings = (e) =>{
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            addToExistingPlaylistSettings: e
+        };
+        return newSettings;
+        })
+    }
+
 
     useEffect(()=>{
         if (isTrack){
             setskipDownload(false)
         }
-    })
+        getExistingPlaylists();
+    }, [])
 
     return (
         <div className='download-form '>
@@ -205,7 +229,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
 
             
 
-
+        {/* ############################## SKIP DOWNLOADING PREV DOWNLOADED TRACKS ################################ */}
         {!isTrack &&
             <Form.Item style={{marginBottom: "0px"}}>
                 <Checkbox
@@ -219,6 +243,47 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                 
         }
 
+        {/* ############################## SKIP DOWNLOADING BEATS AND INSTRUMENTALS ################################ */}
+        {!isTrack &&
+            <Form.Item style={{marginBottom : "0px"}}>
+                <Checkbox
+                    checked={skipBeatsAndInstrumentals}
+                    onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
+                >
+                    Skip downloading beats and instrumental tracks
+                </Checkbox>             
+            </Form.Item>
+        }
+    
+    
+        {/* ############################## ADD TRACK TO EXISTING PLAYLISTS ################################ */}   
+        <Form.Item style={{marginBottom : "0px"}}>
+            <Checkbox
+                checked={addToExistingPlaylist}
+                onChange={(e)=> handleAddToExistingPlaylist(e)}
+            >
+                {isTrack ? 
+                'Add track to exisiting playlist' : 
+                'Add tracks to exisiting playlist'
+                }
+            </Checkbox>             
+        </Form.Item>
+
+        {addToExistingPlaylist &&
+            <Form.Item>
+                <Select
+                    defaultValue=""
+                    style={{ width: 120 }}
+                    onChange={(e) => setAddToExistingPlaylistSettings(e)}
+                    options={existingPlaylistNames}
+                />        
+            </Form.Item>    
+        }
+
+
+
+
+        {/* ############################## ADD TRACKS TO A NEW SUBFOLDER ################################ */}   
         <Form.Item style={{marginBottom : "5px"}}>
             <Checkbox
                 checked={createSubfolder}
@@ -243,19 +308,8 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                 </Form.Item>                
             </div>
         }
-        
-        {!isTrack &&
-            <Form.Item style={{marginBottom : "10px"}}>
-                <Checkbox
-                    checked={skipBeatsAndInstrumentals}
-                    onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
-                >
-                    Skip downloading beats and instrumental tracks
-                </Checkbox>             
-            </Form.Item>
-        }
 
-
+        {/* ############################## CHANGE INDIVIDUAL TRACK TITLE ################################ */}   
         {isTrack && 
         <Form.Item 
             wrapperCol={{ span: 15}}
@@ -266,6 +320,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
           <Input placeholder='Default: <Video title>'/>
         </Form.Item>
         }
+
 
         <Form.Item 
             wrapperCol={{ span: 15}}

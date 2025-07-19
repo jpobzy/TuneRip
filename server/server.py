@@ -27,6 +27,7 @@ controller_obj = controller(app.config['DATABASE_FOLDER'])
 
 @app.route("/")
 def hello_world():
+    print('root')
     return "hello world"
 
 
@@ -207,6 +208,14 @@ def getAlbumTitles():
     """
     return jsonify(controller_obj.getAlbumTitles())
 
+
+@app.get('/getexistingplaylists')
+def getExistingPlaylists():
+    """
+    Returns a list of dicts for the existing playlists
+    format:  { value: 'jack', label: 'Jack' },
+    """
+    return jsonify(controller_obj.getPlaylistDirNames())
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

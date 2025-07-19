@@ -78,7 +78,7 @@ class controller():
         debugModeSkipDownload = False # true to skip downloading
         debugModeAddToDB = False # true to skip adding to database
         #############################################
-        
+        print(f'request is: {request.args}')
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
@@ -89,6 +89,8 @@ class controller():
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
         skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
+        addToExistingPlaylist = request.args.get('addToExistingPlaylistSettings')
+
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
@@ -97,7 +99,10 @@ class controller():
             if subFolderName != None:
                 downloadPath = playlistRoute / subFolderName
             else:
-                downloadPath = playlistRoute / f'Playlist {playlist.title}'
+                if addToExistingPlaylist != None:
+                    downloadPath = playlistRoute / addToExistingPlaylist
+                else:
+                    downloadPath = playlistRoute / f'Playlist {playlist.title}'
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
@@ -149,7 +154,10 @@ class controller():
                 if not Path(downloadPath).exists():
                     os.mkdir(downloadPath)
             else:
-                downloadPath = self.projRoot / f"downloads/customTracks"
+                if addToExistingPlaylist != None:
+                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                else:
+                    downloadPath = self.projRoot / f"downloads/customTracks"
 
             
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
@@ -198,7 +206,10 @@ class controller():
                 if not Path(downloadPath).exists():
                     os.mkdir(downloadPath)
             else:
-                downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
+                if addToExistingPlaylist != None:
+                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                else:
+                    downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
 
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -496,3 +507,14 @@ class controller():
         """
         return self.db.getAlbumTitles()
     
+    def getPlaylistDirNames(self):
+        """
+        returns a list of dict for playlists, this is for the download settings on the front end
+        format: { value: 'jack', label: 'Jack' },
+        """
+        path = Path(self.projRoot / 'downloads/Playlists')
+        res = []
+        for i in path.iterdir():
+            playlistDirName =str(i).rsplit('\\', 1)[1] 
+            res.append({'value': playlistDirName, 'label': playlistDirName})
+        return res

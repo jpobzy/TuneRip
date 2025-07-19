@@ -1,9 +1,11 @@
 import React from 'react';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, message, Upload } from 'antd';
+import { Button, Upload } from 'antd';
 import './uploadButton.css'
+import { App } from 'antd';
 
 export default function UploadButton({refresh}){
+    const { message } = App.useApp();	
     const props = {
     name: 'file',
     multiple: true,
