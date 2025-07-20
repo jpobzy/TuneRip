@@ -3,7 +3,7 @@ import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button, Tour  } from 'antd';
 import './FilterForm.css'
 import axios from 'axios';
-import { useTourContext } from '../context/TourContext';
+import { useTourContext } from '../context/SettingsTourContext';
 
 import { InboxOutlined } from '@ant-design/icons';
 import { Upload, Tooltip, Result} from 'antd';
@@ -18,7 +18,7 @@ export default function FilterForm({setRefresh}) {
   const [filterSuccess, setFilterSuccess] = useState(false)
   const [filterError, setFilterError] = useState(false)
   const [responseData, setResponseData] = useState({})
-  const {setEnableTour} = useTourContext();
+  const {setEnableTour, setcurrStep} = useTourContext();
   const { message } = App.useApp();	
   const { filterSearchBarRef, filterFilesRef } = useTourContext();
   
@@ -155,7 +155,7 @@ export default function FilterForm({setRefresh}) {
                     </div>
                     <div className='flex -ml-[40px]'>
                         <Tooltip title="help">
-                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setEnableTour(true)}/>
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setEnableTour(true), setcurrStep(0)}}/>
                         </Tooltip>    
                     </div>
                 </div>

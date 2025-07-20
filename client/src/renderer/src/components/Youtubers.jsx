@@ -218,7 +218,7 @@ const Youtubers = forwardRef((props, ref) => {
                     </div>
                   </div>
                   <div>
-                    {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
+                    {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>TuneRip</h1>}
                       <div className='user-container inline-block' ref={userRef} >
                         { 
                         Object.entries(users).map((item, index) =>(

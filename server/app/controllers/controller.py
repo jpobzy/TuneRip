@@ -10,6 +10,8 @@ import time, queue, time
 from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, TRCK
 
 class controller():
     def __init__(self, databaseFolderRoute):
@@ -512,9 +514,43 @@ class controller():
         returns a list of dict for playlists, this is for the download settings on the front end
         format: { value: 'jack', label: 'Jack' },
         """
-        path = Path(self.projRoot / 'downloads/Playlists')
+        path = Path(self.projRoot / 'downloads/playlists')
         res = []
         for i in path.iterdir():
             playlistDirName =str(i).rsplit('\\', 1)[1] 
             res.append({'value': playlistDirName, 'label': playlistDirName})
         return res
+    
+    def getAllFolderNamesInDownloads(self):
+        res = []
+        for i in Path(self.projRoot / 'downloads').rglob("**/*"):
+            if Path(i).is_dir():
+                folderName = str(i).split('TuneRip\\downloads\\')[1].replace('\\', '/')
+                if folderName != 'playlists':
+                    res.append({'value': folderName, 'label': folderName})
+        return res
+    
+    def refactorPlaylist(self, request):
+        for playlist in request['playlist']:
+            playlistPath = Path(self.projRoot / 'downloads' / playlist)
+            if not playlistPath.exists():
+                return 'Path not found', 404
+            else:
+                print(playlistPath)
+                trackList = []
+                for path in playlistPath.iterdir():
+                    audio = MP3(path, ID3=ID3)
+                    trackList.append((int(str(audio['TRCK'])), path))
+
+
+                sortedTrackList = sorted(trackList, key=lambda x: x[0])
+                trackNum = 1
+
+                for num, path in sortedTrackList:
+                    print(num, trackNum, path)
+                    if num != trackNum:
+                        audio = MP3(path, ID3=ID3)
+                        audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
+                        audio.save()
+                    trackNum += 1
+                return "Success", 200

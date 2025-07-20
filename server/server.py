@@ -201,7 +201,7 @@ def crop():
         return controller_obj.crop(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
 
 
-@app.route("/getalbumtitles")
+@app.get("/getalbumtitles")
 def getAlbumTitles():
     """
     Sends all album titles from tracks db 
@@ -216,6 +216,26 @@ def getExistingPlaylists():
     format:  { value: 'jack', label: 'Jack' },
     """
     return jsonify(controller_obj.getPlaylistDirNames())
+
+@app.get('/getallfoldernamesindownloads')
+def getAllFolderNamesInDownloads():
+    """
+    Returns a list of dicts for ALL the names of folders in downloads
+    format:  { value: 'jack', label: 'Jack' },
+    """
+    return jsonify(controller_obj.getAllFolderNamesInDownloads())
+
+
+@app.post('/refactor')
+def refactor():
+    """
+    Go through each track in the given playlist and confirm the track number is correct
+    """
+    return controller_obj.refactorPlaylist(json.loads(request.data))
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

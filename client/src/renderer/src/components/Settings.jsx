@@ -3,7 +3,8 @@ import TrackTable from "./table/TrackTable";
 import { useState } from "react";
 import { Tooltip, Button } from "antd";
 import { QuestionOutlined } from '@ant-design/icons';
-import { useTourContext } from "./context/TourContext";
+
+import RefactorTracks from "./refactor/RefactorTracks";
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
     const [currentStep, setCurrentStep] = useState(0)
@@ -20,7 +21,11 @@ function Settings(){
                 </div>
                 <div className="mt-[30px]">
                     <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-                </div>                    
+                </div>        
+                <div>
+                    <RefactorTracks />
+                </div>            
+
             </div>
         </div>
     )

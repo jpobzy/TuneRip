@@ -23,18 +23,6 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const { message } = App.useApp();	
     const [form] = Form.useForm();
 
-    const onFinish = async() => {
-        const res = await fetch('http://localhost:8080/changeDownloadSettings', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({data: downloadSettings})
-        });
-        if (res.status == 200){
-            message.success('Default Settings Updated!');
-        }
-    };
-
-
 
     const toggleDefaultSettings = async (e) => {
         setComponentDisabled(e.target.checked)
@@ -223,7 +211,6 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         disabled={componentDisabled}
         style={{ maxWidth: 600 }}
         // initialValues={{remember: true}}
-        onFinish={onFinish}
         autoComplete='off'
         >
 
@@ -273,7 +260,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             <Form.Item>
                 <Select
                     defaultValue=""
-                    style={{ width: 120 }}
+                    style={{ width: 400 }}
                     onChange={(e) => setAddToExistingPlaylistSettings(e)}
                     options={existingPlaylistNames}
                 />        

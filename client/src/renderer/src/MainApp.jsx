@@ -14,8 +14,7 @@ import Settings from './components/Settings'
 import Crop from './components/crop/Crop';
 import { ToggleProvider } from './components/context/UseContext';
 import { useToggle } from './components/context/UseContext';
-import { useContext } from 'react';
-import { TourProvider } from './components/context/TourContext';
+import { TourProvider } from './components/context/SettingsTourContext';
 import { HomeProvider } from './components/context/HomeContext';
 
 function MainApp() {

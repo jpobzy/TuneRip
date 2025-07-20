@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
 import { App } from 'antd';
 import './table.css'
-import { useTourContext } from '../context/TourContext';
+import { useTourContext } from '../context/SettingsTourContext';
 
 function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
