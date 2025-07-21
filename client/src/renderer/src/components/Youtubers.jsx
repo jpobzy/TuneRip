@@ -37,6 +37,7 @@ const Youtubers = forwardRef((props, ref) => {
   const [skipDownload, setskipDownload] = useState(false);
   const {showDock, setShowDock} = useToggle()
   const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef} = useHomeContext();
+  const [prevPlaylistArt, setPrevPlaylistArt] = useState([])
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -136,7 +137,7 @@ const Youtubers = forwardRef((props, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload}/>
+    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
   }];
 
 
@@ -195,8 +196,7 @@ const Youtubers = forwardRef((props, ref) => {
             </div>      
           }
 
-
-          </div>
+           </div>
           )
         ) : (
           <div >

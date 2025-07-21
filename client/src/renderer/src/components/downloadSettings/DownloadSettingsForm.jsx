@@ -12,8 +12,8 @@ import axios from 'axios'
 import { App } from 'antd';
 
 
-function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload}){
-    const [componentDisabled, setComponentDisabled] = useState(true);
+function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
+    const [componentDisabled, setComponentDisabled] = useState(false);
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [subFolderInputValue, setSubFolderInputValue] = useState('')
@@ -23,11 +23,13 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const { message } = App.useApp();	
     const [form] = Form.useForm();
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
+    const [albumTitleValue, setAlbumTitleValue] = useState('')
 
 
     const toggleDefaultSettings = async (e) => {
         setComponentDisabled(e.target.checked)
         if (e.target.checked === true){
+            setPrevPlaylistArt('')
             if (isTrack){
                     // form.setFieldValue({'': ''})
                     setDownloadSettings({})
@@ -43,6 +45,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             //     form.setFieldValue({'': ''})
             // }
         }else{
+           
             if (skipDownload && createSubfolder){
                 setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }else if (skipDownload) {
@@ -73,9 +76,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                trackTitle: e.target.value 
+                trackTitle: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['trackTitle'];
             }   
             return newSettings;
@@ -86,9 +89,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                artist: e.target.value 
+                artist: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['artist'];
             }   
             return newSettings;
@@ -101,9 +104,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                genre: e.target.value 
+                genre: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['genre'];
             }   
             return newSettings;
@@ -117,9 +120,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                album: e.target.value 
+                album: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['album'];
             }   
             return newSettings;
@@ -151,7 +154,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
         const newSettings = {
             ...prev,
-            subFolderName: e.target.value
+            subFolderName: e
         };
         return newSettings;
         })
@@ -181,20 +184,44 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     }
 
     const setAddToExistingPlaylistSettings = (label, value) =>{
-        console.log(label, value)
-        // setChosenPlaylistSetting(e)
-        // setDownloadSettings(prev => {
-        // const newSettings = {
-        //     ...prev,
-        //     addToExistingPlaylistSettings: e
-        // };
-        // return newSettings;
-        // })
+        // console.log(label, value)
+        setChosenPlaylistSetting(value.value)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            addToExistingPlaylistSettings: value.value
+        };
+        return newSettings;
+        })
     }
 
     const getPlaylistData = async() => {
-        console.log(chosenPlaylistSetting)
-        // const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {'playlist' : chosenPlaylistSetting})
+        // console.log(chosenPlaylistSetting)
+        const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {params: {playlist : chosenPlaylistSetting}})
+        
+        if (getPlaylistData.data.album){
+            const albumData = getPlaylistData.data.album
+            form.setFieldsValue({'album': albumData})
+            setAlbum(albumData)            
+        }
+
+        if (getPlaylistData.data.genreData){
+            const genreData = getPlaylistData.data.genre
+            form.setFieldsValue({'genre': genreData})
+            setGenre(genreData)            
+        }
+
+        if (getPlaylistData.data.artist){
+            const artistData = getPlaylistData.data.artist
+            form.setFieldsValue({'artist': artistData})
+            setArtist(artistData)            
+        }
+
+        if (getPlaylistData.data.coverArtFile){
+            setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
+        }
+        console.log(getPlaylistData.data)
+        
     }
 
     useEffect(()=>{
@@ -298,7 +325,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                     wrapperCol={{ span: 15}}
                     label="Subfolder name"
                     name="dirname"
-                    onChange={(e) => setSubfolder(e)}
+                    onChange={(e) => setSubfolder(e.target.value)}
                     >
                 <Input 
                 placeholder='Default: Album Title' />
@@ -312,7 +339,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="TrackTitle"
             name="title"
-            onChange={(e) => setTitle(e)}
+            onChange={(e) => setTitle(e.target.value)}
             >
           <Input placeholder='Default: <Video title>'/>
         </Form.Item>
@@ -323,7 +350,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="Artist"
             name="artist"
-            onChange={(e) => setArtist(e)}
+            onChange={(e) => setArtist(e.target.value)}
             >
           <Input placeholder='Default: Youtube Music' />
         </Form.Item>
@@ -332,7 +359,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="Genre"
             name="genre"
-            onChange={(e) => setGenre(e)}
+            onChange={(e) => setGenre(e.target.value)}
             >
           <Input placeholder='Default: None'/>
         </Form.Item>
@@ -341,11 +368,13 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="Album Title"
             name="album"
-            onChange={(e) => setAlbum(e)}
+            
             >
-          <Input placeholder='Default: YouTube Album Prod <YT channel>' />
+          <Input 
+            placeholder='Default: YouTube Album Prod <YT channel>' 
+            onChange={(e) => setAlbum(e.target.value)}
+            />
         </Form.Item>
-
       </Form>
     </div>
     );

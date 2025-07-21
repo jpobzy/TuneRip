@@ -214,6 +214,8 @@ def refactor():
 
 @app.get('/getplaylistdata')
 def getPlaylistData():
+    print(request.args.get('playlist'))
+    # return 'ok', 200
     return jsonify(controller_obj.getPlaylistData(request))
 
 

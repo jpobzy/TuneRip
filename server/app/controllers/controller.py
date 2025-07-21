@@ -515,9 +515,15 @@ class controller():
         """
         path = Path(self.projRoot / 'downloads/playlists')
         res = []
-        for i in path.iterdir():
-            playlistDirName =str(i).rsplit('\\', 1)[1] 
-            res.append({'value': playlistDirName, 'label': playlistDirName})
+        for playlistPaths in path.iterdir():
+            # print(i)
+            # playlistDirName = str(i).rsplit('\\', 1)[1] 
+            # res.append({'value': playlistDirName, 'label': playlistDirName})
+            if playlistPaths.is_dir():
+                splicedPath = playlistPaths.parts
+                playlistIndex = splicedPath.index('playlists')
+                playlistFolderName = ''.join(splicedPath[playlistIndex+1:])
+                res.append({'value': playlistFolderName, 'label': playlistFolderName})
         return res
     
     def getAllFolderNamesInDownloads(self):
@@ -554,6 +560,30 @@ class controller():
                 return "Success", 200
 
     def getPlaylistData(self, request):
-        print(request.query_string)
-        print(request.data)
-        return 
+        playlist = request.args.get('playlist')
+        playlistPath =  Path(self.projRoot / 'downloads/playlists' / playlist)
+        res = {}
+        for track in playlistPath.iterdir():
+            if track.suffix == '.mp3':
+                audio = MP3(track, ID3=ID3)
+                # coverAlbumFile = str(audio['COMM::XXX']).replace(str(Path(self.projRoot)), '')
+                coverArtFile = str(audio['COMM::XXX']).split('/TuneRip/server/static/albumCovers/')[1]
+                if Path(str(audio['COMM::XXX'])).exists():
+                    res['coverArtFile'] = coverArtFile
+
+                artist = str(audio['TPE1'])
+                album = str(audio['TALB'])
+                if 'TCON' in audio:
+                    genre = audio['TCON']
+                    res['genre'] = genre
+
+                res['artist'] = artist
+                res['album'] = album
+                
+                break
+                
+        return res
+    
+
+
+
