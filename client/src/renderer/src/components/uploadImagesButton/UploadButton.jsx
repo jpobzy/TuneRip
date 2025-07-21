@@ -1,9 +1,11 @@
 import React from 'react';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, message, Upload } from 'antd';
+import { Button, Upload } from 'antd';
 import './uploadButton.css'
+import { App } from 'antd';
 
 export default function UploadButton({refresh}){
+    const { message } = App.useApp();	
     const props = {
     name: 'file',
     multiple: true,
@@ -12,9 +14,6 @@ export default function UploadButton({refresh}){
       authorization: 'authorization-text',
     },
     onChange(info) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
       if (info.file.status === 'done') {
         message.success(`${info.file.name} file uploaded successfully`);
         refresh?.()

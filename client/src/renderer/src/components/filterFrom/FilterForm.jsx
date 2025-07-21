@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserOutlined, AudioOutlined } from '@ant-design/icons';
-import { Input, ConfigProvider, Button } from 'antd';
+import { Input, ConfigProvider, Button, Tour  } from 'antd';
 import './FilterForm.css'
 import axios from 'axios';
+import { useTourContext } from '../context/SettingsTourContext';
 
 import { InboxOutlined } from '@ant-design/icons';
-import { message, Upload, Collapse, Result} from 'antd';
-
+import { Upload, Tooltip, Result} from 'antd';
+import { QuestionOutlined } from '@ant-design/icons';
+import { App } from 'antd';
 
 export default function FilterForm({setRefresh}) {
   const { Search } = Input;
@@ -16,13 +18,14 @@ export default function FilterForm({setRefresh}) {
   const [filterSuccess, setFilterSuccess] = useState(false)
   const [filterError, setFilterError] = useState(false)
   const [responseData, setResponseData] = useState({})
-
+  const {setEnableTour, setcurrStep} = useTourContext();
+  const { message } = App.useApp();	
+  const { filterSearchBarRef, filterFilesRef } = useTourContext();
+  
   async function onSearch(value) {
     if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
         setLoading(true)
-
-
-      const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
+        const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
         
 
       if (response.status === 200 || response.status === 304) {
@@ -75,96 +78,100 @@ export default function FilterForm({setRefresh}) {
   return (
     <div>
       <br />
-      <button onClick={()=> setRefresh(true)}>
-        click me
-      </button>
-
-            {filterSuccess ?
+        {filterSuccess ?
+            <Result
+            status="success"
+            title="Tracks were added to filter!"
+            // subTitle={`${responseData.data.message}`}
+            extra={[
+            <Button type="primary" onClick={()=> setFilterSuccess(false)}>Go back</Button>,
+            ]}
+            /> : filterError ? 
+            <div className='bg-white rounded-lg mx-auto w-[800px]'>
                 <Result
-                status="success"
-                title="Tracks were added to filter!"
-                // subTitle={`${responseData.data.message}`}
-                extra={[
-                <Button type="primary" onClick={()=> setFilterSuccess(false)}>Go back</Button>,
-                ]}
-                /> : filterError ? 
-                <div className='bg-white rounded-lg mx-auto w-[800px]'>
-                    <Result
-                        status="error"
-                        title="Submission Failed"
-                        subTitle={`${responseData.data.message}`}
-                        extra={[
-                            <Button type="primary" onClick={()=> setFilterError(false)}>Go back</Button>,
-                        ]}
-                    />
-                </div>
-                :
-                <div>
-                    <form
-                        className="filter-form"
-                        onSubmit={(e) => {
-                        e.preventDefault(); // prevent form submission reload
-                        onSearch(user);
-                        }}
-                    >
-                        <label>
-                        <ConfigProvider
-                            theme={{
-                            components: {
-                                Input: {
-                                colorBgContainer: 'rgb(255, 255, 255)', // idle background
-                                colorText: 'rgb(8, 1, 1)', // input text color
-                                colorTextPlaceholder: 'rgb(5, 0, 0)', // placeholder color
-                                },
-                                Button: {
-                                defaultBg: 'rgba(255, 255, 255, 0.94)',
-                                defaultBorderColor: '#6c757d',
-                                defaultColor: 'rgb(247, 244, 244)',
-                                defaultHoverColor: 'red', // example hover text color\
-                                },
-                            },
+                    status="error"
+                    title="Submission Failed"
+                    subTitle={`${responseData.data.message}`}
+                    extra={[
+                        <Button type="primary" onClick={()=> setFilterError(false)}>Go back</Button>,
+                    ]}
+                />
+            </div>
+            :
+            <div >
+                <div className='flex justify-center items-center space-x-0'>
+                    <div className='justify-center '>
+                        <form
+                            className="filter-form"
+                            onSubmit={(e) => {
+                            e.preventDefault(); // prevent form submission reload
+                            onSearch(user);
                             }}
                         >
-                            <Search
-                            
-                            placeholder="Paste Youtube Video URL to filter Here"
-                            allowClear={true}
-                            enterButton={
-                                <Button
-                                className="custom-search-btn"
-                                variant="solid"
-                                loading={loading}
-                                >
-                                Search
-                                </Button>
-                            }
-                            size="large"
-                            value={user}
-                            onChange={(e) => setUser(e.target.value)}
-                            onSearch={onSearch}
-                            disabled={loading}
-                            prefix={<UserOutlined />}
-                            style={{ width: 500 }}
-                            
-                            
-                            />
-                        </ConfigProvider>          
-                        </label>
-                    </form>
-                    
-                    <div className='mx-auto w-[500px] mt-[20px]'>
-                        <Dragger {...props}>
-                            <p className="ant-upload-drag-icon">
-                            <InboxOutlined />
-                            </p>
-                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                            <p className="ant-upload-hint">
-                            Support for a single or bulk upload. 
-                            </p>
-                        </Dragger>
+                            <label>
+                            <ConfigProvider
+                                theme={{
+                                components: {
+                                    Input: {
+                                    colorBgContainer: 'rgb(255, 255, 255)', // idle background
+                                    colorText: 'rgb(8, 1, 1)', // input text color
+                                    colorTextPlaceholder: 'rgb(5, 0, 0)', // placeholder color
+                                    },
+                                    Button: {
+                                    defaultBg: 'rgba(255, 255, 255, 0.94)',
+                                    defaultBorderColor: '#6c757d',
+                                    defaultColor: 'rgb(247, 244, 244)',
+                                    defaultHoverColor: 'red', // example hover text color\
+                                    },
+                                },
+                                }}
+                            >
+                                <div ref={filterSearchBarRef} className='inline-block mr-[50px]'>
+                                    <Search
+                                    placeholder="Paste Youtube Video URL to filter Here"
+                                    allowClear={true}
+                                    enterButton={
+                                        <Button
+                                        className="custom-search-btn"
+                                        variant="solid"
+                                        loading={loading}
+                                        >
+                                        Search
+                                        </Button>
+                                    }
+                                    size="large"
+                                    value={user}
+                                    onChange={(e) => setUser(e.target.value)}
+                                    onSearch={onSearch}
+                                    disabled={loading}
+                                    prefix={<UserOutlined />}
+                                    style={{ width: 450 }}
+                                    />
+                                </div>
+
+                            </ConfigProvider>          
+                            </label>
+                        </form>                    
+                    </div>
+                    <div className='flex -ml-[40px]'>
+                        <Tooltip title="help">
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setEnableTour(true), setcurrStep(0)}}/>
+                        </Tooltip>    
                     </div>
                 </div>
-            }
+                <div className='mx-auto w-[500px] mt-[20px] inline-block' ref={filterFilesRef}>
+                    <Dragger {...props}>
+                        <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                        <p className="ant-upload-hint">
+                        Support for a single or bulk upload. 
+                        </p>
+                    </Dragger>
+                </div>
+            </div>
+        }
             
 
      

@@ -12,21 +12,17 @@ import History from './components/history/History'
 import { useRef, } from 'react'
 import Settings from './components/Settings'
 import Crop from './components/crop/Crop';
-
+import { ToggleProvider } from './components/context/UseContext';
+import { useToggle } from './components/context/UseContext';
+import { TourProvider } from './components/context/SettingsTourContext';
+import { HomeProvider } from './components/context/HomeContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [showCards, setShowCards] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
   const [page, setPage] = useState("Home");
-  // const [page, setPage] = useState("Settings");
   const ref = useRef(null);
 
-  const handleChildClick = (data) => {
-    console.log('Child said:', data);
-  };
-
-    const homeClicked = () => {
+  const homeClicked = () => {
     setPage('Home')
     if (ref.current){
       console.log('ref.current found')
@@ -35,14 +31,14 @@ function MainApp() {
     console.log('home clicked')
   }
 
-
-    const items = [
+  const items = [
     { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
-    // { icon: <VscAccount size={18} />, label: 'Profile', onClick: () => alert('Profile!') },
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
      { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
   ];
+
+  const {showDock} = useToggle()
 
   return (
     <div className='wrapper'>
@@ -52,23 +48,34 @@ function MainApp() {
         amplitude={1.0}
         speed={0.5}
       />
-      {page === 'Home' && <div className='mainApp'><Youtubers ref={ref}/></div>}
-      {page === 'History' && <div className='mainApp'><History /></div>}
-      {page === 'Settings' && <Settings/>}
-      {page === 'Crop' && <Crop src={'http://localhost:8080/getAlbumCovers/32.jpg'}/>}
+        {page === 'Home' && 
+          <HomeProvider>
+            <div className='mainApp'>
+              <Youtubers ref={ref}/>
+            </div>           
+          </HomeProvider>
+        }
 
-    {
-      <div className='dock-wrapper flex justify-center items-center '>
-        <Dock
-          className='custom-dock'
-          items={items}
-          panelHeight={68}
-          baseItemSize={50}
-          magnification={70}
-        /> 
-        
-      </div>
-    }
+        {page === 'History' && <div className='mainApp'><History /></div>}
+        {page === 'Settings' && 
+          <TourProvider>
+            <Settings/> 
+          </TourProvider>
+        }
+        {page === 'Crop' && <Crop/>}
+
+      { showDock &&
+        <div className='dock-wrapper flex justify-center items-center '>
+          <Dock
+            className='custom-dock'
+            items={items}
+            panelHeight={68}
+            baseItemSize={50}
+            magnification={70}
+          /> 
+        </div>
+      }
+
     </div>
   )
 }

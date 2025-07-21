@@ -2,19 +2,22 @@ import React, { forwardRef, useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
-import DownloadedShowcase from './downloadShowcase/DownloadedShowcase';
 import AddUserForm from './addUserForm/AddUserForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
-import { message, Collapse } from 'antd';
+import { Collapse } from 'antd';
+import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
-import { Switch } from 'antd';
+import { Switch, Button, Tooltip } from 'antd';
 import DownloadScreen from './downloadingScreen/DownloadScreen';
+import { useToggle } from './context/UseContext';
+import { QuestionOutlined } from '@ant-design/icons';
+import { useHomeContext } from './context/HomeContext';
 
 const Youtubers = forwardRef((props, ref) => {
-
+  const { message } = App.useApp();
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
@@ -32,7 +35,11 @@ const Youtubers = forwardRef((props, ref) => {
   const [loading, setLoading] = useState(true)
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
-  
+  const {showDock, setShowDock} = useToggle()
+  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef} = useHomeContext();
+  const [prevPlaylistArt, setPrevPlaylistArt] = useState([])
+  const [isUser, setIsUser] = useState(false)
+
   useImperativeHandle(ref, () => ({
     resetAll
   }));
@@ -43,7 +50,8 @@ const Youtubers = forwardRef((props, ref) => {
     setChosenUser(username)
     setIsTrack(false);
     setPrevImg(users[username][1])
-    setDownloadSettings({'skipDownloadingPrevDownload': true})
+    setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true})
+    setIsUser(true)
   }
 
   async function getUsers(){
@@ -55,6 +63,7 @@ const Youtubers = forwardRef((props, ref) => {
 
   const handleAlbumCoverClicked = async(file) =>{
     setLoading(true)
+    setShowDock(false)
     setCoverChosen(file);
     setAlbumCoverChosen(true);
     try{
@@ -67,22 +76,21 @@ const Youtubers = forwardRef((props, ref) => {
 
       if (response.status === 207){
         setLoading(false)
+        setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }else if (response.status === 200){
         setLoading(false)
+        setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }
     }catch (err){
-      console.log('error:')
-      console.log(err)
-      console.log(err.response.data.message)
       setLoading(false)
+      setShowDock(true)
       setResponseData(
-        // {'data': {'message': 'Something in the backend failed, please check the logs in the debug folder'}, 'statusCode': 400}
          {'data': {'message': err.response.data.message}, 'statusCode': err.status}
       )      
     }  
@@ -116,9 +124,12 @@ const Youtubers = forwardRef((props, ref) => {
         setCardClicked(true);
         setIsTrack(true);
         setSearchURL(videosearchURL);
-      }else if (videosearchURL.includes('list=PL')){
+        setIsUser(false)
+      }else if (videosearchURL.includes('playlist?list=')){
         setCardClicked(true);
         setSearchURL(videosearchURL);
+        setIsUser(false)
+        setIsTrack(false);
       }else{
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
@@ -131,7 +142,7 @@ const Youtubers = forwardRef((props, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload}/>
+    children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
   }];
 
 
@@ -141,7 +152,11 @@ const Youtubers = forwardRef((props, ref) => {
     getUsers();
     setEditImgCard(false)
   }, []);
+
+
     
+
+
   return (
     <div>
       {/* <br /> */}
@@ -186,22 +201,30 @@ const Youtubers = forwardRef((props, ref) => {
             </div>      
           }
 
-
-          </div>
+           </div>
           )
         ) : (
           <div >
               <FadeContent  blur={true} duration={2000} easing="ease-out" initialOpacity={0}>
                 {/* Anything placed inside this container will be fade into view */
                 <div>
-                  <div className='-mt-40' >
-                    <AddUserForm 
-                    setSearchURL={downloadVideo}
-                    />
+                  <div className='relative'>
+                    <div className='flex -mt-[125px] justify-center '>
+                      <div className='inline-block' ref={searchBarRef}>
+                        <AddUserForm 
+                        setSearchURL={downloadVideo}
+                        />                        
+                      </div>
+                    </div>
+                    <div className='flex -mt-9 justify-center ml-[545px]'>
+                        <Tooltip title="help">
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setHomeTourEnabled(true)} />
+                        </Tooltip>                      
+                    </div>
                   </div>
                   <div>
-                    {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>Youtubers</h1>}
-                      <div className='user-container'>
+                    {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>TuneRip</h1>}
+                      <div className='user-container inline-block' ref={userRef} >
                         { 
                         Object.entries(users).map((item, index) =>(
                           <YoutuberCard
@@ -223,13 +246,12 @@ const Youtubers = forwardRef((props, ref) => {
         )}
       </div>
       {Object.keys(users).length > 0  &&  !cardClicked && 
-        <div className='mt-[20px]'>
+        <div className='mt-[20px] inline-block' ref={deleteUserRef}>
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
-
-      <button className='mb-[500px]' onClick={()=> console.log(downloadSettings)}>ddddddd me</button>
-
+      {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
+      <Button onClick={()=> console.log(isUser)}>click me</Button>
     </div>
   )
 })

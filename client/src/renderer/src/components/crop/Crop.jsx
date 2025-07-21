@@ -1,16 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Slider, message, Button, Divider, Space, Tour, InputNumber, ConfigProvider, Upload, Input } from 'antd';
+import { Slider, Button, Divider, Space, Tour, InputNumber, ConfigProvider, Upload, Input } from 'antd';
 import Cropper from "react-easy-crop";
 import axios from "axios";
 import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, QuestionCircleFilled, QuestionOutlined  } from '@ant-design/icons';
 import { Flex, Tooltip } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { App } from 'antd';
 
-function Crop({src}){
-    
-    // const getImage = () => {
-    //     const data = axios.get('http://localhost:8080/getImage/BisenasTrackz')
-    // }
+function Crop(){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})
@@ -23,7 +20,7 @@ function Crop({src}){
     const [blobURL, setBlobURL] = useState()
     const [fileData, setFileData] = useState()
     const [validFile, setValidFile] = useState(true)
-
+    const { message } = App.useApp();	
 
     const [open, setOpen] = useState(false);
     const steps = [
@@ -99,7 +96,10 @@ function Crop({src}){
     }
 
     return(
-        <div className="">
+        <div className="-mt-[50px] mb-[100px]">
+            <div className="mx-auto text-center text-[50px] text-white">
+                Crop an image
+            </div>
             <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
             <div className="flex justify-center">
                 <div ref={refAdd} className="flex w-[200px]">

@@ -10,6 +10,8 @@ import time, queue, time
 from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, TRCK
 
 class controller():
     def __init__(self, databaseFolderRoute):
@@ -17,9 +19,8 @@ class controller():
         self.db = database(databaseFolderRoute)
         # self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
-        self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir())
+        self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
 
-    
     def pathMaker(self, path):
         """
         Lazy way to create paths
@@ -43,6 +44,7 @@ class controller():
         self.pathMaker(basePath / 'downloads')
         self.pathMaker(basePath / 'downloads/playlists')
         self.pathMaker(basePath / 'downloads/customTracks')
+        self.pathMaker(basePath / 'debug')
         return
     
 
@@ -74,10 +76,10 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = True # true to skip downloading
-        debugModeAddToDB = True # true to skip adding to database
+        debugModeSkipDownload = False # true to skip downloading
+        debugModeAddToDB = False # true to skip adding to database
         #############################################
-        
+        print(f'request is: {request.args}')
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
@@ -87,21 +89,27 @@ class controller():
         artist = request.args.get('artist')
         genre = request.args.get('genre')
         albumTitle = request.args.get('album')
+        skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
+        addToExistingPlaylist = request.args.get('addToExistingPlaylistSettings')
 
-        if url and 'list=PL' in url:
+
+        if url and 'playlist?list=' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
 
             if subFolderName != None:
                 downloadPath = playlistRoute / subFolderName
             else:
-                downloadPath = playlistRoute / f'Playlist {playlist.title} by {playlist.owner}'
+                if addToExistingPlaylist != None:
+                    downloadPath = playlistRoute / addToExistingPlaylist
+                else:
+                    downloadPath = playlistRoute / f'{playlist.title}'
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
 
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {playlist.owner}' if albumTitle == None else albumTitle
+            albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
             trackNum = 1
 
             if Path(downloadPath).exists():
@@ -114,7 +122,7 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -137,7 +145,7 @@ class controller():
                     
             return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
         
-        elif url and url.startswith('https://www.youtube.com/watch?v='):
+        elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
             video = YouTube(url)
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
@@ -147,7 +155,10 @@ class controller():
                 if not Path(downloadPath).exists():
                     os.mkdir(downloadPath)
             else:
-                downloadPath = self.projRoot / f"downloads/customTracks"
+                if addToExistingPlaylist != None:
+                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                else:
+                    downloadPath = self.projRoot / f"downloads/customTracks"
 
             
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
@@ -159,7 +170,7 @@ class controller():
 
             
             try:
-                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -196,7 +207,10 @@ class controller():
                 if not Path(downloadPath).exists():
                     os.mkdir(downloadPath)
             else:
-                downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
+                if addToExistingPlaylist != None:
+                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                else:
+                    downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
 
             if Path(downloadPath).exists():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -209,7 +223,7 @@ class controller():
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
                     
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload )
+                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -386,7 +400,6 @@ class controller():
         page, limit = query.decode('utf-8').split('&')
         page, limit =  int(page.split('=')[1]), int(limit.split('=')[1])
         offset = (page - 1) * 10
-        print(f'limit: {limit}, offset: {offset}')
         return self.db.getRecords(limit - 1, offset)
 
 
@@ -483,7 +496,6 @@ class controller():
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
         path = Path(self.projRoot / f'server/static/albumCovers/{file.filename}.jpg')
-        # print(f'path is {path}')
         # Shows the image in image viewer
         croppedImg.save(path)
         return 'ok', 200
@@ -494,3 +506,80 @@ class controller():
         """
         return self.db.getAlbumTitles()
     
+    def getPlaylistDirNames(self):
+        """
+        returns a list of dict for playlists, this is for the download settings on the front end
+        format: { value: 'jack', label: 'Jack' },
+        """
+        path = Path(self.projRoot / 'downloads/playlists')
+        res = []
+        for playlistPaths in path.iterdir():
+            if playlistPaths.is_dir():
+                splicedPath = playlistPaths.parts
+                playlistIndex = splicedPath.index('playlists')
+                playlistFolderName = ''.join(splicedPath[playlistIndex+1:])
+                res.append({'value': playlistFolderName, 'label': playlistFolderName})
+        return res
+    
+    def getAllFolderNamesInDownloads(self):
+        res = []
+        for i in Path(self.projRoot / 'downloads').rglob("**/*"):
+            if Path(i).is_dir():
+                folderName = str(i).replace('\\downloads\\playlists\\', '').replace('\\downloads\\', '').replace(str(self.projRoot), '')
+                path = str(i).replace(str(self.projRoot), '')
+                res.append({'value': path, 'label': folderName.rsplit('\\', 1)[-1]})
+        return res
+    
+    def refactorPlaylist(self, request):
+        for playlist in request['playlist']:
+            playlistPath = Path(str(self.projRoot) + playlist)
+            if not playlistPath.exists():
+                return 'Path not found', 404
+            else:
+                trackList = []
+                for path in playlistPath.iterdir():
+                    if '.mp3' in str(path):
+                        audio = MP3(path, ID3=ID3)
+                        trackList.append((int(str(audio['TRCK'])), path))
+
+
+                sortedTrackList = sorted(trackList, key=lambda x: x[0])
+                trackNum = 1
+
+                for num, path in sortedTrackList:
+                    if num != trackNum:
+                        audio = MP3(path, ID3=ID3)
+                        audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
+                        audio.save()
+                    trackNum += 1
+                return "Success", 200
+
+    def getPlaylistData(self, request):
+        playlist = request.args.get('playlist')
+        playlistPath =  Path(self.projRoot / 'downloads/playlists' / playlist)
+        res = {}
+        for track in playlistPath.iterdir():
+            if track.suffix == '.mp3':
+                audio = MP3(track, ID3=ID3)
+                coverArtPath = str(audio['COMM::XXX'])
+                print(coverArtPath)
+                if len(coverArtPath) > 0:
+                    path = Path(coverArtPath)
+                    res['coverArtFile'] = path.parts[-1]
+
+                artist = str(audio['TPE1'])
+                album = str(audio['TALB'])
+                if 'TCON' in audio:
+                    genre = audio['TCON']
+                    res['genre'] = genre
+
+                res['artist'] = artist
+                res['album'] = album
+                
+                break
+                
+        return res
+    
+
+
+

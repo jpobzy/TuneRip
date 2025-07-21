@@ -1,10 +1,11 @@
-import React, { use } from 'react';
+import React, { useRef } from 'react';
 import { Space, Table, Popconfirm, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Input, ConfigProvider, Button, Flex } from 'antd';
+import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
 import { App } from 'antd';
-
+import './table.css'
+import { useTourContext } from '../context/SettingsTourContext';
 
 function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
@@ -16,6 +17,13 @@ function TrackTable({refreshRecords, setRefresh}){
   const [albumTitles, setAlbumTitles] = useState([])
   const [filteredUsers, setFilteredUsers] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
+
+
+
+
+
+  const { tableRef, deleteSelectedButtonRef, deleteSingleRecordRef} = useTourContext();
+
 
   const deleteSelected = async() => {
     setLoading(true)
@@ -72,11 +80,13 @@ function TrackTable({refreshRecords, setRefresh}){
 
   const cols = [
   {
-    title: 'User',
+    // title: <div ref={deleteSingleRecordRef}>user</div>,
+    title: 'user',
     dataIndex: 'user',
     key: 'user',
     fixed: 'left',
     filters: users,
+    className: 'user-filter-column',
     // onFilter: (value, record) => record.user.includes(value),
     onFilter: filterItems
   },
@@ -118,23 +128,26 @@ function TrackTable({refreshRecords, setRefresh}){
     key: 'albumCoverFile'
   },
   {
-    title: 'Action',
+    title: <div ref={deleteSingleRecordRef}>Delete</div>,
     dataIndex: '',
     key: 'x',
     fixed: 'right',
       render: (_, record) => (
-      <Space size="middle">
-      <Popconfirm
-        title="Delete the task"
-        description="Are you sure to delete this task?"
-        onConfirm={() => confirm(record)}
-        onCancel={cancel}
-        okText="Yes"
-        cancelText="No"
-      >
-        <a >Delete</a>
-      </Popconfirm>
-      </Space>
+      <div >
+        <Space size="middle">
+          <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            onConfirm={() => confirm(record)}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+          >
+            <a >Delete</a>
+          </Popconfirm>
+        </Space>        
+      </div>
+
     ),
 
   },
@@ -175,19 +188,6 @@ function TrackTable({refreshRecords, setRefresh}){
   }
 
   const handleFilters = (user, albumTitle)=>{
-    // if (albumtitle && albumtitle.length > 0){
-    //   console.log(`filtered user is ${albumtitle}`)
-    // }
-    // if (user && user.length > 0){
-    //   console.log(`filtered album is ${user}`)
-    // }
-    // if (user && user.length > 0 && albumtitle && albumtitle.length > 0){
-    //   console.log('both')
-    // }else if (user && user.length === 0 && albumtitle && albumtitle.length === 0){
-    //   console.log('none')
-    // }
-    // just set a usestate var with user values, on filter for track albums if usestateval > 0 && show only the records that include the user
-    // in the user section
     if (user && !albumTitle){
       setSelectedUsers(user)
     }
@@ -196,7 +196,6 @@ function TrackTable({refreshRecords, setRefresh}){
     }
 
     if (!user && !albumTitle){
-      console.log('none')
       setSelectedUsers([])
     }
   }
@@ -206,23 +205,29 @@ function TrackTable({refreshRecords, setRefresh}){
     <div>
       <div className=''>
         <div className='relative right-[330px] h-[50px]'>
+          <div ref={deleteSelectedButtonRef} className="inline-block">
             <Button type="primary" onClick={deleteSelected}>
               Delete selected
-            </Button>            
+            </Button>    
+          </div>
+            
         </div>
-        <div className='mx-auto  w-[800px]'>
-          <Table 
-              onChange={(pagination, filters, sorter, extra) => {
-                handleFilters(filters.user, filters.albumTitle)           
-              }}
-            rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
-            loading={isLoading}
-            columns={cols} 
-            dataSource={records} 
-            scroll={{ x: 'max-content' }}  
-            />;
+        <div className='inline-block'>
+          <div className='mx-auto  w-[800px]'>
+                <div ref={tableRef} >
+                  <Table 
+                      onChange={(pagination, filters, sorter, extra) => {
+                        handleFilters(filters.user, filters.albumTitle)           
+                      }}
+                    rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
+                    loading={isLoading}
+                    columns={cols} 
+                    dataSource={records} 
+                    scroll={{ x: 'max-content' }}  
+                    />;            
+                </div>
+              </div>
         </div>
-
       </div>
     </div>
   )

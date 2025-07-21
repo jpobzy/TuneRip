@@ -5,61 +5,54 @@ import {
     Popconfirm,
     Form,
     Input,
-    message,
     Space,
-    Col
+    Select
 } from 'antd'
 import axios from 'axios'
+import { App } from 'antd';
 
 
-
-function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload}){
-    const [componentDisabled, setComponentDisabled] = useState(true);
+function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
+    const [componentDisabled, setComponentDisabled] = useState(false);
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [subFolderInputValue, setSubFolderInputValue] = useState('')
+    const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
+    const [addToExistingPlaylist, setAddToExistingPlaylist] = useState(false)
+    const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
+    const { message } = App.useApp();	
     const [form] = Form.useForm();
-
-    const onFinish = async() => {
-        const res = await fetch('http://localhost:8080/changeDownloadSettings', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({data: downloadSettings})
-        });
-        if (res.status == 200){
-            message.success('Default Settings Updated!');
-        }
-    };
-
+    const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
+    const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
 
 
     const toggleDefaultSettings = async (e) => {
-        
-
         setComponentDisabled(e.target.checked)
         if (e.target.checked === true){
+            setPrevPlaylistArt('')
             if (isTrack){
                     // form.setFieldValue({'': ''})
                     setDownloadSettings({})
             }else{
-                setDownloadSettings({"skipDownloadingPrevDownload": true})
+                setDownloadSettings({"skipDownloadingPrevDownload": true, "skipBeatsAndInstrumentals" : true})
                 setskipDownload(true)
                 setCreateSubfolder(false)
+                setSkipBeatsAndInstrumentals(true)
             }
-            
+
+            if (requestedPrevPlaylistData){
+                setPrevPlaylistArt('')
+            }
             form.setFieldsValue({'album' : '', 'genre' : '', 'title' : '', 'artist' : '', 'dirname' : ''})
-            // if (isTrack){
-            //     form.setFieldValue({'': ''})
-            // }
         }else{
+           
             if (skipDownload && createSubfolder){
-                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': ''})
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'subFolderName': '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }else if (skipDownload) {
-                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload})
+                setDownloadSettings({'skipDownloadingPrevDownload' : skipDownload, 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             } else if (createSubfolder){
-                setDownloadSettings({'subFolderName' : ''})
+                setDownloadSettings({'subFolderName' : '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }
-      
         }
     }
 
@@ -83,9 +76,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                trackTitle: e.target.value 
+                trackTitle: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['trackTitle'];
             }   
             return newSettings;
@@ -96,9 +89,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                artist: e.target.value 
+                artist: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['artist'];
             }   
             return newSettings;
@@ -111,9 +104,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                genre: e.target.value 
+                genre: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['genre'];
             }   
             return newSettings;
@@ -127,9 +120,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
             const newSettings = {
                 ...prev,
-                album: e.target.value 
+                album: e
             };
-            if (e.target.value.length === 0){
+            if (e.length === 0){
                 delete newSettings['album'];
             }   
             return newSettings;
@@ -137,6 +130,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     }
 
     const setSubFolderSettings = (e) => {
+        setAddToExistingPlaylist(false)
         setCreateSubfolder(e.target.checked)
         setSubFolderInputValue('')
 
@@ -160,17 +154,84 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setDownloadSettings(prev => {
         const newSettings = {
             ...prev,
-            subFolderName: e.target.value
+            subFolderName: e
         };
         return newSettings;
         })
+    }
+
+    const setSkippingBeatsAndInstrumentals = (e) =>{
+        setSkipBeatsAndInstrumentals(e.target.checked)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            skipBeatsAndInstrumentals: e.target.checked
+        };
+        return newSettings;
+        })
+    }
+
+
+    const getExistingPlaylists = async ()=>{
+        const req = await axios.get('http://localhost:8080/getexistingplaylists');
+        // console.log(`req is: ${JSON.stringify(req.data)}`)
+        setExistingPlaylistNames(req.data)
+    }
+
+    const handleAddToExistingPlaylist = (e) => {
+        setCreateSubfolder(false)
+        setAddToExistingPlaylist(e.target.checked)
+        if (requestedPrevPlaylistData){
+            setPrevPlaylistArt('')
+        }
+    }
+
+    const setAddToExistingPlaylistSettings = (label, value) =>{
+        // console.log(label, value)
+        setChosenPlaylistSetting(value.value)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            addToExistingPlaylistSettings: value.value
+        };
+        return newSettings;
+        })
+    }
+
+    const getPlaylistData = async() => {
+        // console.log(chosenPlaylistSetting)
+        const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {params: {playlist : chosenPlaylistSetting}})
+        
+        if (getPlaylistData.data.album){
+            const albumData = getPlaylistData.data.album
+            form.setFieldsValue({'album': albumData})
+            setAlbum(albumData)            
+        }
+
+        if (getPlaylistData.data.genreData){
+            const genreData = getPlaylistData.data.genre
+            form.setFieldsValue({'genre': genreData})
+            setGenre(genreData)            
+        }
+
+        if (getPlaylistData.data.artist){
+            const artistData = getPlaylistData.data.artist
+            form.setFieldsValue({'artist': artistData})
+            setArtist(artistData)            
+        }
+
+        if (getPlaylistData.data.coverArtFile){
+            setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
+        }
+        setRequestedPrevPLaylistData(true)
     }
 
     useEffect(()=>{
         if (isTrack){
             setskipDownload(false)
         }
-    })
+        getExistingPlaylists();
+    }, [])
 
     return (
         <div className='download-form '>
@@ -186,13 +247,12 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         disabled={componentDisabled}
         style={{ maxWidth: 600 }}
         // initialValues={{remember: true}}
-        onFinish={onFinish}
         autoComplete='off'
         >
 
             
 
-
+        {/* ############################## SKIP DOWNLOADING PREV DOWNLOADED TRACKS ################################ */}
         {!isTrack &&
             <Form.Item style={{marginBottom: "0px"}}>
                 <Checkbox
@@ -205,7 +265,56 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                    
                 
         }
-        <Form.Item style={{marginBottom : "10px"}}>
+
+        {/* ############################## SKIP DOWNLOADING BEATS AND INSTRUMENTALS ################################ */}
+        {!isTrack &&
+            <Form.Item style={{marginBottom : "0px"}}>
+                <Checkbox
+                    checked={skipBeatsAndInstrumentals}
+                    onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
+                >
+                    Skip downloading beats and instrumental tracks
+                </Checkbox>             
+            </Form.Item>
+        }
+    
+    
+        {/* ############################## ADD TRACK TO EXISTING PLAYLISTS ################################ */}   
+        {!isUser &&
+            <>
+                <Form.Item style={{marginBottom : "0px"}}>
+                    <Checkbox
+                        checked={addToExistingPlaylist}
+                        onChange={(e)=> handleAddToExistingPlaylist(e)}
+                    >
+                        {isTrack ? 
+                        'Add track to exisiting playlist' : 
+                        'Add tracks to exisiting playlist'
+                        }
+                    </Checkbox>             
+                </Form.Item>
+
+                {addToExistingPlaylist &&
+                    <Form.Item style={{marginLeft: "70px"}}>
+                        {/* <div className='ml-[70px] mt-[]'> */}
+                            <Select
+                                defaultValue=""
+                                style={{ width: 250 }}
+                                onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
+                                options={existingPlaylistNames}
+                            />
+                            <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
+                        {/* </div> */}
+
+                    </Form.Item>    
+                }            
+            </>
+        }
+
+
+
+        {/* ############################## ADD TRACKS TO A NEW SUBFOLDER ################################ */}   
+        <Form.Item style={{marginBottom : "5px"}}>
             <Checkbox
                 checked={createSubfolder}
                 onChange={(e)=> setSubFolderSettings(e)}
@@ -222,30 +331,32 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                     wrapperCol={{ span: 15}}
                     label="Subfolder name"
                     name="dirname"
-                    onChange={(e) => setSubfolder(e)}
+                    onChange={(e) => setSubfolder(e.target.value)}
                     >
                 <Input 
                 placeholder='Default: Album Title' />
                 </Form.Item>                
             </div>
         }
-        
+
+        {/* ############################## CHANGE INDIVIDUAL TRACK TITLE ################################ */}   
         {isTrack && 
         <Form.Item 
             wrapperCol={{ span: 15}}
             label="TrackTitle"
             name="title"
-            onChange={(e) => setTitle(e)}
+            onChange={(e) => setTitle(e.target.value)}
             >
           <Input placeholder='Default: <Video title>'/>
         </Form.Item>
         }
 
+
         <Form.Item 
             wrapperCol={{ span: 15}}
             label="Artist"
             name="artist"
-            onChange={(e) => setArtist(e)}
+            onChange={(e) => setArtist(e.target.value)}
             >
           <Input placeholder='Default: Youtube Music' />
         </Form.Item>
@@ -254,7 +365,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="Genre"
             name="genre"
-            onChange={(e) => setGenre(e)}
+            onChange={(e) => setGenre(e.target.value)}
             >
           <Input placeholder='Default: None'/>
         </Form.Item>
@@ -263,13 +374,14 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
             wrapperCol={{ span: 15}}
             label="Album Title"
             name="album"
-            onChange={(e) => setAlbum(e)}
+            
             >
-          <Input placeholder='Default: YouTube Album Prod <YT channel>' />
+          <Input 
+            placeholder='Default: YouTube Album Prod <YT channel>' 
+            onChange={(e) => setAlbum(e.target.value)}
+            />
         </Form.Item>
-
       </Form>
-      {/* <Button onClick={()=> form.setFieldsValue({'dirname': ''})}>click me</Button> */}
     </div>
     );
 };

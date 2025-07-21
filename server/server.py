@@ -27,6 +27,7 @@ controller_obj = controller(app.config['DATABASE_FOLDER'])
 
 @app.route("/")
 def hello_world():
+    print('root')
     return "hello world"
 
 
@@ -94,27 +95,6 @@ def addNewVideo():
     response, status = controller_obj.addNewUser(json.loads(request.data))
     return make_response(jsonify({ 'message': response}), status) 
 
-
-@app.route('/downloadProgress')
-def sse():
-    print('download progress was req')
-    def event_stream():
-        print('hello world')
-        while True:
-            try:
-                data = controller_obj.queue.get_nowait()
-                print(f'new data is {data}')
-                time.sleep(1)
-                yield f'data: Downloaded {data} \n\n'
-            except queue.Empty:
-                # print('keeping connection alive')
-                time.sleep(1)
-                data = None
-                yield ": keep-alive\n\n"
-            except Exception as e:
-                print("Caught other exception:", e)
-                data = None
-    return Response(stream_with_context(event_stream()), content_type='text/event-stream')
 
 
 @app.route('/reload')
@@ -200,12 +180,41 @@ def crop():
         return controller_obj.crop(file, json.loads(request.values.get('cropData')).get('croppedAreaPixels'))
 
 
-@app.route("/getalbumtitles")
+@app.get("/getalbumtitles")
 def getAlbumTitles():
     """
     Sends all album titles from tracks db 
     """
     return jsonify(controller_obj.getAlbumTitles())
+
+
+@app.get('/getexistingplaylists')
+def getExistingPlaylists():
+    """
+    Returns a list of dicts for the existing playlists
+    format:  { value: 'jack', label: 'Jack' },
+    """
+    return jsonify(controller_obj.getPlaylistDirNames())
+
+@app.get('/getallfoldernamesindownloads')
+def getAllFolderNamesInDownloads():
+    """
+    Returns a list of dicts for ALL the names of folders in downloads
+    format:  { value: 'jack', label: 'Jack' },
+    """
+    return jsonify(controller_obj.getAllFolderNamesInDownloads())
+
+
+@app.post('/refactor')
+def refactor():
+    """
+    Go through each track in the given playlist and confirm the track number is correct
+    """
+    return controller_obj.refactorPlaylist(json.loads(request.data))
+
+@app.get('/getplaylistdata')
+def getPlaylistData():
+    return jsonify(controller_obj.getPlaylistData(request))
 
 
 if __name__ == "__main__":
