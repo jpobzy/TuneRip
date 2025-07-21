@@ -145,7 +145,7 @@ class controller():
                     
             return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
         
-        elif url and url.startswith('https://www.youtube.com/watch?v='):
+        elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
             video = YouTube(url)
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
@@ -552,3 +552,8 @@ class controller():
                         audio.save()
                     trackNum += 1
                 return "Success", 200
+
+    def getPlaylistData(self, request):
+        print(request.query_string)
+        print(request.data)
+        return 

@@ -22,6 +22,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const { message } = App.useApp();	
     const [form] = Form.useForm();
+    const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
 
 
     const toggleDefaultSettings = async (e) => {
@@ -179,16 +180,22 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         setAddToExistingPlaylist(e.target.checked)
     }
 
-    const setAddToExistingPlaylistSettings = (e) =>{
-        setDownloadSettings(prev => {
-        const newSettings = {
-            ...prev,
-            addToExistingPlaylistSettings: e
-        };
-        return newSettings;
-        })
+    const setAddToExistingPlaylistSettings = (label, value) =>{
+        console.log(label, value)
+        // setChosenPlaylistSetting(e)
+        // setDownloadSettings(prev => {
+        // const newSettings = {
+        //     ...prev,
+        //     addToExistingPlaylistSettings: e
+        // };
+        // return newSettings;
+        // })
     }
 
+    const getPlaylistData = async() => {
+        console.log(chosenPlaylistSetting)
+        // const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {'playlist' : chosenPlaylistSetting})
+    }
 
     useEffect(()=>{
         if (isTrack){
@@ -257,16 +264,19 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         </Form.Item>
 
         {addToExistingPlaylist &&
-            <Form.Item>
-                <Select
-                    defaultValue=""
-                    style={{ width: 400 }}
-                    onChange={(e) => setAddToExistingPlaylistSettings(e)}
-                    options={existingPlaylistNames}
-                />        
+            <Form.Item style={{marginLeft: "70px"}}>
+                {/* <div className='ml-[70px] mt-[]'> */}
+                    <Select
+                        defaultValue=""
+                        style={{ width: 250 }}
+                        onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
+                        options={existingPlaylistNames}
+                    />
+                    <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
+                {/* </div> */}
+
             </Form.Item>    
         }
-
 
 
 

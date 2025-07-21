@@ -212,8 +212,9 @@ def refactor():
     """
     return controller_obj.refactorPlaylist(json.loads(request.data))
 
-
-
+@app.get('/getplaylistdata')
+def getPlaylistData():
+    return jsonify(controller_obj.getPlaylistData(request))
 
 
 if __name__ == "__main__":
