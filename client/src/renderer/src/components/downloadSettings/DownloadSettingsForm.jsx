@@ -12,7 +12,7 @@ import axios from 'axios'
 import { App } from 'antd';
 
 
-function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
+function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
     const [componentDisabled, setComponentDisabled] = useState(false);
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
@@ -23,7 +23,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const { message } = App.useApp();	
     const [form] = Form.useForm();
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
-    const [albumTitleValue, setAlbumTitleValue] = useState('')
+    const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
 
 
     const toggleDefaultSettings = async (e) => {
@@ -39,11 +39,11 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
                 setCreateSubfolder(false)
                 setSkipBeatsAndInstrumentals(true)
             }
-            
+
+            if (requestedPrevPlaylistData){
+                setPrevPlaylistArt('')
+            }
             form.setFieldsValue({'album' : '', 'genre' : '', 'title' : '', 'artist' : '', 'dirname' : ''})
-            // if (isTrack){
-            //     form.setFieldValue({'': ''})
-            // }
         }else{
            
             if (skipDownload && createSubfolder){
@@ -181,6 +181,9 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     const handleAddToExistingPlaylist = (e) => {
         setCreateSubfolder(false)
         setAddToExistingPlaylist(e.target.checked)
+        if (requestedPrevPlaylistData){
+            setPrevPlaylistArt('')
+        }
     }
 
     const setAddToExistingPlaylistSettings = (label, value) =>{
@@ -220,8 +223,7 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
         if (getPlaylistData.data.coverArtFile){
             setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
         }
-        console.log(getPlaylistData.data)
-        
+        setRequestedPrevPLaylistData(true)
     }
 
     useEffect(()=>{
@@ -278,31 +280,35 @@ function DownloadSettingsForm({isTrack, setDownloadSettings, skipDownload, setsk
     
     
         {/* ############################## ADD TRACK TO EXISTING PLAYLISTS ################################ */}   
-        <Form.Item style={{marginBottom : "0px"}}>
-            <Checkbox
-                checked={addToExistingPlaylist}
-                onChange={(e)=> handleAddToExistingPlaylist(e)}
-            >
-                {isTrack ? 
-                'Add track to exisiting playlist' : 
-                'Add tracks to exisiting playlist'
-                }
-            </Checkbox>             
-        </Form.Item>
+        {!isUser &&
+            <>
+                <Form.Item style={{marginBottom : "0px"}}>
+                    <Checkbox
+                        checked={addToExistingPlaylist}
+                        onChange={(e)=> handleAddToExistingPlaylist(e)}
+                    >
+                        {isTrack ? 
+                        'Add track to exisiting playlist' : 
+                        'Add tracks to exisiting playlist'
+                        }
+                    </Checkbox>             
+                </Form.Item>
 
-        {addToExistingPlaylist &&
-            <Form.Item style={{marginLeft: "70px"}}>
-                {/* <div className='ml-[70px] mt-[]'> */}
-                    <Select
-                        defaultValue=""
-                        style={{ width: 250 }}
-                        onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
-                        options={existingPlaylistNames}
-                    />
-                    <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
-                {/* </div> */}
+                {addToExistingPlaylist &&
+                    <Form.Item style={{marginLeft: "70px"}}>
+                        {/* <div className='ml-[70px] mt-[]'> */}
+                            <Select
+                                defaultValue=""
+                                style={{ width: 250 }}
+                                onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
+                                options={existingPlaylistNames}
+                            />
+                            <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
+                        {/* </div> */}
 
-            </Form.Item>    
+                    </Form.Item>    
+                }            
+            </>
         }
 
 

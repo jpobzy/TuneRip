@@ -400,7 +400,6 @@ class controller():
         page, limit = query.decode('utf-8').split('&')
         page, limit =  int(page.split('=')[1]), int(limit.split('=')[1])
         offset = (page - 1) * 10
-        print(f'limit: {limit}, offset: {offset}')
         return self.db.getRecords(limit - 1, offset)
 
 
@@ -497,7 +496,6 @@ class controller():
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
         path = Path(self.projRoot / f'server/static/albumCovers/{file.filename}.jpg')
-        # print(f'path is {path}')
         # Shows the image in image viewer
         croppedImg.save(path)
         return 'ok', 200
@@ -516,9 +514,6 @@ class controller():
         path = Path(self.projRoot / 'downloads/playlists')
         res = []
         for playlistPaths in path.iterdir():
-            # print(i)
-            # playlistDirName = str(i).rsplit('\\', 1)[1] 
-            # res.append({'value': playlistDirName, 'label': playlistDirName})
             if playlistPaths.is_dir():
                 splicedPath = playlistPaths.parts
                 playlistIndex = splicedPath.index('playlists')
@@ -566,10 +561,11 @@ class controller():
         for track in playlistPath.iterdir():
             if track.suffix == '.mp3':
                 audio = MP3(track, ID3=ID3)
-                # coverAlbumFile = str(audio['COMM::XXX']).replace(str(Path(self.projRoot)), '')
-                coverArtFile = str(audio['COMM::XXX']).split('/TuneRip/server/static/albumCovers/')[1]
-                if Path(str(audio['COMM::XXX'])).exists():
-                    res['coverArtFile'] = coverArtFile
+                coverArtPath = str(audio['COMM::XXX'])
+                print(coverArtPath)
+                if len(coverArtPath) > 0:
+                    path = Path(coverArtPath)
+                    res['coverArtFile'] = path.parts[-1]
 
                 artist = str(audio['TPE1'])
                 album = str(audio['TALB'])

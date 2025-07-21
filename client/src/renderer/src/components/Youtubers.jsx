@@ -38,6 +38,7 @@ const Youtubers = forwardRef((props, ref) => {
   const {showDock, setShowDock} = useToggle()
   const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef} = useHomeContext();
   const [prevPlaylistArt, setPrevPlaylistArt] = useState([])
+  const [isUser, setIsUser] = useState(false)
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -50,6 +51,7 @@ const Youtubers = forwardRef((props, ref) => {
     setIsTrack(false);
     setPrevImg(users[username][1])
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true})
+    setIsUser(true)
   }
 
   async function getUsers(){
@@ -122,9 +124,12 @@ const Youtubers = forwardRef((props, ref) => {
         setCardClicked(true);
         setIsTrack(true);
         setSearchURL(videosearchURL);
+        setIsUser(false)
       }else if (videosearchURL.includes('playlist?list=')){
         setCardClicked(true);
         setSearchURL(videosearchURL);
+        setIsUser(false)
+        setIsTrack(false);
       }else{
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
@@ -137,7 +142,7 @@ const Youtubers = forwardRef((props, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
+    children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
   }];
 
 
@@ -246,6 +251,7 @@ const Youtubers = forwardRef((props, ref) => {
         </div>      
       }
       {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
+      <Button onClick={()=> console.log(isUser)}>click me</Button>
     </div>
   )
 })
