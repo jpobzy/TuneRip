@@ -61,6 +61,11 @@ export const TourProvider = ({children}) => {
        target: () => selectPlaylistsRef.current
     },
     {
+      title: 'Clear',
+      description: "Click 'x' to deselect all selected records.",
+       target: () => document.querySelector('.ant-select-arrow')
+    },
+    {
       title: 'Submit',
       description: 'Click submit to start the process',
        target: () => submitPlaylistsRef.current

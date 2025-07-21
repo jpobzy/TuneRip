@@ -188,19 +188,6 @@ function TrackTable({refreshRecords, setRefresh}){
   }
 
   const handleFilters = (user, albumTitle)=>{
-    // if (albumtitle && albumtitle.length > 0){
-    //   console.log(`filtered user is ${albumtitle}`)
-    // }
-    // if (user && user.length > 0){
-    //   console.log(`filtered album is ${user}`)
-    // }
-    // if (user && user.length > 0 && albumtitle && albumtitle.length > 0){
-    //   console.log('both')
-    // }else if (user && user.length === 0 && albumtitle && albumtitle.length === 0){
-    //   console.log('none')
-    // }
-    // just set a usestate var with user values, on filter for track albums if usestateval > 0 && show only the records that include the user
-    // in the user section
     if (user && !albumTitle){
       setSelectedUsers(user)
     }
@@ -209,7 +196,6 @@ function TrackTable({refreshRecords, setRefresh}){
     }
 
     if (!user && !albumTitle){
-      console.log('none')
       setSelectedUsers([])
     }
   }

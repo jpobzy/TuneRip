@@ -19,9 +19,8 @@ class controller():
         self.db = database(databaseFolderRoute)
         # self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
-        self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir())
+        self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
 
-    
     def pathMaker(self, path):
         """
         Lazy way to create paths
@@ -104,7 +103,7 @@ class controller():
                 if addToExistingPlaylist != None:
                     downloadPath = playlistRoute / addToExistingPlaylist
                 else:
-                    downloadPath = playlistRoute / f'Playlist {playlist.title}'
+                    downloadPath = playlistRoute / f'{playlist.title}'
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
@@ -525,29 +524,28 @@ class controller():
         res = []
         for i in Path(self.projRoot / 'downloads').rglob("**/*"):
             if Path(i).is_dir():
-                folderName = str(i).split('TuneRip\\downloads\\')[1].replace('\\', '/')
-                if folderName != 'playlists':
-                    res.append({'value': folderName, 'label': folderName})
+                folderName = str(i).replace('\\downloads\\playlists\\', '').replace('\\downloads\\', '').replace(str(self.projRoot), '')
+                path = str(i).replace(str(self.projRoot), '')
+                res.append({'value': path, 'label': folderName.rsplit('\\', 1)[-1]})
         return res
     
     def refactorPlaylist(self, request):
         for playlist in request['playlist']:
-            playlistPath = Path(self.projRoot / 'downloads' / playlist)
+            playlistPath = Path(str(self.projRoot) + playlist)
             if not playlistPath.exists():
                 return 'Path not found', 404
             else:
-                print(playlistPath)
                 trackList = []
                 for path in playlistPath.iterdir():
-                    audio = MP3(path, ID3=ID3)
-                    trackList.append((int(str(audio['TRCK'])), path))
+                    if '.mp3' in str(path):
+                        audio = MP3(path, ID3=ID3)
+                        trackList.append((int(str(audio['TRCK'])), path))
 
 
                 sortedTrackList = sorted(trackList, key=lambda x: x[0])
                 trackNum = 1
 
                 for num, path in sortedTrackList:
-                    print(num, trackNum, path)
                     if num != trackNum:
                         audio = MP3(path, ID3=ID3)
                         audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number

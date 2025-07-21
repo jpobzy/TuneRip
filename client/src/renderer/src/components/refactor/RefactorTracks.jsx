@@ -1,4 +1,4 @@
-import { Button, Form, Select } from "antd";
+import { Button, Form, Select, Result  } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import RefactorSubmitButton from "./RefactorSubmitButton";
@@ -13,12 +13,18 @@ function RefactorTracks(){
     const { selectPlaylistsRef } = useTourContext()
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
-        // console.log(`req is: ${JSON.stringify(req.data)}`)
         setExistingPlaylistNames(req.data)
     }
 
-    const setPlaylistChosen = (e) =>{
-        setPlaylistData(e)
+    const setPlaylistChosen = (value, label) =>{
+        setPlaylistData(prev =>{
+            const newSettings = {
+                ...prev,
+                value
+            }
+            return newSettings
+        })
+        
     }
 
     const refactor = async () => {
@@ -26,7 +32,7 @@ function RefactorTracks(){
             message.error('Error no folder is selected')
         }else{
             setButtonDisabled(true)
-            const request = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData})
+            const request = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
             setButtonDisabled(false)
         }
        
@@ -58,10 +64,11 @@ function RefactorTracks(){
                     <Form.Item>
                         <div className="inline-block" ref={selectPlaylistsRef}>
                             <Select
+                                allowClear={true}
                                 mode="multiple"
                                 defaultValue={[]}
-                                style={{ width: 300 }}
-                                onChange={(e) => setPlaylistChosen(e)}
+                                style={{ width: 600 }}
+                                onChange={(value, label) => setPlaylistChosen(value, label)}
                                 options={existingPlaylistNames}
                             />                               
                         </div>
@@ -70,11 +77,10 @@ function RefactorTracks(){
                     <Form.Item>
                         <RefactorSubmitButton buttonDisabled={buttonDisabled} refactor={refactor}/>
                     </Form.Item>
+
                 </Form>                     
             </div>
-            <div className="mb-[100px]">
-
-            </div>
+            <div className="mb-[100px]"></div>
         </div>
     )
 }

@@ -96,27 +96,6 @@ def addNewVideo():
     return make_response(jsonify({ 'message': response}), status) 
 
 
-@app.route('/downloadProgress')
-def sse():
-    print('download progress was req')
-    def event_stream():
-        print('hello world')
-        while True:
-            try:
-                data = controller_obj.queue.get_nowait()
-                print(f'new data is {data}')
-                time.sleep(1)
-                yield f'data: Downloaded {data} \n\n'
-            except queue.Empty:
-                # print('keeping connection alive')
-                time.sleep(1)
-                data = None
-                yield ": keep-alive\n\n"
-            except Exception as e:
-                print("Caught other exception:", e)
-                data = None
-    return Response(stream_with_context(event_stream()), content_type='text/event-stream')
-
 
 @app.route('/reload')
 def reloadCache():
