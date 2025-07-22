@@ -3,7 +3,7 @@ import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button, Tour  } from 'antd';
 import './FilterForm.css'
 import axios from 'axios';
-import { useTourContext } from '../context/SettingsTourContext';
+// import { useTourContext } from '../context/SettingsTourContext';
 
 import { InboxOutlined } from '@ant-design/icons';
 import { Upload, Tooltip, Result} from 'antd';
@@ -18,9 +18,25 @@ export default function FilterForm({setRefresh}) {
   const [filterSuccess, setFilterSuccess] = useState(false)
   const [filterError, setFilterError] = useState(false)
   const [responseData, setResponseData] = useState({})
-  const {setEnableTour, setcurrStep} = useTourContext();
+
   const { message } = App.useApp();	
-  const { filterSearchBarRef, filterFilesRef } = useTourContext();
+
+  const [open, setOpen] = useState(false); 
+  const filterSearchBarRef = useRef(null) ;
+  const filterFilesRef = useRef(null);
+
+  const steps = [   
+    {
+      title: 'Filter a video from downloading',
+      description: 'Paste a youtube URL and hit "Search" to add a video you want to prevent being downloaded in the future',
+      target: () => filterSearchBarRef.current,
+    },
+    {
+      title: 'Filter multiple videos from downloading',
+      description: 'Create a text file with multiple youtube links to be filtered, format should be one line per line in the text file',
+      target: () => filterFilesRef.current,
+    }
+    ]
   
   async function onSearch(value) {
     if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
@@ -155,7 +171,7 @@ export default function FilterForm({setRefresh}) {
                     </div>
                     <div className='flex -ml-[40px]'>
                         <Tooltip title="help">
-                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setEnableTour(true), setcurrStep(0)}}/>
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
                         </Tooltip>    
                     </div>
                 </div>
@@ -170,6 +186,7 @@ export default function FilterForm({setRefresh}) {
                         </p>
                     </Dragger>
                 </div>
+                <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
             </div>
         }
             

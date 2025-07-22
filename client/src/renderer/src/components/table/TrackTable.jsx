@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { Space, Table, Popconfirm, Switch } from 'antd';
+import { Space, Table, Popconfirm, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
 import { App } from 'antd';
 import './table.css'
-import { useTourContext } from '../context/SettingsTourContext';
+import { QuestionOutlined  } from '@ant-design/icons';
+
 
 function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
@@ -17,26 +18,58 @@ function TrackTable({refreshRecords, setRefresh}){
   const [albumTitles, setAlbumTitles] = useState([])
   const [filteredUsers, setFilteredUsers] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
+  const tableRef = useRef(null)
+  const deleteSelectedButtonRef = useRef(null);
+  const deleteSingleRecordRef = useRef(null);
+  const [open, setOpen] = useState(false);
 
+  const steps = [
+    {
+      title: 'Downloads records table',
+      description: 'This table will show all downloads and all filtered records',
+      target: () => tableRef.current,
+    },
+    {
+      title: 'Delete an individual record',
+      description: 'Click on the delete button that corresponds with the records row and click on "yes" in the popup to delete it',
+      target: () => deleteSingleRecordRef.current,
+    },
+    {
+      title: 'Select multiple records',
+      description: 'Select multiple records to be deleted, using the top checkbox at the top will only select the records on the current page',
+       target: () => document.querySelector('.ant-table-selection-col'),
+    },
+    {
+      title: 'Delete multiple records',
+      description: 'After selecting multiple records delete, delete them',
+      target: () => deleteSelectedButtonRef.current,
+    },
+    {
+      title: 'Filter',
+      description: 'Use the filter button to help with sorting for specific records',
+       target: () => document.querySelector('.user-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
+    }
+  ] 
 
-
-
-
-  const { tableRef, deleteSelectedButtonRef, deleteSingleRecordRef} = useTourContext();
 
 
   const deleteSelected = async() => {
     setLoading(true)
-    const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
-    if (req.status === 204){
-      message.info('No track was found');
-    }else if (req.status === 200){
-      if (recordsToDelete.length > 1){
-        message.success(`Selected records have been deleted`);       
-      } else {
-        message.success(`Selected record have been deleted`);
-      }
-      getRecords();
+    console.log('hello world')
+    if (recordsToDelete.length === 0){
+      message.info('No tracks was were selected');
+    }else{
+      const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
+      if (req.status === 204){
+        message.info('No track was found');
+      }else if (req.status === 200){
+        if (recordsToDelete.length > 1){
+          message.success(`Selected records have been deleted`);       
+        } else {
+          message.success(`Selected record have been deleted`);
+        }
+        getRecords();
+      }      
     }
     setLoading(false)
   }
@@ -205,11 +238,30 @@ function TrackTable({refreshRecords, setRefresh}){
     <div>
       <div className=''>
         <div className='relative right-[330px] h-[50px]'>
-          <div ref={deleteSelectedButtonRef} className="inline-block">
-            <Button type="primary" onClick={deleteSelected}>
-              Delete selected
-            </Button>    
-          </div>
+
+        <div className='flex justify-center'>
+          <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
+            <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            onConfirm={() => deleteSelected()}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+            >
+            <Button type="primary">
+              {/* <Button type="primary" onClick={deleteSelected}> */}
+                Delete selected
+              </Button>    
+            </Popconfirm>
+          </div>  
+            <div className="flex ml-[5px]" >
+                <Tooltip title="help">
+                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                </Tooltip>                                    
+            </div>      
+        </div>
+
             
         </div>
         <div className='inline-block'>
@@ -229,6 +281,7 @@ function TrackTable({refreshRecords, setRefresh}){
               </div>
         </div>
       </div>
+      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
     </div>
   )
 

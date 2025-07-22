@@ -54,22 +54,7 @@ export const TourProvider = ({children}) => {
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
        target: () => document.querySelector('.user-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
-    },
-    {
-      title: 'Choose a playlist to refactor',
-      description: 'Pick one or multiple playlists to reorganize their track numbers in the correct order',
-       target: () => selectPlaylistsRef.current
-    },
-    {
-      title: 'Clear',
-      description: "Click 'x' to deselect all selected records.",
-       target: () => document.querySelector('.ant-select-arrow')
-    },
-    {
-      title: 'Submit',
-      description: 'Click submit to start the process',
-       target: () => submitPlaylistsRef.current
-    },
+    }
 
   ] 
   

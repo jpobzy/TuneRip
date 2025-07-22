@@ -35,7 +35,7 @@ function MainApp() {
     { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
-     { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
+    //  { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
   ];
 
   const {showDock} = useToggle()
