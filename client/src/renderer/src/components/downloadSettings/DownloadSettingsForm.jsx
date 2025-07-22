@@ -13,7 +13,7 @@ import { App } from 'antd';
 
 
 function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
-    const [componentDisabled, setComponentDisabled] = useState(false);
+    const [componentDisabled, setComponentDisabled] = useState(true);
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [subFolderInputValue, setSubFolderInputValue] = useState('')
@@ -24,6 +24,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [form] = Form.useForm();
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
     const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
+    const [debugMode, setDebugMode] = useState(false);
 
 
     const toggleDefaultSettings = async (e) => {
@@ -226,6 +227,17 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         setRequestedPrevPLaylistData(true)
     }
 
+    const handleDebugMode = (e) => {
+        setDebugMode(e.target.checked)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            debugMode: e.target.checked
+        };
+        return newSettings;
+        })
+    }
+
     useEffect(()=>{
         if (isTrack){
             setskipDownload(false)
@@ -350,6 +362,15 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
           <Input placeholder='Default: <Video title>'/>
         </Form.Item>
         }
+
+        {/* <Form.Item>
+            <Checkbox
+                checked={debugMode}
+                onChange={(e)=> handleDebugMode(e)}
+            >
+                Debug mode
+            </Checkbox>  
+        </Form.Item> */}
 
 
         <Form.Item 

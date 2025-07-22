@@ -251,7 +251,7 @@ const Youtubers = forwardRef((props, ref) => {
         </div>      
       }
       {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
-      <Button onClick={()=> console.log(isUser)}>click me</Button>
+      {/* <Button onClick={()=> console.log(isUser)}>click me</Button> */}
     </div>
   )
 })

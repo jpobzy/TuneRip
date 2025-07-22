@@ -202,7 +202,7 @@ function Settings(){
                 <Menu theme="light" onClick={onClick} selectedKeys={[current]} mode="horizontal" items={menuItems} />
             </div> */}
 
-            <div className="w-[700px] mx-auto mb-[800px]">
+            <div className="w-[700px] mx-auto mb-[00px]">
                 <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
             </div>
 

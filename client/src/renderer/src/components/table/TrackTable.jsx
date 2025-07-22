@@ -236,8 +236,8 @@ function TrackTable({refreshRecords, setRefresh}){
 
   return (
     <div>
-      <div className=''>
-        <div className='relative right-[330px] h-[50px]'>
+      <div className='-ml-[50px]'>
+        <div className='relative right-[360px] h-[50px]'>
 
         <div className='flex justify-center'>
           <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
@@ -261,8 +261,6 @@ function TrackTable({refreshRecords, setRefresh}){
                 </Tooltip>                                    
             </div>      
         </div>
-
-            
         </div>
         <div className='inline-block'>
           <div className='mx-auto  w-[800px]'>

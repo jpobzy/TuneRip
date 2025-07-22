@@ -76,8 +76,15 @@ class controller():
             - download all videos in the playlist url 
         """
         ############# TOGGLE DEBUG HERE ################
-        debugModeSkipDownload = False # true to skip downloading
-        debugModeAddToDB = False # true to skip adding to database
+        # debugModeSkipDownload = False # true to skip downloading
+        # debugModeAddToDB = False # true to skip adding to database
+        debugMode = request.args.get('debugMode')
+        if debugMode:
+            debugModeSkipDownload = True
+            debugModeAddToDB = True
+        else:
+            debugModeSkipDownload = False
+            debugModeAddToDB = False
         #############################################
         print(f'request is: {request.args}')
         url = request.args.get('url')
