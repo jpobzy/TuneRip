@@ -8,4 +8,4 @@ flask-cors
 colorthief
 pymongo
 Pathlib
-
+playsound==1.2.2

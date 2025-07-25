@@ -2,7 +2,7 @@ from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 from app.controllers.controller import controller
 from flask import send_from_directory, redirect
-from flask import Flask, render_template, Response, stream_with_context
+from flask import Flask, render_template, Response, stream_with_context, send_file
 import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
@@ -215,6 +215,21 @@ def refactor():
 @app.get('/getplaylistdata')
 def getPlaylistData():
     return jsonify(controller_obj.getPlaylistData(request))
+
+
+@app.put('/updatemetadata')
+def updateMetaData():
+    controller_obj.updateMetaData(json.loads(request.data))
+    return 'ok'
+
+
+# @app.get('/audio')
+# def get_audio():
+
+#     if not Path('./hi.wav').exists():
+#         return "file not found", 404
+    
+#     return send_file('./hi.wav', mimetype='audio/mpeg')
 
 
 if __name__ == "__main__":

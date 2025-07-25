@@ -26,3 +26,4 @@ oldcode/__pycache__/ansi_colors.cpython-313.pyc
 *.spec
 *.mp3
 *.mp4
+*.wav

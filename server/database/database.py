@@ -215,3 +215,25 @@ class database():
                 # retval.append({'albumTitle':record[1]})
         database.close()
         return retval
+    
+
+    def updateTrackData(self, artist, album, trackName):
+        """
+        Updates the track data if parameters are not None
+        """
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        
+        query = cur.execute('SELECT * FROM tracks WHERE trackName = ?', (trackName,))
+        
+        for track in query:
+            print(track)
+            if artist:
+                cur.execute('UPDATE tracks SET user = ? WHERE trackName = ?', (artist, trackName))
+            if album:
+                cur.execute('UPDATE tracks SET albumTitle = ? WHERE trackName = ?', (album, trackName))
+
+
+        database.commit()
+        database.close()
+        return 

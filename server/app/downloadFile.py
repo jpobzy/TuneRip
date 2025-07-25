@@ -73,7 +73,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
 
 
 
-    audio_file_path = audio_download.download(filename=f'{valid_title}.mp4')
+    audio_file_path = audio_download.download(filename=f'downloadedFile.mp4')
     
     # Convert to MP3 using moviepy
     mp3_file_path = os.path.splitext(audio_file_path)[0] + '.mp3'
@@ -112,5 +112,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     
     audio.save()
     os.remove(audio_file_path) # deletes mp4 file
-    shutil.move(mp3_file_path, trackDst)
+    renamedFile = Path(Path(mp3_file_path).parent / f'{valid_title}.mp3')
+    os.rename(mp3_file_path, renamedFile)
+    shutil.move(renamedFile, trackDst)
     return valid_title

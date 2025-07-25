@@ -24,10 +24,7 @@ function DownloadScreen ({loading, responseData}) {
             <Result
               status="success"
               title="Successfully downloaded all tracks!"
-              subTitle={`${responseData.data.message}`}
-              extra={[
-                <Button key="Home" onClick={() => window.location.reload()}>Home</Button>,
-              ]}
+              subTitle={`${responseData.data.message}`}        
             /> 
             : responseData.statusCode === 207 ?
             <Result

@@ -11,7 +11,8 @@ import {  SmileOutlined } from '@ant-design/icons';
 import './settings.css'
 import RefactorTracks from "./refactor/RefactorTracks";
 import Crop from "./crop/Crop";
-
+import EditMetaData from "./editMetaData/EditMetaData";
+ 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
     const [currentStep, setCurrentStep] = useState(0)
@@ -85,9 +86,6 @@ function Settings(){
     },
     ];
 
-    const onChange = key => {
-        console.log(key);
-    };
 
     const tabItems = [
     {
@@ -122,6 +120,14 @@ function Settings(){
             <Crop />
         </div>
     },
+    {
+        key: '5',
+        label: 'Edit Meta Data',
+        children: 
+        <div className="text-center mt-[50px]">
+            <EditMetaData />
+        </div>
+    }
     ];
 
     const onClick = e => {
@@ -203,7 +209,7 @@ function Settings(){
             </div> */}
 
             <div className="w-[700px] mx-auto mb-[00px]">
-                <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
+                <Tabs defaultActiveKey="1" items={tabItems} />
             </div>
 
             {/* <div className="bg-gray-700 w-[800px] mx-auto">

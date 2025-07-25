@@ -11,13 +11,12 @@ from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TRCK
+from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1
 
 class controller():
     def __init__(self, databaseFolderRoute):
         self.checkFolders()
         self.db = database(databaseFolderRoute)
-        # self.projRoot = Path(__file__).parents[3]
         self.queue = queue.Queue()
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
 
@@ -98,7 +97,7 @@ class controller():
         albumTitle = request.args.get('album')
         skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
         addToExistingPlaylist = request.args.get('addToExistingPlaylistSettings')
-
+        downloadCount = 0
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
@@ -200,7 +199,7 @@ class controller():
                 return {'message': f'Error when downloading, please check the log in {self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'}'}, 500
             else:
                 return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
-        
+            
         else:
             ytLink = self.db.userCache[user][0]
             sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
@@ -225,10 +224,16 @@ class controller():
             c = Channel(ytLink)
             erorrCount = 0
             for video in c.videos:
-                try:
+                try: 
+                    # print(downloadCount)   
+                    # downloadCount+=1
+                    # if downloadCount == 20:
+                    #     time.sleep()
+                    
+
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
-                
+
                     
                     trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
@@ -530,8 +535,10 @@ class controller():
     
     def getAllFolderNamesInDownloads(self):
         res = []
-        for i in Path(self.projRoot / 'downloads').rglob("**/*"):
+        for i in Path(self.projRoot / 'downloads').rglob("**/*"): 
             if Path(i).is_dir():
+                if Path(i) == self.projRoot / 'downloads/playlists':
+                    continue #skip playlist folder but not the contents within
                 folderName = str(i).replace('\\downloads\\playlists\\', '').replace('\\downloads\\', '').replace(str(self.projRoot), '')
                 path = str(i).replace(str(self.projRoot), '')
                 res.append({'value': path, 'label': folderName.rsplit('\\', 1)[-1]})
@@ -569,7 +576,6 @@ class controller():
             if track.suffix == '.mp3':
                 audio = MP3(track, ID3=ID3)
                 coverArtPath = str(audio['COMM::XXX'])
-                print(coverArtPath)
                 if len(coverArtPath) > 0:
                     path = Path(coverArtPath)
                     res['coverArtFile'] = path.parts[-1]
@@ -587,6 +593,35 @@ class controller():
                 
         return res
     
+
+    def updateMetaData(self, request):
+        playlistData = request.get('playlistData')
+        playlistPath = playlistData.get('playlist')
+        updateDatabase = playlistData.get('updateDatabase')
+        album = playlistData.get('album')
+        artist = playlistData.get('artist')
+        genre = playlistData.get('genre')
+
+        subfolder = Path(playlistPath).relative_to(Path("\\downloads"))
+        fullPath = Path(self.projRoot) / "downloads" / subfolder
+
+        if not fullPath.exists():
+            return f'Could not find path {subfolder}', 404
+
+        for file in fullPath.iterdir():
+            if file.suffix == '.mp3':
+                audio = MP3(file, ID3=ID3)
+                if album:
+                    audio['TALB'] = TALB(encoding=3, text=album) # Album 
+                if artist:
+                    audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
+                if genre:
+                    audio['TCON'] = TCON(encoding=3, text=f'{genre}')
+             # audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
+                audio.save()
+                if updateDatabase:
+                    self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
+        return f'Success', 200
 
 
 
