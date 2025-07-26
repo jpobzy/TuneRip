@@ -23,7 +23,7 @@ import { toggleBackgroundSettings } from './components/context/BackgroundSetting
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [page, setPage] = useState("Home");
+  const [page, setPage] = useState("Settings");
   // const [background, setbackground] = useState("");
   const ref = useRef(null);
   const [dimensions, setDimensions] = useState({
@@ -53,35 +53,9 @@ function MainApp() {
 
   const {showDock} = useToggle()
 
-  // useEffect(()=>{
-  //   if (background === 'veil'){
-  //       document.body.style.backgroundColor = 'black';
-  //   }else if (background === 'aurora'){
-  //       document.body.style.backgroundColor = '#1a1a1afd';
-  //   }else if (background === 'galaxy'){
-  //       document.body.style.backgroundColor = 'black';
-  //   }
-
-
-  //   const handleResize = () => {
-  //     // console.log(window.innerWidth, window.innerHeight)
-  //     setDimensions({
-  //       width: window.innerWidth,
-  //       height: window.innerHeight,
-  //     });
-  //   };
-
-  //   window.addEventListener('resize', handleResize);
-
-  //   // Clean up the event listener on unmount
-  //   return () => {
-  //     window.removeEventListener('resize', handleResize);
-  //   };
-  // }, [])
-
   return (
     <div className='wrapper'>
-        <div className={background === 'galaxy' && `mt-[150px]`}>
+        <div className={background === 'galaxy' ? `mt-[150px]`: ''}>
         {/* <div> */}
           {page === 'Home' && 
             <HomeProvider>
