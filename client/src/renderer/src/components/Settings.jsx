@@ -21,48 +21,48 @@ function Settings(){
     const [current, setCurrent] = useState('mail');
 
     const tabItems = [
-    // {
-    //     key: '1',
-    //     label: 'Add to Filter',
-    //     children: 
-    //     <div className="text-center mt-[20px]">
-    //         <FilterForm setRefresh={setRefresh}/>
-    //     </div>
-    // },
-    // {
-    //     key: '2',
-    //     label: 'Track Database',
-    //     children:
-    //     <div className="text-center mt-[20px]">
-    //         <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-    //     </div>
-    // },
-    // {
-    //     key: '3',
-    //     label: 'Reorder Tracks',
-    //     children: 
-    //     <div className="text-center mt-[50px]">
-    //         <RefactorTracks />
-    //     </div>
-    // },
-    // {
-    //     key: '4',
-    //     label: 'Crop',
-    //     children: 
-    //     <div className="text-center mt-[20px]">
-    //         <Crop />
-    //     </div>
-    // },
-    // {
-    //     key: '5',
-    //     label: 'Edit Meta Data',
-    //     children: 
-    //     <div className="text-center mt-[50px]">
-    //         <EditMetaData />
-    //     </div>
-    // },
     {
         key: '1',
+        label: 'Add to Filter',
+        children: 
+        <div className="text-center mt-[20px]">
+            <FilterForm setRefresh={setRefresh}/>
+        </div>
+    },
+    {
+        key: '2',
+        label: 'Track Database',
+        children:
+        <div className="text-center mt-[20px]">
+            <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+        </div>
+    },
+    {
+        key: '3',
+        label: 'Reorder Tracks',
+        children: 
+        <div className="text-center mt-[50px]">
+            <RefactorTracks />
+        </div>
+    },
+    {
+        key: '4',
+        label: 'Crop',
+        children: 
+        <div className="text-center mt-[20px]">
+            <Crop />
+        </div>
+    },
+    {
+        key: '5',
+        label: 'Edit Meta Data',
+        children: 
+        <div className="text-center mt-[50px]">
+            <EditMetaData />
+        </div>
+    },
+    {
+        key: '6',
         label: 'Change background',
         children: 
         <div className="text-center mt-[50px]">
@@ -74,7 +74,7 @@ function Settings(){
 
     return (
         <div>
-            <div className="mx-auto text-center text-gray-200 text-[100px] -mt-[80px] z-10  position: relative">
+            <div className="mx-auto text-center text-gray-200 text-[50px] -mt-[80px] z-10  position: relative">
                 Settings
             </div>
             

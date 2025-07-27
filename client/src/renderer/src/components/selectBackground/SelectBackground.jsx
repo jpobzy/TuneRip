@@ -44,7 +44,6 @@ function SelectBackground(){
     const saveChanges = () => {
         if (Object.keys(formData).length > 0){
             if (selectChosen === 'aurora'){
-                // if (Object.keys(formData).length > 0){
                     if (formData.blend){
                         auroraSettings.setAuroraBackgroundSettings(prev => {
                             return {...prev, blend : formData.blend}
@@ -66,10 +65,7 @@ function SelectBackground(){
                     if (formData.color3){
                         auroraSettings.updateColorStopIndex(2, formData.color3)
                     }
-                // }
             }else if (selectChosen === 'veil'){
-                // if (Object.keys(formData).length > 0){
-                    // console.log(formData)
                     if (formData.speed){
                         veilSettings.setVeilBackgroundSettings(prev => {
                             return {...prev, speed: formData.speed}
@@ -91,7 +87,7 @@ function SelectBackground(){
                             return {...prev, scanlineIntensity: formData.scanlineIntensity}
                         })                    
                     }            
-                // }
+
             } else if (selectChosen === 'galaxy'){
                 if (formData.density){
                     galaxySettings.setGalaxyBackgroundSettings(prev => {
@@ -163,7 +159,7 @@ function SelectBackground(){
     
     return (
         <>
-            <div>
+            <div className="-mt-[30px]">
                 <Select
                     defaultValue=""
                     style={{ width: 120 }}
@@ -185,12 +181,12 @@ function SelectBackground(){
                         },
                     }}}           
                 >
-                    <div className="flex justify-center items-center min-h-screen ">
+                    <div className="flex justify-center items-center  mt-[px]">
                         <Form
                         onValuesChange={(e, a)=>handleFormChange(e, a)}
                         >
                             {selectChosen === 'aurora' &&
-                                <div className="-mt-[425px]">
+                                <div className="mt-[20px]">
                                     <Form.Item 
                                         style={{width: 300 }}
                                         name="blend"
@@ -285,7 +281,7 @@ function SelectBackground(){
                                 </div> 
                             }  
                             {selectChosen === 'veil' &&
-                                <div className="-mt-[425px]">
+                                <div className="mt-[20px]">
 
                                     <Form.Item 
                                         style={{width: 300 }}
@@ -355,7 +351,7 @@ function SelectBackground(){
                                 </div> 
                             }      
                             {selectChosen === 'galaxy' &&
-                                <div className="-mt-[130px]">
+                                <div className="mt-[20px]">
 
                                     <Form.Item 
                                         style={{width: 300 }}
@@ -465,11 +461,6 @@ function SelectBackground(){
                         </Form>
                     </div>    
                 </ConfigProvider>
-
-
-                <Button onClick={()=>BackgroundChosen('aurora')}>aurora</Button>
-                <Button onClick={()=>BackgroundChosen('veil')}>veil</Button>
-                <Button onClick={()=>BackgroundChosen('galaxy')}>galaxy</Button>
             </div>
         </>
     )

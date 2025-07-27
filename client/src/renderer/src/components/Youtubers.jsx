@@ -175,8 +175,9 @@ const Youtubers = forwardRef((props, ref) => {
             <div className='-mt-30 mb-10'>
               <UploadButton refresh={getNewAlbumCover} />
             </div>
-            <div>
-               {<h1 className='header1 text-5xl font-bold mb-15 text-gray-200'>Choose an album cover</h1>} 
+            <div className='mx-auto text-center text-gray-200 text-[50px]  z-10 font-bold mb-15 position: relative'>
+               {/* {<h1 className='header1 text-5xl font-bold mb-15 text-white'>Choose an album cover</h1>}  */}
+              Choose an album cover
             </div>
             <div className='downloadSettingsForm mt-10 mx-auto mb-10 w-150'> 
               <Collapse items={downloadItems} defaultActiveKey={['0']} />
