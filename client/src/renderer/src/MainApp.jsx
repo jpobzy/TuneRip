@@ -26,12 +26,7 @@ function MainApp() {
   const [page, setPage] = useState("Settings");
   // const [background, setbackground] = useState("");
   const ref = useRef(null);
-  const [dimensions, setDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
 
-  const height = dimensions.height + 100;
   const {background, setBackground} = toggleBackgroundSettings();
 
 
@@ -55,8 +50,13 @@ function MainApp() {
 
   return (
     <div className='wrapper'>
-        <div className={background === 'galaxy' ? `mt-[150px]`: ''}>
-        {/* <div> */}
+        {/* <div className={background === 'galaxy' ? `mt-[150px]`: ''}> */}
+        <div className={` 
+          ${background === 'galaxy' && 'mt-[150px]'}
+          ${background === 'lightning' && 'mt-[80px]'}
+          `}>
+
+            
           {page === 'Home' && 
             <HomeProvider>
               <div className='mainApp '>

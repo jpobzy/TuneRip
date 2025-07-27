@@ -47,8 +47,10 @@ export default function History() {
   return (
     <div>
         <div className='history-wrapper'>
-          <h1 className='header1 text-5xl font-bold -mt-15 mb-5 text-gray-200 pointer-events-none'>Download history</h1>
-
+          {/* <h1 className='header1 text-5xl font-bold -mt-15 mb-5 text-gray-200 pointer-events-none position: fixed'>Download history</h1> */}
+          <div className='mx-auto text-center text-gray-200 text-[50px] z-10  position: relative'>
+            Download history
+          </div>
           <div className='text-[20px] pointer-events-none'>
   
             <GradientText

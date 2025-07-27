@@ -236,48 +236,47 @@ function TrackTable({refreshRecords, setRefresh}){
 
   return (
     <div>
-      <div className='-ml-[50px]'>
-        <div className='relative right-[360px] h-[50px]'>
-
-        <div className='flex justify-center'>
-          <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
-            <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            onConfirm={() => deleteSelected()}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-            >
-            <Button type="primary">
-              {/* <Button type="primary" onClick={deleteSelected}> */}
-                Delete selected
-              </Button>    
-            </Popconfirm>
-          </div>  
-            <div className="flex ml-[5px]" >
-                <Tooltip title="help">
-                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                </Tooltip>                                    
-            </div>      
-        </div>
-        </div>
-        <div className='inline-block'>
-          <div className='mx-auto  w-[800px]'>
-                <div ref={tableRef} >
-                  <Table 
-                      onChange={(pagination, filters, sorter, extra) => {
-                        handleFilters(filters.user, filters.albumTitle)           
-                      }}
-                    rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
-                    loading={isLoading}
-                    columns={cols} 
-                    dataSource={records} 
-                    scroll={{ x: 'max-content' }}  
-                    />;            
+      <div className='-ml-[100px]'>
+        <div className='relative right-[330px] h-[50px]'>
+          <div className='flex justify-center'>
+            <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
+              <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete this task?"
+              onConfirm={() => deleteSelected()}
+              onCancel={cancel}
+              okText="Yes"
+              cancelText="No"
+              >
+              <Button type="primary">
+                {/* <Button type="primary" onClick={deleteSelected}> */}
+                  Delete selected
+                </Button>    
+              </Popconfirm>
+            </div>  
+              <div className="flex ml-[5px]" >
+                  <Tooltip title="help">
+                      <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                  </Tooltip>                                    
+              </div>      
+          </div>
+          </div>
+          <div className='inline-block'>
+            <div className='mx-auto ml-[50px] w-[800px]'>
+                  <div ref={tableRef} >
+                    <Table 
+                        onChange={(pagination, filters, sorter, extra) => {
+                          handleFilters(filters.user, filters.albumTitle)           
+                        }}
+                      rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
+                      loading={isLoading}
+                      columns={cols} 
+                      dataSource={records} 
+                      scroll={{ x: 'max-content' }}  
+                      />;            
+                  </div>
                 </div>
-              </div>
-        </div>
+          </div>
       </div>
       <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
     </div>

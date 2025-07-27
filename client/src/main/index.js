@@ -123,7 +123,8 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
+  
+  mainWindow.openDevTools();
   // autoUpdater.check
   // if (app.isPackaged) {
   //   // ForUpdatesAndNotify();

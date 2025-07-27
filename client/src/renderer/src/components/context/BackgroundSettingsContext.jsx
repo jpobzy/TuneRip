@@ -2,13 +2,14 @@ import { useContext, createContext, useState, useEffect } from "react";
 import Aurora from "../background/Aurora";
 import DarkVeil from "../background/DarkVeil";
 import Galaxy from "../background/Galaxy";
+import Lightning from "../background/Lightning";
 import { Button } from "antd";
 
 
 const toggleSettingsContext = createContext();
 
 export const ToggleBackgroundSettingsProvider = ({children}) => {
-    const [background, setBackground] = useState("galaxy");
+    const [background, setBackground] = useState("lightning");
 
     // ############################### AURORA SETTINGS
     const [auroraColorStop1, setAuroraColorStop1] = useState('#3A29FF')
@@ -140,52 +141,74 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             galaxySettings : {resetGalaxySettings, setGalaxyBackgroundSettings, }
     
         }}>
-            { background === 'veil' && 
-                <div className='-mb-[570px]'>
-                    <div style={{ width: '100%', height: '600px', position: 'relative' }}>
-                        <DarkVeil 
-                            speed={veilBackgroundSettings.speed}
-                            hueShift={veilBackgroundSettings.hueShift}
-                            noiseIntensity={veilBackgroundSettings.noiseIntensity}
-                            scanlineFrequency={veilBackgroundSettings.scanlineFrequency}
-                            scanlineIntensity={veilBackgroundSettings.scanlineIntensity}
-                            warpAmount={veilBackgroundSettings.warpAmount}
-                        />
+            <div className="fixed inset-0 -z-10 relative">
+                { background === 'veil' && 
+                    <div className='-mb-[570px]'>
+                        <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+                            <DarkVeil 
+                                speed={veilBackgroundSettings.speed}
+                                hueShift={veilBackgroundSettings.hueShift}
+                                noiseIntensity={veilBackgroundSettings.noiseIntensity}
+                                scanlineFrequency={veilBackgroundSettings.scanlineFrequency}
+                                scanlineIntensity={veilBackgroundSettings.scanlineIntensity}
+                                warpAmount={veilBackgroundSettings.warpAmount}
+                            />
+                        </div>
                     </div>
-                </div>
-            } 
-            { background === 'aurora' &&
-                <div>
-                    <Aurora
-                    colorStops={auroraBackgroundSettings.colorStops}
-                    blend={auroraBackgroundSettings.blend}
-                    amplitude={auroraBackgroundSettings.amplitude}
-                    speed={auroraBackgroundSettings.speed}
-                    />              
-                </div>
+                } 
+                { background === 'aurora' &&
+                    <div>
+                        <Aurora
+                        colorStops={auroraBackgroundSettings.colorStops}
+                        blend={auroraBackgroundSettings.blend}
+                        amplitude={auroraBackgroundSettings.amplitude}
+                        speed={auroraBackgroundSettings.speed}
+                        />              
+                    </div>
 
-            }
-            { background === 'galaxy' &&
-                <div className="z-0"
-                    style={{
-                    position: 'fixed', 
-                    width: '100%',
-                    height: '100vh'  
-                    }}>
-                    <div style={{ width: '100%', height: '100vh', position: 'fixed' }} >
-                        <Galaxy
-                        density={galaxyBackgroundSettings.density}
-                        glowIntensity={galaxyBackgroundSettings.glowIntensity}
-                        saturation={galaxyBackgroundSettings.saturation}
-                        hueShift={galaxyBackgroundSettings.hueShift}
-                        twinkleIntensity={galaxyBackgroundSettings.twinkleIntensity}
-                        transparent={false}
-                        starSpeed={galaxyBackgroundSettings.starSpeed}
-                        speed={galaxyBackgroundSettings.speed}
+                }
+                { background === 'galaxy' &&
+                    <div className="z-0"
+                        style={{
+                        position: 'fixed', 
+                        width: '100%',
+                        height: '100vh'  
+                        }}>
+                        <div style={{ width: '100%', height: '100vh', position: 'fixed' }} >
+                            <Galaxy
+                            density={galaxyBackgroundSettings.density}
+                            glowIntensity={galaxyBackgroundSettings.glowIntensity}
+                            saturation={galaxyBackgroundSettings.saturation}
+                            hueShift={galaxyBackgroundSettings.hueShift}
+                            twinkleIntensity={galaxyBackgroundSettings.twinkleIntensity}
+                            transparent={false}
+                            starSpeed={galaxyBackgroundSettings.starSpeed}
+                            speed={galaxyBackgroundSettings.speed}
+                            />
+                        </div>
+                    </div>
+                }
+                {background === 'lightning' && 
+                    <div className="z-0"
+                        style={{
+                        position: 'fixed', 
+                        width: '100%',
+                        height: '100%'  
+                        }}>
+                  
+                    <div style={{ width: '100%', height: '100vh', position: 'fixed' }}>
+                        <Lightning 
+                            hue={220} 
+                            xOffset={0} 
+                            speed={1} 
+                            intensity={1} 
+                            size={1} 
                         />
                     </div>
                 </div>
-            }
+                }
+
+            </div>
             <div className="z-10">
                {children} 
             </div>
