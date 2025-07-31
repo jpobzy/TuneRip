@@ -22,7 +22,6 @@ export default function History() {
     }
     setLoadingHistory(false)
     setTrackHistory(temp)
-    console.log(temp)
   };
 
   
@@ -31,7 +30,6 @@ export default function History() {
 
     if (res.status == 200){
       const data = res.data
-      console.log(`data: ${data.data}`)
       setDownloadCount(res.data)
     }
 
@@ -45,7 +43,7 @@ export default function History() {
         
 
   return (
-    <div>
+    <div className='inline-block mt-[30px]'>
         <div className='history-wrapper'>
           {/* <h1 className='header1 text-5xl font-bold -mt-15 mb-5 text-gray-200 pointer-events-none position: fixed'>Download history</h1> */}
           <div className='mx-auto text-center text-gray-200 text-[50px] z-10  position: relative'>

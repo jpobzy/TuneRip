@@ -6,43 +6,54 @@ import './hyperspeed.css';
 
 const Hyperspeed = ({ effectOptions = {
   onSpeedUp: () => { },
-    onSlowDown: () => { },
-    distortion: 'turbulentDistortion',
-    length: 400,
-    roadWidth: 10,
-    islandWidth: 2,
-    lanesPerRoad: 4,
-    fov: 90,
-    fovSpeedUp: 0,
-    speedUp: 2,
-    carLightsFade: 0.4,
-    totalSideLightSticks: 20,
-    lightPairsPerRoadWay: 40,
-    shoulderLinesWidthPercentage: 0.05,
-    brokenLinesWidthPercentage: 0.1,
-    brokenLinesLengthPercentage: 0.5,
-    lightStickWidth: [0.12, 0.5],
-    lightStickHeight: [1.3, 1.7],
-    movingAwaySpeed: [60, 80],
-    movingCloserSpeed: [-120, -160],
-    carLightsLength: [400 * 0.03, 400 * 0.2],
-    carLightsRadius: [0.05, 0.14],
-    carWidthPercentage: [0.3, 0.5],
-    carShiftX: [-0.8, 0.8],
-    carFloorSeparation: [0, 5],
-    colors: {
-      roadColor: 0x080808,
-      islandColor: 0x0a0a0a,
-      background: 0x000000,
-      shoulderLines: 0xFFFFFF,
-      brokenLines: 0xFFFFFF,
-      leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
-      rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
-      sticks: 0x03B3C3,
+  onSlowDown: () => { },
+  distortion: 'turbulentDistortion',
+  length: 400,
+  roadWidth: 10,
+  islandWidth: 2,
+  lanesPerRoad: 4,
+  fov: 90,
+  fovSpeedUp: 150,
+  speedUp: 2,
+  carLightsFade: 0.4,
+  totalSideLightSticks: 20,
+  lightPairsPerRoadWay: 40,
+  shoulderLinesWidthPercentage: 0.05,
+  brokenLinesWidthPercentage: 0.1,
+  brokenLinesLengthPercentage: 0.5,
+  lightStickWidth: [0.12, 0.5],
+  lightStickHeight: [1.3, 1.7],
+  movingAwaySpeed: [60, 80],
+  movingCloserSpeed: [-120, -160],
+  carLightsLength: [400 * 0.03, 400 * 0.2],
+  carLightsRadius: [0.05, 0.14],
+  carWidthPercentage: [0.3, 0.5],
+  carShiftX: [-0.8, 0.8],
+  carFloorSeparation: [0, 5],
+  colors: {
+    roadColor: 0x080808,
+    islandColor: 0x0a0a0a,
+    background: 0x000000,
+    shoulderLines: 0xFFFFFF,
+    brokenLines: 0xFFFFFF,
+    leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
+    rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
+    sticks: 0x03B3C3,
   }
 } }) => {
   const hyperspeed = useRef(null);
+  const appRef = useRef(null);
+  
   useEffect(() => {
+    if (appRef.current) {
+      appRef.current.dispose();
+      const container = document.getElementById('lights');
+      if (container) {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+      }
+    }
     const mountainUniforms = {
       uFreq: { value: new THREE.Vector3(3, 6, 10) },
       uAmp: { value: new THREE.Vector3(30, 30, 20) }
@@ -358,7 +369,7 @@ const Hyperspeed = ({ effectOptions = {
         this.camera.position.y = 8;
         this.camera.position.x = 0;
         this.scene = new THREE.Scene();
-        this.scene.background = null;  // Ensure scene background is transparent
+        this.scene.background = null;
 
         let fog = new THREE.Fog(
           options.colors.background,
@@ -556,6 +567,24 @@ const Hyperspeed = ({ effectOptions = {
 
       dispose() {
         this.disposed = true;
+        
+        if (this.renderer) {
+          this.renderer.dispose();
+        }
+        if (this.composer) {
+          this.composer.dispose();
+        }
+        if (this.scene) {
+          this.scene.clear();
+        }
+        
+        // Remove event listeners
+        window.removeEventListener("resize", this.onWindowResize.bind(this));
+        if (this.container) {
+          this.container.removeEventListener("mousedown", this.onMouseDown);
+          this.container.removeEventListener("mouseup", this.onMouseUp);
+          this.container.removeEventListener("mouseout", this.onMouseUp);
+        }
       }
 
       setSize(width, height, updateStyles) {
@@ -658,7 +687,7 @@ const Hyperspeed = ({ effectOptions = {
           let length = random(options.carLightsLength);
           let speed = random(this.speed);
 
-          let carLane = i % options.lanesPerRoad;  // Fix lane assignment to spread across lanes
+          let carLane = i % options.lanesPerRoad;
           let laneX = carLane * laneWidth - options.roadWidth / 2 + laneWidth / 2;
 
           let carWidth = random(options.carWidthPercentage) * laneWidth;
@@ -1035,20 +1064,15 @@ const Hyperspeed = ({ effectOptions = {
     `;
 
     const roadMarkings_fragment = `
-      uv.y = mod(uv.y + uTime * 0.05, 1.);  // Adjust speed of markings
+      uv.y = mod(uv.y + uTime * 0.05, 1.);
       float laneWidth = 1.0 / uLanes;
       float brokenLineWidth = laneWidth * uBrokenLinesWidthPercentage;
       float laneEmptySpace = 1. - uBrokenLinesLengthPercentage;
 
-      float brokenLines = step(1.0 - brokenLineWidth, fract(uv.x * 2.0)) * step(laneEmptySpace, fract(uv.y * 10.0));  // Dashes in the middle
-      float sideLines = step(1.0 - brokenLineWidth, fract((uv.x - laneWidth * (uLanes - 1.0)) * 2.0)) + step(brokenLineWidth, uv.x); // Side continuous lines
+      float brokenLines = step(1.0 - brokenLineWidth, fract(uv.x * 2.0)) * step(laneEmptySpace, fract(uv.y * 10.0));
+      float sideLines = step(1.0 - brokenLineWidth, fract((uv.x - laneWidth * (uLanes - 1.0)) * 2.0)) + step(brokenLineWidth, uv.x);
 
       brokenLines = mix(brokenLines, sideLines, uv.x);
-      // color = mix(color, uBrokenLinesColor, brokenLines);
-
-      // vec2 noiseFreq = vec2(4., 7000.);
-      // float roadNoise = random(floor(uv * noiseFreq) / noiseFreq) * 0.02 - 0.01; 
-      // color += roadNoise;
     `;
 
     const roadFragment = roadBaseFragment
@@ -1089,13 +1113,20 @@ const Hyperspeed = ({ effectOptions = {
 
     (function () {
       const container = document.getElementById('lights');
-      effectOptions.distortion = distortions[effectOptions.distortion];
+      const options = { ...effectOptions };
+      options.distortion = distortions[options.distortion];
 
-      const myApp = new App(container, effectOptions);
+      const myApp = new App(container, options);
+      appRef.current = myApp;
       myApp.loadAssets().then(myApp.init);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return () => {
+      if (appRef.current) {
+        appRef.current.dispose();
+      }
+    };
+  }, [effectOptions]);
 
   return (
     <div id="lights" ref={hyperspeed}></div>

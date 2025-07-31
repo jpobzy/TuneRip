@@ -7,6 +7,7 @@ import os, time, json, queue
 from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
 from pathlib import Path
+from app.controllers.backgroundDataController import backgroundData
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -24,6 +25,7 @@ app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 # path_env = 'MUSIC_PATH'
 
 controller_obj = controller(app.config['DATABASE_FOLDER'])
+backgrounddata_obj = backgroundData()
 
 @app.route("/")
 def hello_world():
@@ -223,14 +225,14 @@ def updateMetaData():
     return 'ok'
 
 
-# @app.get('/audio')
-# def get_audio():
+@app.post('/savebackgroundsettings')
+def saveBackgroundSettings():
+    return backgrounddata_obj.saveBackgroundSettings(request)
 
-#     if not Path('./hi.wav').exists():
-#         return "file not found", 404
-    
-#     return send_file('./hi.wav', mimetype='audio/mpeg')
 
+@app.put('/resetbackgroundsettings')
+def resetBackgroundSettings():
+    return backgrounddata_obj.reset()
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

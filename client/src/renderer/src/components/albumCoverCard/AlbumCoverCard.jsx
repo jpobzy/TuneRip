@@ -26,7 +26,7 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                     cancelText="No"
                     onConfirm={deleteImg}
                     >
-                        <img className='w-[30px] absolute  z-1 ml-[20px] delete'  src={minusIcon} onClick={()=>console.log(edit)} />
+                        <img className='w-[30px] absolute z-1 ml-[20px] delete'  src={minusIcon} onClick={()=>console.log(edit)} />
                     </Popconfirm>     
                 }
         
