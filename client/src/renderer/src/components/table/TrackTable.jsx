@@ -55,7 +55,6 @@ function TrackTable({refreshRecords, setRefresh}){
 
   const deleteSelected = async() => {
     setLoading(true)
-    console.log('hello world')
     if (recordsToDelete.length === 0){
       message.info('No tracks was were selected');
     }else{

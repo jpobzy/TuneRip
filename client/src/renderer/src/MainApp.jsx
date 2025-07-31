@@ -16,9 +16,6 @@ import { ToggleProvider } from './components/context/UseContext';
 import { useToggle } from './components/context/UseContext';
 import { TourProvider } from './components/context/SettingsTourContext';
 import { HomeProvider } from './components/context/HomeContext';
-import DarkVeil from './components/background/DarkVeil';
-import Galaxy from './components/background/Galaxy';
-import { toggleBackgroundSettings } from './components/context/BackgroundSettingsContext';
 
 
 function MainApp() {
@@ -27,45 +24,31 @@ function MainApp() {
   // const [background, setbackground] = useState("");
   const ref = useRef(null);
 
-  const {background, setBackground} = toggleBackgroundSettings();
-
-
   const homeClicked = () => {
-    setPage('Home')
+    setPage('Settings')
     if (ref.current){
-      console.log('ref.current found')
       ref.current.resetAll();
     }
-    console.log('home clicked')
   }
 
   const items = [
     { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
-    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') },
-    //  { icon: <FaCropSimple size={18} />, label: 'Crop', onClick: () => setPage('Crop') },
+    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') }
   ];
 
   const {showDock} = useToggle()
 
   return (
     <div className='wrapper'>
-        {/* <div className={background === 'galaxy' ? `mt-[150px]`: ''}> */}
-        <div className={` 
-          ${background === 'galaxy' && 'mt-[150px]'}
-          ${background === 'lightning' && 'mt-[80px]'}
-          `}>
-
-            
+        <div >
           {page === 'Home' && 
             <HomeProvider>
-              <div className='mainApp '>
-                <Youtubers ref={ref}/>
-              </div>           
+                <Youtubers ref={ref}/>       
             </HomeProvider>
           }
 
-          {page === 'History' && <div className='mainApp'><History /></div>}
+          {page === 'History' && <History />}
           {page === 'Settings' && 
             <TourProvider>
               <Settings/> 

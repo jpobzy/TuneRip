@@ -171,15 +171,17 @@ const Youtubers = forwardRef((props, ref) => {
               {/* <button onClick={()=> setLoading(!loading)} >loading</button> */}
             </div>
           ) : (
-          <div >
-            <div className='-mt-30 mb-10'>
-              <UploadButton refresh={getNewAlbumCover} />
+          <div className='inline-block'>
+            <div className='mb-10  relative '>
+              <div className='flex  justify-center mt-[30px]'>
+                <UploadButton refresh={getNewAlbumCover} />
+              </div>
             </div>
-            <div className='mx-auto text-center text-gray-200 text-[50px]  z-10 font-bold mb-15 position: relative'>
-               {/* {<h1 className='header1 text-5xl font-bold mb-15 text-white'>Choose an album cover</h1>}  */}
+
+            <div className='mx-auto text-center text-gray-200 text-[50px] -mt-[30px] z-10 font-bold '>
               Choose an album cover
-            </div>
-            <div className='downloadSettingsForm mt-10 mx-auto mb-10 w-150'> 
+            </div>            
+            <div className='downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
               <Collapse items={downloadItems} defaultActiveKey={['0']} />
             </div>
 
@@ -210,8 +212,8 @@ const Youtubers = forwardRef((props, ref) => {
                 {/* Anything placed inside this container will be fade into view */
                 <div>
                   <div className='relative'>
-                    <div className='flex -mt-[125px] justify-center '>
-                      <div className='inline-block' ref={searchBarRef}>
+                    <div className='flex  justify-center '>
+                      <div className='inline-block mt-[30px]' ref={searchBarRef}>
                         <AddUserForm 
                         setSearchURL={downloadVideo}
                         />                        
