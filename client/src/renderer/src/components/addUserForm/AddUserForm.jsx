@@ -8,8 +8,6 @@ export default function AddUserForm({setSearchURL}) {
   const [user, setUser] = useState('');
 
   async function onSearch(value) {
-    console.log('Search input:', value);
-
     if (value.includes("@") ){
       const res = await fetch('http://localhost:8080/newUser', {
         method: 'POST',

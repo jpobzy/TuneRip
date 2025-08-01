@@ -10,7 +10,6 @@ export default function YoutuberCard({name, userPFP, onClick, edit, setUsers}) {
 
   async function deleteUser(){
     const deleteReq = await axios.delete('http://localhost:8080/deleteUser', {data: {'user': name}})
-    console.log(`delete status ${deleteReq.status}`)
     if (deleteReq.status === 200 || deleteReq.status === 204) {
       window.location.reload()
     } 

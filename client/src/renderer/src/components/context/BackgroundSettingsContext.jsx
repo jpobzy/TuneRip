@@ -647,29 +647,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             document.body.style.backgroundColor = 'black';
         }
             
-        // } else if (currentBackground === 'faultyTerminal'){
-        //     setFaultyTerminalBackgroundSettings(prevSettings)
-        // } else if (currentBackground === 'iridescence'){
-        //     setIridescenceBackgroundSettings(prevSettings)
-        // } else if (currentBackground === 'liquidChrome'){
-        //     setLiquidChromeBackgroundSettings(prevSettings)
-        // } else if (currentBackground === 'balatro'){
-        //     setBalatroBackgroundSettings(prevSettings)
-        // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         setPrevEditedBackgrounds(req.data[2])       
     }
@@ -681,7 +658,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }, [])
 
     return (
-        <toggleSettingsContext.Provider value={{background, setChosenBackground, reset, prevEditedBackgrounds,
+        <toggleSettingsContext.Provider value={{background, setChosenBackground, reset, prevEditedBackgrounds, getData,
             auroraSettings : {auroraBackgroundSettings, setAuroraBackgroundSettings, updateColorStopIndex, resetColorStopIndex, auroraFormSettings},
             veilSettings: {veilBackgroundSettings, setVeilBackgroundSettings, veilFormSettings },
             galaxySettings : {galaxyBackgroundSettings, setGalaxyBackgroundSettings, galaxyFormSettings},
@@ -970,7 +947,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             <div>
                {children} 
             </div>
-            {/* <Button onClick={()=> console.log(letterGlitchBackgroundSettings.glitchColors)}>click me pls</Button> */}
+
         </toggleSettingsContext.Provider>
     )
 }

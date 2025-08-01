@@ -83,7 +83,7 @@ class database():
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        query = cur.execute(f"SELECT * FROM tracks WHERE status <> ? ORDER BY ? DESC LIMIT ?", ('Filter', 'whenRecordAdded', trackAmount))
+        query = cur.execute(f'SELECT * FROM tracks WHERE status <> ?  ORDER BY whenRecordAdded DESC LIMIT ?', ('Filter', trackAmount,))
         retval = []
         for record in query:
             retval.append({'trackName':record[2], 'user':record[0]})

@@ -188,7 +188,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     }
 
     const setAddToExistingPlaylistSettings = (label, value) =>{
-        // console.log(label, value)
+
         setChosenPlaylistSetting(value.value)
         setDownloadSettings(prev => {
         const newSettings = {
@@ -200,7 +200,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     }
 
     const getPlaylistData = async() => {
-        // console.log(chosenPlaylistSetting)
         const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {params: {playlist : chosenPlaylistSetting}})
         
         if (getPlaylistData.data.album){

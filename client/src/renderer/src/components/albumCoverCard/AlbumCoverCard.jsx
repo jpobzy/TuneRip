@@ -9,7 +9,6 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
 
     async function deleteImg() {
         const deleteReq = await axios.delete('http://localhost:8080/deleteimg', {data: {'filename': filename}})
-        console.log(`delete status ${deleteReq.status}`)
         if (deleteReq.status === 200 || deleteReq.status === 204) {
             refresh?.()
         } 
@@ -26,7 +25,8 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                     cancelText="No"
                     onConfirm={deleteImg}
                     >
-                        <img className='w-[30px] absolute z-1 ml-[20px] delete'  src={minusIcon} onClick={()=>console.log(edit)} />
+                        <img className='w-[30px] absolute z-1 ml-[20px] delete'  src={minusIcon} />
+                        {/* <img className='w-[30px] absolute z-1 ml-[20px] delete'  src={minusIcon} onClick={()=>console.log(edit)} /> */}
                     </Popconfirm>     
                 }
         
