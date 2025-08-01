@@ -5,7 +5,6 @@ import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContex
 function AuroraBackground({setFormData, handleFormChange, formData, backgroundForm}){
     const {reset, auroraSettings} = toggleBackgroundSettings();
 
-
     return (
         <>
         <div className="mt-[20px]">

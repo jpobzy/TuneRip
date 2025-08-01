@@ -1,13 +1,14 @@
 
     {
+        "selectedBackground" : "aurora",
         "Backgrounds" : {
-            "Aurora" : {
+            "aurora" : {
                 "blend" : 0.5,
                 "amplitude" : 1.0,
                 "speed" : 0.5,
                 "colorStops" : ["#3A29FF", "#FF94B4", "#FF3232"]
             },
-            "DarkVeil" : {
+            "veil" : {
                 "speed" : 0.5,
                 "hueShift" : 0,
                 "noiseIntensity" : 0,
@@ -15,7 +16,7 @@
                 "scanlineIntensity" : 0,
                 "warpAmount" : 0
             },
-            "DotGrid" : {
+            "dotGrid" : {
                 "baseColor" : "#5227FF",
                 "activeColor" : "#5227FF",
                 "dotSize" : 5,
@@ -26,7 +27,7 @@
                 "resistance" : 750, 
                 "returnDuration" : 1.5
             },
-            "FaultyTerminal" : {
+            "faultyTerminal" : {
                 "tintColor" : "#A7EF9E",
                 "scale" : 1.5,
                 "digitSize" : 1.2,
@@ -39,7 +40,7 @@
                 "mouseReact" : true, 
                 "pageLoadAnimation" : true 
             },
-            "Galaxy" : {
+            "galaxy" : {
                 "starSpeed" : 0.5,
                 "density" : 1,
                 "hueShift" : 140,
@@ -49,25 +50,52 @@
                 "twinkleIntensity" : 0.3,
                 "transparent" : true   
             },
-            "HyperSpeed" : {
+            "hyperspeed" : {
                 "preset" : "default"
             }, 
-            "Iridescence" : {
+            "iridescence" : {
                 "color" : [1, 1, 1],
                 "mouseReact" : false,
                 "amplitude" : 0.1,
                 "speed" : 1.0
             },
-            "Lightning" : {
+            "lightning" : {
                 "hue" : 260,
                 "xOffset" : 0,
                 "speed" : 1,
                 "intensity" : 1,
                 "size" : 1
             },
-            "Waves" : {
+            "waves" : {
                 "waveSpeedX" : 0.0125,
                 "wavesColor" : "#FFFFFF"
+            },
+            "letterGlitch" : {
+                "glitchColors" : ["#2b4539", "#61dca3", "#61b3dc"],
+                "glitchSpeed" : 10,
+                "smoothAnimation" : true,
+                "showCenterVignette": true,
+                "showOuterVignette": false
+            },
+            "squares" : {
+                "direction" : "diagonal",
+                "speed" : 0.5,
+                "squareSize" : 40,
+                "borderColor" : "#fff",
+                "hoverFillColor" : "#222"
+            },
+            "liquidChrome" : {
+                "red" : 0.1,
+                "green" : 0.1,
+                "blue" : 0.1,
+                "speed" : 0.3,
+                "amplitude" : 0.3     
+            },
+            "balatro" : {
+                "color1" : "#DE443B",
+                "color2" : "#006BB4",
+                "color3" : "#162325",
+                "pixelFilter" : 745
             }
         }
     }

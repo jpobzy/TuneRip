@@ -224,15 +224,21 @@ def updateMetaData():
     controller_obj.updateMetaData(json.loads(request.data))
     return 'ok'
 
+@app.get('/getBackgroundSettings')
+def getBackgroundSettings():
+    return jsonify(backgrounddata_obj.getBackgroundSettings())
 
 @app.post('/savebackgroundsettings')
 def saveBackgroundSettings():
     return backgrounddata_obj.saveBackgroundSettings(request)
 
 
-@app.put('/resetbackgroundsettings')
+@app.post('/resetbackgroundsettings')
 def resetBackgroundSettings():
-    return backgrounddata_obj.reset()
+    return backgrounddata_obj.reset(request)
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
+
+
+# 0dfc35

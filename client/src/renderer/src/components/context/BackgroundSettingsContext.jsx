@@ -1,23 +1,26 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import Aurora from "../background/Aurora";
-import DarkVeil from "../background/DarkVeil";
-import Galaxy from "../background/Galaxy";
-import Lightning from "../background/Lightning";
-import FaultyTerminal from "../background/FaultyTerminal";
-import DotGrid from "../background/DotGrid";
-import Hyperspeed from "../background/Hyperspeed";
+import { Button } from "antd";
 import { Color } from '@rc-component/color-picker';
 import { hyperspeedPresets } from "../background/hyperspeedPresets/HyperspeedPresets";
-import Iridescence from "../background/Iridescence";
-import Waves from "../background/Waves";
-import LetterGlitch from "../background/LetterGlitch";
+import axios from 'axios';
+import Aurora from "../background/aurora/Aurora";
+import DarkVeil from "../background/darkVeil/DarkVeil";
+import Galaxy from "../background/galaxy/Galaxy";
+import Lightning from "../background/lightning/Lightning";
+import FaultyTerminal from "../background/faultyTerminal/FaultyTerminal";
+import DotGrid from "../background/dotGrid/DotGrid";
+import Hyperspeed from "../background/hyperspeed/Hyperspeed";
+import Iridescence from "../background/iridescence/Iridescence";
+import Waves from "../background/waves/Waves";
+import LetterGlitch from "../background/letterGlitch/LetterGlitch";
+import LiquidChrome from "../background/liquidChrome/LiquidChrome";
 import Squares from "../background/squares/Squares";
-import { Button } from "antd";
+import Balatro from "../background/balatro/Balatro";
 
 const toggleSettingsContext = createContext();
 
 export const ToggleBackgroundSettingsProvider = ({children}) => {
-    const [background, setBackground] = useState("squares");
+    const [background, setBackground] = useState("");
 
     // ############################### AURORA SETTINGS #######################################
     const [auroraBackgroundSettings, setAuroraBackgroundSettings] = useState({
@@ -215,53 +218,51 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
 
     
 
-    const defaultHypserspeedSettings = {
-        // default : {
-                    onSpeedUp: () => { },
-                    onSlowDown: () => { },
-                    distortion: 'turbulentDistortion',
-                    length: 400,
-                    roadWidth: 10,
-                    islandWidth: 2,
-                    lanesPerRoad: 4,
-                    fov: 90,
-                    fovSpeedUp: 150,
-                    speedUp: 2,
-                    carLightsFade: 0.4,
-                    totalSideLightSticks: 20,
-                    lightPairsPerRoadWay: 40,
-                    shoulderLinesWidthPercentage: 0.05,
-                    brokenLinesWidthPercentage: 0.1,
-                    brokenLinesLengthPercentage: 0.5,
-                    lightStickWidth: [0.12, 0.5],
-                    lightStickHeight: [1.3, 1.7],
-                    movingAwaySpeed: [60, 80],
-                    movingCloserSpeed: [-120, -160],
-                    carLightsLength: [400 * 0.03, 400 * 0.2],
-                    carLightsRadius: [0.05, 0.14],
-                    carWidthPercentage: [0.3, 0.5],
-                    carShiftX: [-0.8, 0.8],
-                    carFloorSeparation: [0, 5],
-                    colors: {
-                    roadColor: 0x080808,
-                    islandColor: 0x0a0a0a,
-                    background: 0x000000,
-                    shoulderLines: 0xFFFFFF,
-                    brokenLines: 0xFFFFFF,
-                    leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
-                    rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
-                    sticks: 0x03B3C3,
-                    }
-                // }
+    const defaultHyserspeedSettings = {
+        onSpeedUp: () => { },
+        onSlowDown: () => { },
+        distortion: 'turbulentDistortion',
+        length: 400,
+        roadWidth: 10,
+        islandWidth: 2,
+        lanesPerRoad: 4,
+        fov: 90,
+        fovSpeedUp: 150,
+        speedUp: 2,
+        carLightsFade: 0.4,
+        totalSideLightSticks: 20,
+        lightPairsPerRoadWay: 40,
+        shoulderLinesWidthPercentage: 0.05,
+        brokenLinesWidthPercentage: 0.1,
+        brokenLinesLengthPercentage: 0.5,
+        lightStickWidth: [0.12, 0.5],
+        lightStickHeight: [1.3, 1.7],
+        movingAwaySpeed: [60, 80],
+        movingCloserSpeed: [-120, -160],
+        carLightsLength: [400 * 0.03, 400 * 0.2],
+        carLightsRadius: [0.05, 0.14],
+        carWidthPercentage: [0.3, 0.5],
+        carShiftX: [-0.8, 0.8],
+        carFloorSeparation: [0, 5],
+        colors: {
+        roadColor: 0x080808,
+        islandColor: 0x0a0a0a,
+        background: 0x000000,
+        shoulderLines: 0xFFFFFF,
+        brokenLines: 0xFFFFFF,
+        leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
+        rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
+        sticks: 0x03B3C3,
+        }
     }
 
     const hyperspeedPresetOptions = hyperspeedPresets
     
-    const [hypserspeedBackgroundSettings, setHyperspeedSettings] = useState(defaultHypserspeedSettings)
+    const [hypserspeedBackgroundSettings, setHyperspeedSettings] = useState(defaultHyserspeedSettings)
 
     const changeHyperspeedSettings = (presetSelected) =>{
         if (presetSelected == 'default'){
-            setHyperspeedSettings(defaultHypserspeedSettings)
+            setHyperspeedSettings(defaultHyserspeedSettings)
         }else if (presetSelected == 'cyberpunk'){
             setHyperspeedSettings(hyperspeedPresetOptions.one)
         } else if (presetSelected == 'akira'){
@@ -320,14 +321,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }
 
 
-    const updateWavesColorIndex = (index, newColor) => {
-        const updatedStops = wavesBackgroundSettings.wavesColor; 
-        updatedStops[index] = newColor;              
-        setIridescenceBackgroundSettings(prev => {
-            return { ...prev, ...updatedStops}; 
-        })
-    }
-
 // ############################### LETTER GLITCH SETTINGS ################################
 
     const defaultLetterGlitchSettings = {
@@ -368,10 +361,46 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
         speed : {min : 0.1, max : 2, step : 0.01},
     }
 
+// ############################### LIQUID CHROME SETTINGS ################################
+
+    const defaultLiquidChromeSettings = {
+        red: 0.1,
+        green: 0.1,
+        blue: 0.1,
+        speed: 0.3,
+        amplitude: 0.3,
+    }
+
+    const [liquidChromeBackgroundSettings, setLiquidChromeBackgroundSettings] = useState(defaultLiquidChromeSettings)
+
+    const liquidChromeFormSettings = {
+        red : {min : -0.1, max : 1, step : 0.1},
+        blue : {min : -0.1, max : 1, step : 0.1},
+        green : {min : -0.1, max : 1, step : 0.1},
+        speed : {min : -2, max : 2, step : 0.1},
+        amplitude : {min : 0.1, max : 1, step : 0.01},
+    }
+
+// ############################### BALATRO SETTINGS ################################
+
+    const defaultBalatroSettings = {
+        color1: "#DE443B",
+        color2: "#006BB4",
+        color3: "#162325",
+        pixelFilter : 745
+    }
+
+    const [balatroBackgroundSettings, setBalatroBackgroundSettings] = useState(defaultBalatroSettings)
+
+    const balatroFormSettings = {
+        pixelFilter : {min : 0, max : 2000, step : 10},
+    }
+
+
 // ###############################################################################
 // ############################### RESET SETTINGS ################################
 // ###############################################################################
-    const reset = (backgroundForm) => {
+    const reset = async (backgroundForm) => {
         if (background === 'aurora'){
             setAuroraBackgroundSettings(defaultAuroraBackgroundSettings)
             backgroundForm.setFieldsValue({
@@ -437,7 +466,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 activeColor:  new Color('#5227FF'),
             })
         }else if (background === 'hyperspeed'){
-            setHyperspeedSettings(hypserspeedDefaultSettings.default)
+            setHyperspeedSettings(defaultHyserspeedSettings)
         }else if (background === 'iridescence'){
             setIridescenceBackgroundSettings(defaultIridescenceSettings)
         }else if (background === 'waves'){
@@ -463,7 +492,26 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 borderColor : new Color("#fff"),
                 hoverFillColor : new Color('#222')
             })
+        }else if (background === 'liquidChrome'){
+            setLiquidChromeBackgroundSettings(defaultLiquidChrome)
+            backgroundForm.setFieldsValue({
+                direction : defaultSquaresSettings.direction,
+                squareSize : defaultSquaresSettings.squareSize,
+                speed : defaultSquaresSettings.speed,
+                borderColor : new Color("#fff"),
+                hoverFillColor : new Color('#222')
+            })            
+        }else if (background === 'balatro'){
+            setBalatroBackgroundSettings(defaultBalatroSettings)
+            backgroundForm.setFieldsValue({
+                color1 : defaultBalatroSettings.color1,
+                color2 : defaultBalatroSettings.color2,
+                color3 : defaultBalatroSettings.color3,
+                pixelFilter : defaultBalatroSettings.pixelFilter
+            })                
         }
+
+        const req = await axios.post('http://localhost:8080/resetbackgroundsettings', {params : {'background' : background}})
     }
 
 
@@ -473,7 +521,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
 
         if (e === 'aurora'){
             document.body.style.backgroundColor = '#1a1a1afd';
-            // document.body.style.backgroundColor = '#1a1a1afd';
         } else if (e === 'veil'){
             document.body.style.backgroundColor = 'black';
         } else if (e === 'galaxy'){
@@ -486,24 +533,86 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             document.body.style.backgroundColor = 'black';
         } else if (e === 'squares'){
             document.body.style.backgroundColor = 'black';
+        } else if (e === 'hyperspeed'){
+            document.body.style.backgroundColor = 'black';
+        } else if (e === 'dotGrid'){
+            document.body.style.backgroundColor = 'black';
+        }
+    }
+
+    async function getData() {
+        const req = await axios.get('http://localhost:8080/getBackgroundSettings')
+        setBackground(req.data[0])
+        const currentBackground = req.data[0]
+
+        if (currentBackground === 'aurora'){
+            document.body.style.backgroundColor = '#1a1a1afd';
+            setAuroraBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'veil'){
+            document.body.style.backgroundColor = 'black';
+            setVeilBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'galaxy'){
+            document.body.style.backgroundColor = 'black';
+            setGalaxyBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'rippleGrid'){
+            // document.body.style.backgroundColor = 'black';
+            
+
+        } else if (currentBackground === 'waves'){
+            document.body.style.backgroundColor = 'black';
+            setWavesBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'letterGlitch'){
+            console.log(req.data[1])
+            document.body.style.backgroundColor = 'black';
+            setLetterGlitchBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'squares'){
+            document.body.style.backgroundColor = 'black';
+            setSquareBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'hyperspeed'){
+            document.body.style.backgroundColor = 'black';
+            const preset = req.data[1]['preset']
+            if (preset == 'default'){
+                setHyperspeedSettings(defaultHyserspeedSettings)
+            }else if (preset == 'cyberpunk'){
+                setHyperspeedSettings(hyperspeedPresetOptions.one)
+            } else if (preset == 'akira'){
+                setHyperspeedSettings(hyperspeedPresetOptions.two)
+            } else if (preset == 'golden'){
+                setHyperspeedSettings(hyperspeedPresetOptions.three)
+            } else if (preset == 'split'){
+                setHyperspeedSettings(hyperspeedPresetOptions.four)
+            } else if (preset == 'highway'){
+                setHyperspeedSettings(hyperspeedPresetOptions.five)
+            }else if (preset == 'other'){
+                setHyperspeedSettings(hyperspeedPresetOptions.six)
+            }
+
+        } else if (currentBackground === 'dotGrid'){
+            document.body.style.backgroundColor = 'black';
+            setDotGridBackgroundSettings(req.data[1])
+
+        } else if (currentBackground === 'faultyTerminal'){
+            setFaultyTerminalBackgroundSettings(req.data[1])
+        } else if (currentBackground === 'iridescence'){
+            setIridescenceBackgroundSettings(req.data[1])
+        } else if (currentBackground === 'liquidChrome'){
+            setLiquidChromeBackgroundSettings(req.data[1])
+        } else if (currentBackground === 'balatro'){
+            setBalatroBackgroundSettings(req.data[1])
         }
     }
 
 
 
-    // useEffect(()=>{
-    //     if (background === 'veil'){
-    //         document.body.style.backgroundColor = 'black';
-    //     }else if (background === 'aurora'){
-    //         console.log(`aurora settings: ${auroraBackgroundSettings}`)
-    //         document.body.style.backgroundColor = '#1a1a1afd';
-    //     }else if (background === 'galaxy'){
-    //         document.body.style.backgroundColor = 'black';
-    //     }else if (background === 'sqaures'){
-    //         document.body.style.backgroundColor = 'black';
-    //     }
-        
-    // }, [])
+    useEffect(() =>{
+        getData()        
+    }, [])
 
     return (
         <toggleSettingsContext.Provider value={{background, setChosenBackground, reset, 
@@ -515,9 +624,11 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             dotGridSettings: {dotGridBackgroundSettings, setDotGridBackgroundSettings},
             hyperspeedSettings: {changeHyperspeedSettings},
             iridescenceSettings : {iridescenceBackgroundSettings, setIridescenceBackgroundSettings, iridescenceFormSettings, updateIridescenceColorIndex},
-            wavesSettings : {wavesBackgroundSettings, setWavesBackgroundSettings, wavesFormSettings, updateWavesColorIndex},
+            wavesSettings : {wavesBackgroundSettings, setWavesBackgroundSettings, wavesFormSettings},
             letterGlitchSettings : {letterGlitchBackgroundSettings, setLetterGlitchBackgroundSettings, updateLetterGlitchIndex, letterGlitchFormSettings},
-            squaresSettings : {squareBackgroundSettings, setSquareBackgroundSettings, squaresFormSettings}
+            squaresSettings : {squareBackgroundSettings, setSquareBackgroundSettings, squaresFormSettings},
+            liquidChromeSettings : {liquidChromeBackgroundSettings, liquidChromeFormSettings, setLiquidChromeBackgroundSettings},
+            balatroSettings : {balatroBackgroundSettings, setBalatroBackgroundSettings, balatroFormSettings}
         }}>
             <div className="fixed inset-0 -z-10 relative">
                 { background === 'aurora' &&
@@ -743,6 +854,52 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                         />  
                     </div>                
                 }
+                {background === 'liquidChrome' &&
+                    <div className="z-0"
+                    style={{
+                    position: 'fixed', 
+                    width: '100%',
+                    height: '100%'  
+                    }}>
+                        {/* <div style={{ width: '100%', height: '600px', position: 'relative' }}> */}
+                        <LiquidChrome
+                            baseColor={[liquidChromeBackgroundSettings.red, liquidChromeBackgroundSettings.green, liquidChromeBackgroundSettings.blue]}
+                            speed={liquidChromeBackgroundSettings.speed}
+                            amplitude={liquidChromeBackgroundSettings.amplitude}
+                            interactive={false}
+                        />
+                        {/* </div> */}
+                    </div>
+                }
+                {background === 'balatro' &&   
+                    <div className="z-0"
+                    style={{
+                    position: 'fixed', 
+                    width: '100%',
+                    height: '100%'  
+                    }}>
+                        <>
+                            <div className="flex ">
+                                {/* <div className="z-1  flex mx-auto items-center justify-center h-screen"> 
+                                    <img src={card} />   
+                                </div> */}
+                                
+                                <div className="z-0" style={{ width: '100%', height: '100vh', position: 'fixed' }}>
+                                    <Balatro
+                                    color1={balatroBackgroundSettings.color1}
+                                    color2={balatroBackgroundSettings.color2}
+                                    color3={balatroBackgroundSettings.color3}
+                                    isRotate={false}
+                                    mouseInteraction={false}
+                                    pixelFilter={balatroBackgroundSettings.pixelFilter}
+                                    />                                   
+                                </div>                                
+                            </div>
+                        </>
+
+                    </div>
+                }
+                
             </div>
             <div>
                {children} 

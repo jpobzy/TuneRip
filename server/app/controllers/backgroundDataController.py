@@ -6,6 +6,7 @@ import urllib.parse
 class backgroundData():
     data = """
     {
+        "selectedBackground" : "aurora",
         "Backgrounds" : {
             "aurora" : {
                 "blend" : 0.5,
@@ -55,7 +56,7 @@ class backgroundData():
                 "twinkleIntensity" : 0.3,
                 "transparent" : true   
             },
-            "hyperSpeed" : {
+            "hyperspeed" : {
                 "preset" : "default"
             }, 
             "iridescence" : {
@@ -74,6 +75,33 @@ class backgroundData():
             "waves" : {
                 "waveSpeedX" : 0.0125,
                 "wavesColor" : "#FFFFFF"
+            },
+            "letterGlitch" : {
+                "glitchColors" : ["#2b4539", "#61dca3", "#61b3dc"],
+                "glitchSpeed" : 10,
+                "smoothAnimation" : true,
+                "showCenterVignette": true,
+                "showOuterVignette": false
+            },
+            "squares" : {
+                "direction" : "diagonal",
+                "speed" : 0.5,
+                "squareSize" : 40,
+                "borderColor" : "#fff",
+                "hoverFillColor" : "#222"
+            },
+            "liquidChrome" : {
+                "red" : 0.1,
+                "green" : 0.1,
+                "blue" : 0.1,
+                "speed" : 0.3,
+                "amplitude" : 0.3     
+            },
+            "balatro" : {
+                "color1" : "#DE443B",
+                "color2" : "#006BB4",
+                "color3" : "#162325",
+                "pixelFilter" : 745
             }
         }
     }
@@ -90,36 +118,233 @@ class backgroundData():
             with open(self.file, 'w') as file:
                 file.write(backgroundData.data)
 
-        defaultFile = appdataFolder / 'DefaultBackgroundData.json' 
-        if not Path(defaultFile).exists():
-            Path.touch(defaultFile)
-            with open(defaultFile, 'w') as file:
+        self.defaultDataFile = appdataFolder / 'DefaultBackgroundData.json' 
+        if not Path(self.defaultDataFile).exists():
+            Path.touch(self.defaultDataFile)
+            with open(self.defaultDataFile, 'w') as file:
                 file.write(backgroundData.data)
 
-        self.defaultDataFile = defaultFile
         return
 
     def saveBackgroundSettings(self, request):
         url_parts = urllib.parse.urlparse(request.url)
         query_parts = urllib.parse.parse_qs(url_parts.query)
-        background = query_parts.get('background')[0]
+        background = str(query_parts.get('background')[0])
         changes = json.loads(request.data)
+
         data = None
+
         with open(self.file, 'r') as file:
             data = json.load(file)
             for property, value in changes.items():
-                data['Backgrounds'][background][property] = value
+                if background == 'aurora':
+                    if property == 'color1':
+                        data['Backgrounds'][background]['colorStops'][0] = value
+
+                    if property == 'color2':
+                        data['Backgrounds'][background]['colorStops'][1] = value
+
+                    if property == 'color3':
+                        data['Backgrounds'][background]['colorStops'][2] = value
+
+                    if property == 'blend':
+                        data['Backgrounds'][background]['blend'] = value
+
+                    if property == 'speed':
+                        data['Backgrounds'][background]['speed'] = value
+
+                elif background == 'veil':
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value
+
+                    if property == 'hueShift':
+                        data['Backgrounds'][background][property] = value
+
+                    if property == 'noiseIntensity':
+                        data['Backgrounds'][background][property] = value
+
+                    if property == 'scanlineFrequency':
+                        data['Backgrounds'][background][property] = value
+
+                    if property == 'scanlineIntensity':
+                        data['Backgrounds'][background][property] = value
+
+                    if property == 'warpAmount':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'galaxy':
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value                
+                    if property == 'density':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'glowIntensity':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'saturation':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'hueShift':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'twinkleIntensity':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'transparent':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'starSpeed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value     
+
+                elif background == 'dotGrid':
+                    if property == 'baseColor':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'activeColor':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'dotSize':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'gap':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'proximity':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'shockRadius':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'shockStrength':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'resistance':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'returnDuration':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'faultyTerminal':
+                    if property == 'scale':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'tintColor':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'digitSize':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'noiseAmplitude':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'brightness':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'scanlineIntensity':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'curvature':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'mouseStrength':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'mouseReact':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'pageLoadAnimation':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'hyperspeed':
+                    if property == 'preset':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'iridescence':
+                    
+                    if property == 'red':
+                        data['Backgrounds'][background]['color'][0] = value
+                    if property == 'blue':
+                        data['Backgrounds'][background]['color'][2] = value                        
+                    if property == 'green':
+                        data['Backgrounds'][background]['color'][1] = value
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'amplitude':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'lightning':
+                    if property == 'hue':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'xOffset':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'intensity':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'size':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'waves':
+                    if property == 'waveSpeedX':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'wavesColor':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'letterGlitch':
+                    if property == 'glitchSpeed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'glitchColor1':
+                        data['Backgrounds'][background]['glitchColors'][0] = value
+                    if property == 'glitchColor2':
+                        data['Backgrounds'][background]['glitchColors'][1]  = value
+                    if property == 'glitchColor3':
+                        data['Backgrounds'][background]['glitchColors'][2] = value
+
+                elif background == 'squares':
+                    if property == 'direction':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'squareSize':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'borderColor':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'liquidChrome':
+                    if property == 'red':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'green':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'blue':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'speed':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'amplitude':
+                        data['Backgrounds'][background][property] = value
+
+                elif background == 'balatro':
+                    if property == 'color1':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'color2':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'color3':
+                        data['Backgrounds'][background][property] = value
+                    if property == 'pixelFilter':
+                        data['Backgrounds'][background][property] = value                
+
+            data['selectedBackground'] = background
+ 
 
         with open(self.file, 'w') as file:
             json.dump(data, file, indent=4)   
 
         return 'ok'
     
-    def reset(self):
+    def reset(self, request):
+        background = json.loads(request.data)['params']['background']
         with open(self.defaultDataFile, 'r') as file:
             data = json.load(file)
+            defaultData = data['Backgrounds'][background]
+
+        with open(self.file, 'r') as file:
+            currData = json.load(file)
+            currData['Backgrounds'][background] = defaultData
 
         with open(self.file, 'w') as file:
-            json.dump(data, file, indent=4)   
+            json.dump(currData, file, indent=4)   
 
         return 'ok'
+
+    def getBackgroundSettings(self):
+
+        jsonFile = Path(Path.home() / 'Documents/Github/TuneRip/server/appdata/BackgroundData.json')
+        with open(jsonFile, 'r') as file:
+            data = json.load(file)
+
+        currentBackground = data['selectedBackground']
+        currentBackgroundSettings = data['Backgrounds'][currentBackground]
+
+        # print(currentBackground)
+        # print(currentBackgroundSettings)
+        return currentBackground, currentBackgroundSettings
+    
+
