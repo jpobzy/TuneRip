@@ -3,7 +3,6 @@ import Youtubers from './components/Youtubers'
 import './assets/mainApp.css'
 import React, { useEffect, useState } from 'react'
 import { AnimatedBackground } from 'animated-backgrounds';
-import Aurora from './components/background/Aurora'
 import { Button, Space, DatePicker, version, App } from 'antd';
 import Dock from './components/dock/Dock'
 import { VscHome, VscAccount, VscArchive, VscSettingsGear } from 'react-icons/vsc';

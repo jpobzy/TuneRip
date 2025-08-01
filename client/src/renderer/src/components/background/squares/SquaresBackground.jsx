@@ -45,7 +45,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                 >
                         <Radio.Group
                         block
-                        defaultValue="diagonal"
+                        // defaultValue="diagonal"
                         options={options}
                         optionType="button"
                         buttonStyle="solid"
@@ -96,7 +96,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                         />
                     </Form.Item>
                 </div>
-                <div className="flex justify-center mr-[60px]">
+                {/* <div className="flex justify-center mr-[60px]">
                     <Form.Item
                     name="hoverFillColor"
                     label="Hover Fill Color" 
@@ -114,12 +114,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                         }}                                           
                         />
                     </Form.Item>
-                </div>
-
-                <Form.Item>
-                    <Button type="primary" onClick={()=>saveChanges()}>save</Button>
-                    <Button type="primary" onClick={()=>handleDefaultSettings()}>revert to default</Button>
-                </Form.Item>    
+                </div> */}
 
             </div>
         </>

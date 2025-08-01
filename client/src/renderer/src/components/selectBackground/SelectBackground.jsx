@@ -6,6 +6,17 @@ import { Color } from '@rc-component/color-picker';
 import SquaresBackground from "../background/squares/SquaresBackground";
 import AuroraBackground from "../background/aurora/AuroraBackground";
 import DarkVeilBackground from "../background/darkVeil/DarkVeilBackground";
+import GalaxyBackround from "../background/galaxy/GalaxyBackground";
+import LightningBackground from "../background/lightning/LightningBackground";
+import FaultyTerminalBackground from "../background/faultyTerminal/FaultyTerminalBackground";
+import DotGridBackground from "../background/dotGrid/DotGridBackground";
+import IridescenceBackground from "../background/iridescence/IridescenceBackground";
+import HyperspeedBackground from "../background/hyperspeed/HyperspeedBackground"; 
+import WavesBackground from "../background/waves/WavesBackground";
+import LetterGlitchBackground from "../background/letterGlitch/LetterGlitchBackground";
+import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackground";
+import BalatroBackground from "../background/balatro/BalatroBackground";
+import axios from 'axios';
 
 function SelectBackground(){
     const {background, setChosenBackground, reset,
@@ -13,7 +24,8 @@ function SelectBackground(){
         lightningSettings, faultyTerminalSettings,
         dotGridSettings, hyperspeedSettings,
         iridescenceSettings, wavesSettings,
-        letterGlitchSettings
+        letterGlitchSettings, squaresSettings,
+        liquidChromeSettings, balatroSettings
     } = toggleBackgroundSettings();
 
     const [selectChosen, setSelectChosen] = useState('')
@@ -35,20 +47,12 @@ function SelectBackground(){
         { value: 'waves', label: 'Waves' },    
         { value: 'letterGlitch', label: 'Letter Glitch' }, 
         { value: 'squares', label: 'Squares' }, 
+        { value: 'liquidChrome', label: 'Liquid Chrome' }, 
+        { value: 'balatro', label: 'Balatro' }, 
     ]
 
-    const hyperspeedPresetOptions = [
-        { value: 'Default', label: 'Default' },
-        { value: 'cyberpunk', label: 'CyberPunk' },
-        { value: 'akira', label: 'Akira' },
-        { value: 'golden', label: 'Golden' },
-        { value: 'split', label: 'Split' },
-        { value: 'highway', label: 'Highway' },
-        { value: 'other', label: 'other' },
-    ]
 
     const changeBackground = (e) => {
-        // setSelectedItem(e)
         setSelectChosen(e)
         setFormData({})
         if (e === 'veil'){
@@ -72,19 +76,6 @@ function SelectBackground(){
     const saveChanges = async() => {
         if (Object.keys(formData).length > 0){
             if (selectChosen === 'aurora'){
-                    // if (formData.blend){
-                    //     auroraSettings.setAuroraBackgroundSettings(prev => {
-                    //         return {...prev, blend : formData.blend}
-                    //     })
-                    // }
-
-                    // if (formData.speed){
-                    //     auroraSettings.setAuroraBackgroundSettings(prev => {
-                    //         return {...prev, speed : formData.speed}
-                    //     })
-                    // }
-
-
                 auroraSettings.setAuroraBackgroundSettings(prev => {
                     const updates = {}
                     if (formData.speed) updates.speed = formData.speed
@@ -284,11 +275,13 @@ function SelectBackground(){
                 })
             } else if (selectChosen === 'hyperspeed'){
                 hyperspeedSettings.changeHyperspeedSettings(selectedPreset)
+                console.log(`selected preset= ${selectedPreset}`)
+                console.log(selectedPreset)
             } else if (selectChosen === 'iridescence'){
                 iridescenceSettings.setIridescenceBackgroundSettings(prev => {
                     if (formData.red) iridescenceSettings.updateIridescenceColorIndex(0, formData.red) 
-                    if (formData.blue) iridescenceSettings.updateIridescenceColorIndex(1, formData.blue) 
-                    if (formData.green) iridescenceSettings.updateIridescenceColorIndex(2, formData.green)   
+                    if (formData.blue) iridescenceSettings.updateIridescenceColorIndex(2, formData.blue) 
+                    if (formData.green) iridescenceSettings.updateIridescenceColorIndex(1, formData.green)   
                     return {...prev}
                 })
 
@@ -326,10 +319,38 @@ function SelectBackground(){
                 }        
 
                 // console.log(letterGlitchSettings.letterGlitchBackgroundSettings.glitchColors)
+            } else if (selectChosen === 'squares'){
+                squaresSettings.setSquareBackgroundSettings(prev => {
+                const updates = {}
+                if (formData.direction) updates.direction = formData.direction
+                if (formData.squareSize) updates.squareSize = formData.squareSize
+                if (formData.speed) updates.speed = formData.speed
+                if (formData.borderColor) updates.borderColor = formData.borderColor
+                return {...prev, ...updates}
+            })  
+            } else if (selectChosen === 'liquidChrome'){
+                liquidChromeSettings.setLiquidChromeBackgroundSettings(prev => {
+                    const updates = {}
+                    if (formData.red) updates.red = formData.red
+                    if (formData.green) updates.green = formData.green
+                    if (formData.blue) updates.blue = formData.blue
+                    if (formData.speed) updates.speed = formData.speed
+                    if (formData.amplitude) updates.amplitude = formData.amplitude
+                    return {...prev, ...updates}
+                })
+            } else if (selectChosen === 'balatro'){
+                balatroSettings.setBalatroBackgroundSettings(prev => {
+                    const updates = {}
+                    if (formData.pixelFilter) updates.pixelFilter = formData.pixelFilter
+                    if (formData.color1) updates.color1 = formData.color1
+                    if (formData.color2) updates.color2 = formData.color2
+                    if (formData.color3) updates.color3 = formData.color3
+                    return {...prev, ...updates}
+                })     
             }
         }
         setChosenBackground(selectChosen)
-        // await axios.post('http://localhost:8080/savebackgroundsettings', formData, {params : {'background' : selectChosen}})
+        await axios.post('http://localhost:8080/savebackgroundsettings', formData, {params : {'background' : selectChosen}})
     }
 
     const handleDefaultSettings = () => {
@@ -344,7 +365,8 @@ function SelectBackground(){
             <div className="-mt-[30px]">
                 <Select
                     defaultValue=""
-                    style={{ width: 120 }}
+                    style={{ width: 220 }}
+                    value={selectChosen}
                     onChange={(e) => changeBackground(e)}
                     options={backgroundOptions}
                     />
@@ -369,824 +391,53 @@ function SelectBackground(){
                         onValuesChange={(e, a)=>handleFormChange(e, a)}
                         >
                             {selectChosen === 'aurora' &&
-                                // <div className="mt-[20px]">
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="blend"
-                                //         initialValue={auroraSettings.auroraBackgroundSettings.blend} 
-                                //         label={'Blend'}>
-                                //         <Slider 
-                                //         min={auroraSettings.auroraFormSettings.blend.min}
-                                //         max={auroraSettings.auroraFormSettings.blend.max}
-                                //         step={auroraSettings.auroraFormSettings.blend.step} 
-                                //         />
-                                //     </Form.Item> 
-
-                                //     {/* <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="amplitude"
-                                //         label={'Amplitude'}>
-                                //         <Slider 
-                                //         min={0}
-                                //         max={2}
-                                //         initialValues={1.0} 
-                                //         step={0.1} 
-                                //         />
-                                //     </Form.Item>    */}
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="speed"
-                                //         initialValue={auroraSettings.auroraBackgroundSettings.speed} 
-                                //         label={'Speed'}>
-                                //         <Slider 
-                                //         min={auroraSettings.auroraFormSettings.speed.min}
-                                //         max={auroraSettings.auroraFormSettings.speed.max}
-                                //         step={auroraSettings.auroraFormSettings.speed.step} 
-                                //         />
-                                //     </Form.Item>                           
-
-
-                                //     <div className="flex justify-center mr-[60px]">
-                                //         <Form.Item
-                                //         name="colorPicker1"
-                                //         label="Color 1"    
-                                //         initialValue={auroraSettings.auroraBackgroundSettings.colorStops[0]}
-                                //         >   
-                                //                 <ColorPicker 
-                                //                 allowClear
-                                //                 onChange={c => {
-                                //                     if (c.cleared){
-                                //                         delete formData['color1']
-                                //                     }else{
-                                //                     handleFormChange({color1 : c.toHexString()}); 
-                                //                     }                                                
-                                //                 }}                                            
-                                //                 />
-                                        
-                                //         </Form.Item>
-                                //     </div>
-
-                                //     <div className="flex justify-center mr-[60px]">
-                                //         <Form.Item
-                                //         name="colorPicker2"
-                                //         label="Color 2" 
-                                //         initialValue={auroraSettings.auroraBackgroundSettings.colorStops[1]}   
-                                //         >
-                                //             <ColorPicker
-                                //             allowClear
-                                //             onChange={c => {
-                                //                 if (c.cleared){
-                                //                     delete formData['color2']
-                                //                 }else{
-                                //                     handleFormChange({color2 : c.toHexString()});   
-                                //                 }
-                                                
-                                //             }}                                           
-                                //             />
-                                //         </Form.Item>
-                                //     </div>
-
-
-                                //     <div className="flex justify-center mr-[60px]">
-                                //         <Form.Item
-                                //         name="colorPicker3"
-                                //         label="Color 3" 
-                                //         initialValue={auroraSettings.auroraBackgroundSettings.colorStops[2]}
-                                //         >
-                                //                 <ColorPicker 
-                                //                 allowClear
-                                //                 onChange={c => {
-                                //                     if (c.cleared){
-                                //                         delete formData['color3']
-                                //                     }else{
-                                //                         handleFormChange({color3 : c.toHexString()});   
-                                //                     }
-                                //                 }}
-                                //                 />
-                                            
-                                //         </Form.Item>  
-                                //     </div>
-                                // </div> 
-
                                 <AuroraBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             } 
                             {selectChosen === 'veil' &&
-                                // <div className="mt-[20px]">
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="speed"
-                                //         label={'Speed'}
-                                //         initialValue={veilSettings.veilBackgroundSettings.speed}
-                                //         >
-                                //         <Slider 
-                                //         min={veilSettings.veilFormSettings.speed.min}
-                                //         max={veilSettings.veilFormSettings.speed.max}
-                                //         step={veilSettings.veilFormSettings.speed.step} 
-                                //         />
-                                //     </Form.Item> 
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="hueShift"
-                                //         label={'Hue Shift'}
-                                //         initialValue={veilSettings.veilBackgroundSettings.hueShift}
-                                //         >
-                                //         <Slider 
-                                //         min={veilSettings.veilFormSettings.hueShift.min}
-                                //         max={veilSettings.veilFormSettings.hueShift.max}
-                                //         step={veilSettings.veilFormSettings.hueShift.step} 
-                                //         />
-                                //     </Form.Item>   
-                    
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="scanlineFrequency"
-                                //         label={'Scanline Frequency'}
-                                //         initialValue={veilSettings.veilBackgroundSettings.scanlineFrequency}
-                                //         >
-                                //         <Slider 
-                                //         min={veilSettings.veilFormSettings.scanlineFrequency.min}
-                                //         max={veilSettings.veilFormSettings.scanlineFrequency.max}
-                                //         step={veilSettings.veilFormSettings.scanlineFrequency.step} 
-                                //         />
-                                //     </Form.Item> 
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="scanlineIntensity"
-                                //         label={'Scanline Intensity'}
-                                //         initialValue={veilSettings.veilBackgroundSettings.scanlineIntensity}
-                                //         >
-                                //         <Slider 
-                                //         min={veilSettings.veilFormSettings.scanlineIntensity.min}
-                                //         max={veilSettings.veilFormSettings.scanlineIntensity.max}
-                                //         step={veilSettings.veilFormSettings.scanlineIntensity.step} 
-                                //         />
-                                //     </Form.Item>   
-
-                                //     <Form.Item 
-                                //         style={{width: 300 }}
-                                //         name="warpAmount"
-                                //         label={'Warp Amount'}
-                                //         initialValue={veilSettings.veilBackgroundSettings.warpAmount}
-                                //         >
-                                //         <Slider 
-                                //         min={veilSettings.veilFormSettings.warpAmount.min}
-                                //         max={veilSettings.veilFormSettings.warpAmount.max}
-                                //         step={veilSettings.veilFormSettings.warpAmount.step} 
-                                //         />
-                                //     </Form.Item>        
-                                // </div> 
                                 <DarkVeilBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }      
                             {selectChosen === 'galaxy' &&
-                                <div className="mt-[20px]">
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="density"
-                                        label={'Density'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.density}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.starSpeed.min}
-                                        max={galaxySettings.galaxyFormSettings.starSpeed.max}
-                                        step={galaxySettings.galaxyFormSettings.starSpeed.step}
-                                        />
-                                    </Form.Item> 
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="glowIntensity"
-                                        label={'Glow Intensity'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.glowIntensity}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.glowIntensity.min}
-                                        max={galaxySettings.galaxyFormSettings.glowIntensity.max}
-                                        step={galaxySettings.galaxyFormSettings.glowIntensity.step}
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="saturation"
-                                        label={'Saturation'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.saturation}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.saturation.min}
-                                        max={galaxySettings.galaxyFormSettings.saturation.max}
-                                        step={galaxySettings.galaxyFormSettings.saturation.step}
-                                        />
-                                    </Form.Item>                           
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="hueShift"
-                                        label={'Hue Shift'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.hueShift}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.hueShift.min}
-                                        max={galaxySettings.galaxyFormSettings.hueShift.max}
-                                        step={galaxySettings.galaxyFormSettings.hueShift.step}
-                                        />
-                                    </Form.Item>                           
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="twinkleIntensity"
-                                        label={'Twinkle Intensity'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.twinkleIntensity}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.twinkleIntensity.min}
-                                        max={galaxySettings.galaxyFormSettings.twinkleIntensity.max}
-                                        step={galaxySettings.galaxyFormSettings.twinkleIntensity.step}
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item
-                                        style={{width: 300 }}
-                                        name="transparent"
-                                        label={'Transparent'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.transparent}
-                                        >
-                                        <Switch />
-                                    </Form.Item>
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="starSpeed"
-                                        label={'Star Speed'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.starSpeed}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.starSpeed.min}
-                                        max={galaxySettings.galaxyFormSettings.starSpeed.max}
-                                        step={galaxySettings.galaxyFormSettings.starSpeed.step}
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="speed"
-                                        label={'Animation Speed'}
-                                        initialValue={galaxySettings.galaxyBackgroundSettings.speed}
-                                        >
-                                        <Slider 
-                                        min={galaxySettings.galaxyFormSettings.speed.min}
-                                        max={galaxySettings.galaxyFormSettings.speed.max}
-                                        step={galaxySettings.galaxyFormSettings.speed.step} 
-                                        />
-                                    </Form.Item>   
-                                </div> 
+                                <GalaxyBackround handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }  
                             {selectChosen === 'lightning' &&
-                                <div className="mt-[20px]">
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="hue"
-                                        label={'Hue'}
-                                        initialValue={lightningSettings.lightningBackgroundSettings.hue}
-                                        >
-                                        <Slider 
-                                        min={lightningSettings.lightningFormSettings.hue.min}
-                                        max={lightningSettings.lightningFormSettings.hue.max}
-                                        step={lightningSettings.lightningFormSettings.hue.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="xOffset"
-                                        label={'X Offset'}
-                                        initialValue={lightningSettings.lightningBackgroundSettings.xOffset}
-                                        >
-                                        <Slider 
-                                        min={lightningSettings.lightningFormSettings.xOffset.min}
-                                        max={lightningSettings.lightningFormSettings.xOffset.max}
-                                        step={lightningSettings.lightningFormSettings.xOffset.step} 
-                                        />
-                                    </Form.Item>   
-
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="speed"
-                                        label={'Speed'}
-                                        iinitialValue={lightningSettings.lightningBackgroundSettings.speed}
-                                        >
-                                        <Slider 
-                                        min={lightningSettings.lightningFormSettings.speed.min}
-                                        max={lightningSettings.lightningFormSettings.speed.max}
-                                        step={lightningSettings.lightningFormSettings.speed.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="intensity"
-                                        label={'Intensity'}
-                                        initialValue={lightningSettings.lightningBackgroundSettings.intensity}
-                                        >
-                                        <Slider 
-                                        min={lightningSettings.lightningFormSettings.intensity.min}
-                                        max={lightningSettings.lightningFormSettings.intensity.max}
-                                        step={lightningSettings.lightningFormSettings.intensity.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="size"
-                                        label={'Size'}
-                                        initialValue={lightningSettings.lightningBackgroundSettings.size}
-                                        >
-                                        <Slider 
-                                        min={lightningSettings.lightningFormSettings.size.min}
-                                        max={lightningSettings.lightningFormSettings.size.max}
-                                        step={lightningSettings.lightningFormSettings.size.step} 
-                                        />
-                                    </Form.Item>   
-
-                                </div>
+                                <LightningBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen === 'faultyTerminal' &&
-                                <div className="mt-[20px]">
-                                    <div className="mr-[60px]">
-                                        <Form.Item
-                                        name="tintColor"
-                                        label="Tint Color"    
-                                        // initialValue={auroraSettings.auroraBackgroundSettings.colorStops[0]}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.tintColor}
-                                        >
-                                            <ColorPicker 
-                                            allowClear
-                                            onChange={c => {
-                                                if (c.cleared){
-                                                    delete formData['tintColor']
-                                                }else{
-                                                handleFormChange({tintColor : c.toHexString()}); 
-                                                }                                               
-                                            }}                                            
-                                            /> 
-                                        </Form.Item>
-                                    </div>
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="scale"
-                                        label={'Scale'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.scale}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.scale.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.scale.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.scale.step} 
-                                        />
-                                    </Form.Item>   
-
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="digitSize"
-                                        label={'Digit Size'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.digitSize}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="noiseAmplitude"
-                                        label={'Noise Amplitude'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.noiseAmplitude}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="brightness"
-                                        label={'Brightness'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.brightness}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.brightness.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.brightness.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.brightness.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="scanlineIntensity"
-                                        label={'Scanline Intensity'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.scanlineIntensity}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="curvature"
-                                        label={'Curvature'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.curvature}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.curvature.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.curvature.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.curvature.step} 
-                                        />
-                                    </Form.Item>   
-
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="mouseStrength"
-                                        label={'Mouse Strength'}
-                                        initialValue={faultyTerminalSettings.faultyTerminalBackgroundSettings.mouseStrength}
-                                        >
-                                        <Slider 
-                                        min={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.min}
-                                        max={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.max}
-                                        step={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.step} 
-                                        />
-                                    </Form.Item>   
-
-                                    <Form.Item
-                                        style={{width: 300 }}
-                                        name="mouseReact"
-                                        label={'Mouse React'}
-                                        >
-                                        <Switch />
-                                    </Form.Item>
-
-                                    <Form.Item
-                                        style={{width: 300 }}
-                                        name="pageLoadAnimation"
-                                        label={'Page Load Animation'}
-                                        >
-                                        <Switch />
-                                    </Form.Item>                                   
-
-                                </div>                            
+                                <FaultyTerminalBackground formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen === 'dotGrid' && 
-                                <div className="mt-[20px]">
-                                    <div className="">
-                                        <Form.Item
-                                        name="baseColor"
-                                        label="Base Color"
-                                        valuePropName="value"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.baseColor} 
-                                        >    
-                                                <ColorPicker
-                                                allowClear
-                                                onChange={c => {
-                                                    if (c.cleared){
-                                                        delete formData['baseColor']
-                                                    }else{
-                                                        handleFormChange({baseColor : c.toHexString()});   
-                                                    }
-                                                }}
-                                                />
-                                        </Form.Item>  
-                                    </div>
-
-
-                                    <div className=" ">
-                                        <Form.Item
-                                        name="activeColor"
-                                        label="Active Color" 
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.activeColor} 
-                                        >       
-                                                <ColorPicker 
-                                                allowClear
-                                                onChange={c => {
-                                                    if (c.cleared){
-                                                        delete formData['activeColor']
-                                                    }else{
-                                                        handleFormChange({activeColor : c.toHexString()});   
-                                                    }
-                                                }}
-                                                />
-                                        
-                                        </Form.Item>  
-                                    </div>
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="dotSize"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.dotSize} 
-                                        label={'Dot Size'}>
-                                        <Slider 
-                                        min={0}
-                                        max={50}
-                                        step={1} 
-                                        />
-                                    </Form.Item> 
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="gap"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.gap} 
-                                        label={'Gap'}>
-                                        <Slider 
-                                        min={0}
-                                        max={100}
-                                        step={1} 
-                                        />
-                                    </Form.Item>                           
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="proximity"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.proximity} 
-                                        label={'Proximity'}>
-                                        <Slider 
-                                        min={0}
-                                        max={500}
-                                        step={10} 
-                                        />
-                                    </Form.Item>     
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="shockRadius"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.shockRadius} 
-                                        label={'Shock Radius'}>
-                                        <Slider 
-                                        min={0}
-                                        max={500}
-                                        step={10} 
-                                        />
-                                    </Form.Item>     
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="shockStrength"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.shockStrength} 
-                                        label={'Shock Strength'}>
-                                        <Slider 
-                                        min={0}
-                                        max={20}
-                                        step={1} 
-                                        />
-                                    </Form.Item>     
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="resistance"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.resistance} 
-                                        label={'Resistance'}>
-                                        <Slider 
-                                        min={100}
-                                        max={2000}
-                                        step={50} 
-                                        />
-                                    </Form.Item>     
-
-
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="returnDuration"
-                                        initialValue={dotGridSettings.dotGridBackgroundSettings.returnDuration} 
-                                        label={'Return Duration'}>
-                                        <Slider 
-                                        min={0.1}
-                                        max={5}
-                                        step={0.1} 
-                                        />
-                                    </Form.Item>     
-                                </div>                             
+                                <DotGridBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen === 'hyperspeed' &&
-                                <div className="mt-[20px]">
-                                    <Form.Item
-                                        name="presets"
-                                        label="presets"
-                                        initialValue={'Default'}
-                                    >
-                                         <Select
-                                            style={{ width: 120 }}
-                                            onChange={(e) => setSelectedPreset(e)}
-                                            options={hyperspeedPresetOptions}
-                                            />
-                                    </Form.Item>
-
-                                </div> 
+                                <HyperspeedBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} setSelectedPreset={setSelectedPreset}/>
                             }
                             {selectChosen === 'iridescence' &&
-                                <div className="mt-[20px]">
-                                    <div className="columns-3 gap-[20px] w-[700px]">
-                                        <Form.Item
-                                            name="red"
-                                            label="Red"
-                                            initialValue={iridescenceSettings.iridescenceBackgroundSettings.color[0]} 
-                                        >
-                                            <Slider 
-                                            min={iridescenceSettings.iridescenceFormSettings.red.min}
-                                            max={iridescenceSettings.iridescenceFormSettings.red.max}
-                                            step={iridescenceSettings.iridescenceFormSettings.red.step} 
-                                            />
-                                        </Form.Item> 
-
-                                        <Form.Item
-                                            name="green"
-                                            label="Green"
-                                            initialValue={iridescenceSettings.iridescenceBackgroundSettings.color[1]} 
-                                        >
-                                            <Slider 
-                                            min={iridescenceSettings.iridescenceFormSettings.green.min}
-                                            max={iridescenceSettings.iridescenceFormSettings.green.max}
-                                            step={iridescenceSettings.iridescenceFormSettings.green.step} 
-                                            />                             
-                                        </Form.Item>   
-                                        
-                                        <Form.Item
-                                            name="blue"
-                                            label="Blue"
-                                            initialValue={iridescenceSettings.iridescenceBackgroundSettings.color[2]} 
-                                        >
-                                            <Slider 
-                                            min={iridescenceSettings.iridescenceFormSettings.blue.min}
-                                            max={iridescenceSettings.iridescenceFormSettings.blue.max}
-                                            step={iridescenceSettings.iridescenceFormSettings.blue.step} 
-                                            />
-                                        </Form.Item>                                                                    
-                                    </div>
-                                <div className="mx-auto w-[250px]">
-                                   <Form.Item
-                                    name="speed"
-                                    label="Speed"
-                                    initialValue={iridescenceSettings.iridescenceBackgroundSettings.speed} 
-                                   >    
-                                        <Slider 
-                                        min={iridescenceSettings.iridescenceFormSettings.speed.min}
-                                        max={iridescenceSettings.iridescenceFormSettings.speed.max}
-                                        step={iridescenceSettings.iridescenceFormSettings.speed.step} 
-                                        />
-                                    </Form.Item>                                       
-                                </div>
-     
-                                </div>
+                                <IridescenceBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }                            
                             {selectChosen === 'waves' &&
-                                <div className="mt-[20px]">
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="waveSpeedX"
-                                        initialValue={wavesSettings.wavesBackgroundSettings.waveSpeedX} 
-                                        label={'Wave Speed X'}>
-                                        <Slider 
-                                        min={wavesSettings.wavesFormSettings.waveSpeedX.min}
-                                        max={wavesSettings.wavesFormSettings.waveSpeedX.max}
-                                        step={wavesSettings.wavesFormSettings.waveSpeedX.step} 
-                                        />
-                                    </Form.Item> 
-                         
-
-
-                                    <div className="flex justify-center mr-[60px]">
-                                        <Form.Item
-                                        name="wavesColor"
-                                        label="Waves Color"    
-                                        initialValue={wavesSettings.wavesBackgroundSettings.wavesColor}
-                                        >   
-                                                <ColorPicker 
-                                                allowClear
-                                                onChange={c => {
-                                                    if (c.cleared){
-                                                        delete formData['wavesColor']
-                                                    }else{
-                                                    handleFormChange({wavesColor : c.toHexString()}); 
-                                                    }                                                
-                                                }}                                            
-                                                />
-                                        
-                                        </Form.Item>
-                                    </div>
-                                </div> 
+                                <WavesBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             } 
                             {selectChosen === 'letterGlitch' &&
-                                <div className="mt-[20px]">
-                                    <Form.Item 
-                                        style={{width: 300 }}
-                                        name="glitchSpeed"
-                                        initialValue={letterGlitchSettings.letterGlitchBackgroundSettings.glitchSpeed} 
-                                        label={'Glitch Speed'}>
-                                        <Slider 
-                                        min={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.min}
-                                        max={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.max}
-                                        step={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.step} 
-                                        />
-                                    </Form.Item> 
-
-
-                                    <div className="flex justify-center mr-[60px]">
-                                        <Form.Item
-                                        name="glitchColor1"
-                                        label="Glitch color 1"    
-                                        initialValue={letterGlitchSettings.letterGlitchBackgroundSettings.glitchColors[0]}
-                                        >   
-                                            <ColorPicker 
-                                            allowClear
-                                            onChange={c => {
-                                                if (c.cleared){
-                                                    delete formData['glitchColor1']
-                                                }else{
-                                                handleFormChange({glitchColor1 : c.toHexString()}); 
-                                                }                                                
-                                            }}                                            
-                                            />
-                                        
-                                        </Form.Item>
-                                    </div>
-
-                                    <div className="flex justify-center mr-[60px]">
-                                        <Form.Item
-                                        name="glitchColor2"
-                                        label="Glitch color 2" 
-                                        initialValue={letterGlitchSettings.letterGlitchBackgroundSettings.glitchColors[1]}
-                                        >
-                                            <ColorPicker
-                                            allowClear
-                                            onChange={c => {
-                                                if (c.cleared){
-                                                    delete formData['glitchColor2']
-                                                }else{
-                                                    handleFormChange({glitchColor2 : c.toHexString()});   
-                                                }
-                                                
-                                            }}                                           
-                                            />
-                                        </Form.Item>
-                                    </div>
-
-                                    <div className="flex justify-center mr-[60px]">
-                                        <Form.Item
-                                        name="glitchColor3"
-                                        label="Glitch color 3" 
-                                        initialValue={letterGlitchSettings.letterGlitchBackgroundSettings.glitchColors[2]}
-                                        >
-                                            <ColorPicker
-                                            allowClear
-                                            onChange={c => {
-                                                if (c.cleared){
-                                                    delete formData['glitchColor3']
-                                                }else{
-                                                    handleFormChange({glitchColor3 : c.toHexString()});   
-                                                }
-                                                
-                                            }}                                           
-                                            />
-                                        </Form.Item>
-                                    </div>
-
-                                </div>
+                                <LetterGlitchBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen === 'squares' &&
                                 <SquaresBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
-
-
-
-
-
-
-
-
+                            {selectChosen === 'liquidChrome' &&
+                                <LiquidChromeBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                            }
+                            {selectChosen === 'balatro' &&
+                                <BalatroBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                            }
                             {selectChosen &&
                                 <Form.Item>
-                                    <Button type="primary" onClick={()=>saveChanges()}>OLD save</Button>
-                                    <Button type="primary" onClick={()=>handleDefaultSettings()}>OLD revert to default</Button>
-                                </Form.Item>        
+                                    <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
+                                    <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
+                                </Form.Item>                                         
                             }
-
-
                         </Form>
                     </div>    
                 </ConfigProvider>
-
-                {/* <Button onClick={()=> console.log(formData)} >Click me</Button> */}
-
             </div>
         </>
     )
