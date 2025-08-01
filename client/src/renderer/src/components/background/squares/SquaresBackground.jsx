@@ -16,7 +16,6 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
 
     const saveChanges = () => {
         if (Object.keys(formData).length > 0){
-            console.log(formData)
             squaresSettings.setSquareBackgroundSettings(prev => {
                 const updates = {}
                 if (formData.direction) updates.direction = formData.direction

@@ -20,7 +20,8 @@ import axios from 'axios';
 
 
 function SelectBackground(){
-    const {background, setChosenBackground, reset, prevEditedBackgrounds,
+    const {background, setChosenBackground, reset, 
+        prevEditedBackgrounds, getData,
         auroraSettings, veilSettings, galaxySettings, 
         lightningSettings, faultyTerminalSettings,
         dotGridSettings, hyperspeedSettings,
@@ -66,12 +67,15 @@ function SelectBackground(){
         }else if (e === 'iridescence'){
             setLabelColor('red')
         }     
-
-
-        if (prevEditedBackgrounds.includes(e)){
-            setSelectedHasPrevData(true)
+        // getData()
+        if (background != e) {
+            if (prevEditedBackgrounds.includes(e)){
+                setSelectedHasPrevData(true)
+                getData()
+            }            
+        }else{
+            setSelectedHasPrevData(false)
         }
-
     }
     
     const handleFormChange = (e) => {
@@ -283,8 +287,6 @@ function SelectBackground(){
                 })
             } else if (selectChosen === 'hyperspeed'){
                 hyperspeedSettings.changeHyperspeedSettings(selectedPreset)
-                console.log(`selected preset= ${selectedPreset}`)
-                console.log(selectedPreset)
             } else if (selectChosen === 'iridescence'){
                 iridescenceSettings.setIridescenceBackgroundSettings(prev => {
                     if (formData.red) iridescenceSettings.updateIridescenceColorIndex(0, formData.red) 
@@ -325,8 +327,6 @@ function SelectBackground(){
                 if (formData.glitchColor3){
                     letterGlitchSettings.updateLetterGlitchIndex(2, formData.glitchColor3)
                 }        
-
-                // console.log(letterGlitchSettings.letterGlitchBackgroundSettings.glitchColors)
             } else if (selectChosen === 'squares'){
                 squaresSettings.setSquareBackgroundSettings(prev => {
                 const updates = {}
@@ -444,15 +444,22 @@ function SelectBackground(){
                             }
                             {selectChosen &&
                                 <Form.Item>
-                                    {!selectedHasPrevData &&
-                                        <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
-                                    }
+                                    {/* {!selectedHasPrevData &&
+                                        
+                                    } */}
                                     
-                                    {selectedHasPrevData && 
-                                        <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
+                                    {selectedHasPrevData  
+                                        ? <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
+                                        : <>
+                                            <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
+                                            { selectChosen == background &&
+                                            <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
+                                            }
+                                            
+                                        </>
                                     }
 
-                                    <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
+                                    
                                 </Form.Item>                                         
                             }
                         </Form>

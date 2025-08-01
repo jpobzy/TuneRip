@@ -145,7 +145,14 @@ const Youtubers = forwardRef((props, ref) => {
     children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
   }];
 
-
+  const debugMode = () => {
+    setCardClicked(true)
+    setAlbumCoverChosen(true)
+    setLoading(false)
+    
+    const data = {data: {message: 'All tracks downloaded successfully and can be foun…rs\\j03yp\\Documents\\TuneRip\\downloads\\Archimage999'}, statusCode : 200}
+    setResponseData(data)
+  }
 
 
   useEffect(()=> {
@@ -165,7 +172,7 @@ const Youtubers = forwardRef((props, ref) => {
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
-              <div className='mx-auto'>
+              <div className=''>
                 <DownloadScreen loading={loading} responseData={responseData}/>                
               </div>
               {/* <button onClick={()=> setLoading(!loading)} >loading</button> */}
@@ -249,12 +256,14 @@ const Youtubers = forwardRef((props, ref) => {
         )}
       </div>
       {Object.keys(users).length > 0  &&  !cardClicked && 
-        <div className='mt-[20px] inline-block' ref={deleteUserRef}>
+        <div className='mt-[20px] inline-block mb-[20px]' ref={deleteUserRef}>
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
       {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
-      {/* <Button onClick={()=> console.log(isUser)}>click me</Button> */}
+
+
+      {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
     </div>
   )
 })

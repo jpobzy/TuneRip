@@ -352,7 +352,6 @@ class backgroundData():
         keyList = []
         for key, val in data['Backgrounds'].items():
             if val != defaultData['Backgrounds'][key]:
-                print(key, val)
                 res[key] = val
                 keyList.append(key)
 

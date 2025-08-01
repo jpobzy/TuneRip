@@ -57,7 +57,6 @@ function Crop(){
       ];
 
     const onCropComplete = (croppedArea, croppedAreaPixels) => {
-        // console.log(croppedArea, croppedAreaPixels)
         setCropData({'croppedArea' : croppedArea, // {x: 18.906249999999996, y: 34.51718749999999, width: 62.5, height: 31.25} 
             'croppedAreaPixels' : croppedAreaPixels}) //{width: 1280, height: 1280, x: 387, y: 1414}
         

@@ -111,9 +111,6 @@ function EditMetaData(){
             // setButtonDisabled(true)
             if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && !Object.keys(playlistData).includes('artist')){
                 message.error('No inputs were added')
-                console.log(1)
-            }else{
-                console.log(2)
             }
             // const request = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData})
             // setButtonDisabled(false)

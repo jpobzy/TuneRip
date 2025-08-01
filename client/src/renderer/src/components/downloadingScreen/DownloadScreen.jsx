@@ -9,8 +9,8 @@ function DownloadScreen ({loading, responseData}) {
   return (
     <div>
       {loading ? 
-          <div>
-            <div className=''>
+          <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] text-white '>
+            <div >
               <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
             </div>
             <div>
@@ -19,7 +19,7 @@ function DownloadScreen ({loading, responseData}) {
             
           </div> 
         :
-        <div className='bg-white rounded-lg mx-auto w-[800px]'>
+        <div className='bg-white rounded-lg w-[800px] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%]'>
           {responseData.statusCode === 200 ?
             <Result
               status="success"

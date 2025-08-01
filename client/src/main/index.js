@@ -35,23 +35,26 @@ autoUpdater.on('update-available', (info) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('[Updater] Update downloaded:', info.version);
-  const waitForUserAck = () => {
-    if (userAcknowledgedUpdate){
-      dialog.showMessageBox({
-        type: 'info',
-        title: 'Update Ready',
-        message: 'Install & restart now?',
-        buttons: ['Yes', 'Later']
-      }).then(result => {
-        if (result.response === 0) {
-          autoUpdater.quitAndInstall(); 
-        }
-      });    
-    }else {
-      setTimeout(waitForUserAck, 1000)
-    }
-  }
-  waitForUserAck();
+  log.info('Update downloaded — quitting and installing...');
+  autoUpdater.quitAndInstall();
+
+  // const waitForUserAck = () => {
+  //   if (userAcknowledgedUpdate){
+  //     dialog.showMessageBox({
+  //       type: 'info',
+  //       title: 'Update Ready',
+  //       message: 'Install & restart now?',
+  //       buttons: ['Yes', 'Later']
+  //     }).then(result => {
+  //       if (result.response === 0) {
+  //         autoUpdater.quitAndInstall(); 
+  //       }
+  //     });    
+  //   }else {
+  //     setTimeout(waitForUserAck, 1000)
+  //   }
+  // }
+  // waitForUserAck();
 });
 
 // #################### server section #########################
@@ -124,7 +127,7 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
   
-  mainWindow.openDevTools();
+  // mainWindow.openDevTools();
   // autoUpdater.check
   // if (app.isPackaged) {
   //   // ForUpdatesAndNotify();
@@ -132,13 +135,26 @@ function createWindow() {
   // } 
 }
 
+  const waitForServerReady = async () => {
+    while (true) {
+      try {
+        await fetch('http://localhost:8080/');
+        break;
+      } catch {
+        await new Promise(res => setTimeout(res, 200));
+      }
+    }
+  };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   if (app.isPackaged){
     startServer();
+  }
+  if (app.isPackaged) {
+    await waitForServerReady();
   }
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
