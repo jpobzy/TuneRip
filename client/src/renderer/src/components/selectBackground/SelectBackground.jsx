@@ -1,5 +1,5 @@
 import { Button, Select, Form, Input, ColorPicker, ConfigProvider, Slider, Switch} from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toggleBackgroundSettings } from "../context/BackgroundSettingsContext";
 import { hyperspeedPresets } from "../background/hyperspeedPresets/HyperspeedPresets";
 import { Color } from '@rc-component/color-picker';
@@ -18,8 +18,9 @@ import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackg
 import BalatroBackground from "../background/balatro/BalatroBackground";
 import axios from 'axios';
 
+
 function SelectBackground(){
-    const {background, setChosenBackground, reset,
+    const {background, setChosenBackground, reset, prevEditedBackgrounds,
         auroraSettings, veilSettings, galaxySettings, 
         lightningSettings, faultyTerminalSettings,
         dotGridSettings, hyperspeedSettings,
@@ -33,6 +34,7 @@ function SelectBackground(){
     const [backgroundForm] = Form.useForm();
     const [formData, setFormData] = useState({});
     const [selectedPreset, setSelectedPreset] = useState('')
+    const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
 
 
     const backgroundOptions = [
@@ -64,6 +66,12 @@ function SelectBackground(){
         }else if (e === 'iridescence'){
             setLabelColor('red')
         }     
+
+
+        if (prevEditedBackgrounds.includes(e)){
+            setSelectedHasPrevData(true)
+        }
+
     }
     
     const handleFormChange = (e) => {
@@ -359,6 +367,11 @@ function SelectBackground(){
     }
 
 
+    const loadPrevBackgroundSettings = async () => {
+        setChosenBackground(selectChosen)
+        await axios.post('http://localhost:8080/savebackgroundsettings', {params : {'background' : selectChosen}})
+        setSelectedHasPrevData(false)
+    }   
     
     return (
         <>
@@ -431,7 +444,14 @@ function SelectBackground(){
                             }
                             {selectChosen &&
                                 <Form.Item>
-                                    <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
+                                    {!selectedHasPrevData &&
+                                        <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
+                                    }
+                                    
+                                    {selectedHasPrevData && 
+                                        <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
+                                    }
+
                                     <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
                                 </Form.Item>                                         
                             }

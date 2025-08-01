@@ -6,9 +6,9 @@
             "amplitude": 1.0,
             "speed": 0.5,
             "colorStops": [
-                "#1bcab3",
-                "#97ffc8",
-                "#3932ff"
+                "#3A29FF",
+                "#FF94B4",
+                "#FF3232"
             ]
         },
         "veil": {

@@ -240,5 +240,3 @@ def resetBackgroundSettings():
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
 
-
-# 0dfc35

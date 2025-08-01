@@ -19,12 +19,12 @@ import { HomeProvider } from './components/context/HomeContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [page, setPage] = useState("Settings");
+  const [page, setPage] = useState("Home");
   // const [background, setbackground] = useState("");
   const ref = useRef(null);
 
   const homeClicked = () => {
-    setPage('Settings')
+    setPage('Home')
     if (ref.current){
       ref.current.resetAll();
     }
