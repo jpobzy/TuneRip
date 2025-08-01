@@ -109,7 +109,7 @@ class backgroundData():
 
     def __init__(self): 
         # if Path(Path.home() / 'Documents/TuneRip/server/appdata').exists():
-        appdataFolder = Path(Path.home() / 'Documents/Github/TuneRip/server/appdata')
+        appdataFolder = Path(Path.home() / 'Documents/TuneRip/server/appdata')
         if not appdataFolder.exists():
             Path.mkdir(appdataFolder)
         self.file =  appdataFolder / 'BackgroundData.json' 
@@ -129,7 +129,10 @@ class backgroundData():
     def saveBackgroundSettings(self, request):
         url_parts = urllib.parse.urlparse(request.url)
         query_parts = urllib.parse.parse_qs(url_parts.query)
-        background = str(query_parts.get('background')[0])
+        if 'background' in query_parts:
+            background = str(query_parts.get('background')[0])
+        else:
+            background = json.loads(request.data)['params']['background']
         changes = json.loads(request.data)
 
         data = None
@@ -335,16 +338,26 @@ class backgroundData():
         return 'ok'
 
     def getBackgroundSettings(self):
-
-        jsonFile = Path(Path.home() / 'Documents/Github/TuneRip/server/appdata/BackgroundData.json')
+        jsonFile = self.file
         with open(jsonFile, 'r') as file:
             data = json.load(file)
 
         currentBackground = data['selectedBackground']
         currentBackgroundSettings = data['Backgrounds'][currentBackground]
 
-        # print(currentBackground)
-        # print(currentBackgroundSettings)
-        return currentBackground, currentBackgroundSettings
+        with open(self.defaultDataFile, 'r') as file:
+            defaultData = json.load(file)
+
+        res = {}
+        keyList = []
+        for key, val in data['Backgrounds'].items():
+            if val != defaultData['Backgrounds'][key]:
+                print(key, val)
+                res[key] = val
+                keyList.append(key)
+
+
+        # return currentBackground, currentBackgroundSettings
+        return currentBackground, res, keyList
     
 

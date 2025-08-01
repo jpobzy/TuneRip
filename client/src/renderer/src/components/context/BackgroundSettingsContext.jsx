@@ -21,6 +21,7 @@ const toggleSettingsContext = createContext();
 
 export const ToggleBackgroundSettingsProvider = ({children}) => {
     const [background, setBackground] = useState("");
+    const [prevEditedBackgrounds, setPrevEditedBackgrounds] = useState([])
 
     // ############################### AURORA SETTINGS #######################################
     const [auroraBackgroundSettings, setAuroraBackgroundSettings] = useState({
@@ -543,69 +544,134 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     async function getData() {
         const req = await axios.get('http://localhost:8080/getBackgroundSettings')
         setBackground(req.data[0])
-        const currentBackground = req.data[0]
 
+
+        
+        for (let i = 0; i < Object.keys(req.data[1]).length; i++) {
+
+            const currentBackground = Object.keys(req.data[1])[i]
+            const prevSettings = Object.values(req.data[1])[i]
+
+            if (currentBackground === 'aurora'){
+                setAuroraBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'veil'){
+                setVeilBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'galaxy'){
+                setGalaxyBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'waves'){
+                setWavesBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'letterGlitch'){
+                setLetterGlitchBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'squares'){
+                setSquareBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'hyperspeed'){
+                const preset = prevSettings['preset']
+                if (preset == 'default'){
+                    setHyperspeedSettings(defaultHyserspeedSettings)
+                }else if (preset == 'cyberpunk'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.one)
+                } else if (preset == 'akira'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.two)
+                } else if (preset == 'golden'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.three)
+                } else if (preset == 'split'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.four)
+                } else if (preset == 'highway'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.five)
+                }else if (preset == 'other'){
+                    setHyperspeedSettings(hyperspeedPresetOptions.six)
+                }
+            } else if (currentBackground === 'dotGrid'){
+                setDotGridBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'faultyTerminal'){
+                setFaultyTerminalBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'iridescence'){
+                setIridescenceBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'liquidChrome'){
+                setLiquidChromeBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'balatro'){
+                setBalatroBackgroundSettings(prevSettings)
+            }
+        } 
+
+        const currentBackground = req.data[0]
         if (currentBackground === 'aurora'){
             document.body.style.backgroundColor = '#1a1a1afd';
-            setAuroraBackgroundSettings(req.data[1])
 
         } else if (currentBackground === 'veil'){
             document.body.style.backgroundColor = 'black';
-            setVeilBackgroundSettings(req.data[1])
 
         } else if (currentBackground === 'galaxy'){
             document.body.style.backgroundColor = 'black';
-            setGalaxyBackgroundSettings(req.data[1])
-
-        } else if (currentBackground === 'rippleGrid'){
-            // document.body.style.backgroundColor = 'black';
-            
 
         } else if (currentBackground === 'waves'){
             document.body.style.backgroundColor = 'black';
-            setWavesBackgroundSettings(req.data[1])
 
         } else if (currentBackground === 'letterGlitch'){
-            console.log(req.data[1])
             document.body.style.backgroundColor = 'black';
-            setLetterGlitchBackgroundSettings(req.data[1])
+        
 
         } else if (currentBackground === 'squares'){
             document.body.style.backgroundColor = 'black';
-            setSquareBackgroundSettings(req.data[1])
 
         } else if (currentBackground === 'hyperspeed'){
             document.body.style.backgroundColor = 'black';
-            const preset = req.data[1]['preset']
-            if (preset == 'default'){
-                setHyperspeedSettings(defaultHyserspeedSettings)
-            }else if (preset == 'cyberpunk'){
-                setHyperspeedSettings(hyperspeedPresetOptions.one)
-            } else if (preset == 'akira'){
-                setHyperspeedSettings(hyperspeedPresetOptions.two)
-            } else if (preset == 'golden'){
-                setHyperspeedSettings(hyperspeedPresetOptions.three)
-            } else if (preset == 'split'){
-                setHyperspeedSettings(hyperspeedPresetOptions.four)
-            } else if (preset == 'highway'){
-                setHyperspeedSettings(hyperspeedPresetOptions.five)
-            }else if (preset == 'other'){
-                setHyperspeedSettings(hyperspeedPresetOptions.six)
-            }
+            // const preset = prevSettings['preset']
+            // if (preset == 'default'){
+            //     setHyperspeedSettings(defaultHyserspeedSettings)
+            // }else if (preset == 'cyberpunk'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.one)
+            // } else if (preset == 'akira'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.two)
+            // } else if (preset == 'golden'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.three)
+            // } else if (preset == 'split'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.four)
+            // } else if (preset == 'highway'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.five)
+            // }else if (preset == 'other'){
+            //     setHyperspeedSettings(hyperspeedPresetOptions.six)
+            // }
 
         } else if (currentBackground === 'dotGrid'){
             document.body.style.backgroundColor = 'black';
-            setDotGridBackgroundSettings(req.data[1])
-
-        } else if (currentBackground === 'faultyTerminal'){
-            setFaultyTerminalBackgroundSettings(req.data[1])
-        } else if (currentBackground === 'iridescence'){
-            setIridescenceBackgroundSettings(req.data[1])
-        } else if (currentBackground === 'liquidChrome'){
-            setLiquidChromeBackgroundSettings(req.data[1])
-        } else if (currentBackground === 'balatro'){
-            setBalatroBackgroundSettings(req.data[1])
         }
+            
+        // } else if (currentBackground === 'faultyTerminal'){
+        //     setFaultyTerminalBackgroundSettings(prevSettings)
+        // } else if (currentBackground === 'iridescence'){
+        //     setIridescenceBackgroundSettings(prevSettings)
+        // } else if (currentBackground === 'liquidChrome'){
+        //     setLiquidChromeBackgroundSettings(prevSettings)
+        // } else if (currentBackground === 'balatro'){
+        //     setBalatroBackgroundSettings(prevSettings)
+        // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        setPrevEditedBackgrounds(req.data[2])       
     }
 
 
@@ -615,7 +681,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }, [])
 
     return (
-        <toggleSettingsContext.Provider value={{background, setChosenBackground, reset, 
+        <toggleSettingsContext.Provider value={{background, setChosenBackground, reset, prevEditedBackgrounds,
             auroraSettings : {auroraBackgroundSettings, setAuroraBackgroundSettings, updateColorStopIndex, resetColorStopIndex, auroraFormSettings},
             veilSettings: {veilBackgroundSettings, setVeilBackgroundSettings, veilFormSettings },
             galaxySettings : {galaxyBackgroundSettings, setGalaxyBackgroundSettings, galaxyFormSettings},
