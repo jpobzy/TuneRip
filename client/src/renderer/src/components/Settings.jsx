@@ -13,7 +13,7 @@ import RefactorTracks from "./refactor/RefactorTracks";
 import Crop from "./crop/Crop";
 import EditMetaData from "./editMetaData/EditMetaData";
 import SelectBackground from "./selectBackground/SelectBackground";
-
+import SelectCursor from "./selectCursor/SelectCursor";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
@@ -67,6 +67,14 @@ function Settings(){
         children: 
         <div className="text-center mt-[50px]">
             <SelectBackground />
+        </div>
+    },
+    {
+        key: '7',
+        label: 'Change Cursor',
+        children: 
+        <div className="text-center mt-[50px]">
+            <SelectCursor />
         </div>
     }
     ];

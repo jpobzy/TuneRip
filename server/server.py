@@ -8,6 +8,7 @@ from flask import Flask, flash, request, redirect, url_for
 # from werkzeug.utils import secure_filename
 from pathlib import Path
 from app.controllers.backgroundDataController import backgroundData
+from app.controllers.cursorDataController import cursorData
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -26,6 +27,7 @@ app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 
 controller_obj = controller(app.config['DATABASE_FOLDER'])
 backgrounddata_obj = backgroundData()
+cursordata_obj = cursorData()
 
 @app.route("/")
 def hello_world():
@@ -224,7 +226,7 @@ def updateMetaData():
     controller_obj.updateMetaData(json.loads(request.data))
     return 'ok'
 
-@app.get('/getBackgroundSettings')
+@app.get('/getbackgroundsettings')
 def getBackgroundSettings():
     return jsonify(backgrounddata_obj.getBackgroundSettings())
 
@@ -232,10 +234,25 @@ def getBackgroundSettings():
 def saveBackgroundSettings():
     return backgrounddata_obj.saveBackgroundSettings(request)
 
-
 @app.post('/resetbackgroundsettings')
 def resetBackgroundSettings():
     return backgrounddata_obj.reset(request)
+
+@app.get('/getcursorsettings')
+def getCursorSettings():
+    return jsonify(cursordata_obj.getCursorSettings())
+
+@app.post('/savecursorsettings')
+def saveCursorSettings():
+    return cursordata_obj.saveCursorSettings(request)
+
+@app.post('/resetcursorsettings')
+def resetCursorSettings():
+    return cursordata_obj.reset(request)
+
+@app.post('/disablecurrentcursor')
+def disableCurrentCursor():
+    return cursordata_obj.disableCurrCursor()
 
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

@@ -1,3 +1,7 @@
 .ant-tabs .ant-tabs-tab {
 color: gray;
 }
+
+.ant-tabs .ant-tabs-nav .ant-tabs-nav-more{
+    color: white;
+}

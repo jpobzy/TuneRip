@@ -104,12 +104,17 @@ class controller():
             playlistRoute = self.projRoot / 'downloads/playlists'
 
             if subFolderName != None:
+                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                 downloadPath = playlistRoute / subFolderName
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = playlistRoute / addToExistingPlaylist
                 else:
-                    downloadPath = playlistRoute / f'{playlist.title}'
+                    playlistTitle = playlist.title
+                    playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
+                    downloadPath = playlistRoute / f'{playlistTitle}'
+
+            
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
@@ -157,6 +162,7 @@ class controller():
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
 
             if subFolderName != None:
+                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                 downloadPath = self.projRoot / f"downloads/{subFolderName}"
                 if not Path(downloadPath).exists():
                     os.mkdir(downloadPath)
