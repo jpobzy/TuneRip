@@ -355,8 +355,6 @@ class backgroundData():
                 res[key] = val
                 keyList.append(key)
 
-
-        # return currentBackground, currentBackgroundSettings
         return currentBackground, res, keyList
     
 

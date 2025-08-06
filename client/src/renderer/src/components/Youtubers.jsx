@@ -120,7 +120,6 @@ const Youtubers = forwardRef((props, ref) => {
   async function downloadVideo(videosearchURL){
     //https://www.youtube.com/playlist?list=PLQLeP-y1PipMahmS_f1vCSKNvNee3ytnG
       if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') ){
-        console.log('link is track')
         setCardClicked(true);
         setIsTrack(true);
         setSearchURL(videosearchURL);

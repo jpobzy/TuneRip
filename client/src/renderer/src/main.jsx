@@ -5,13 +5,16 @@ import MainApp from './MainApp'
 import { App as AntdApp } from "antd";
 import { ToggleProvider } from './components/context/UseContext';
 import { ToggleBackgroundSettingsProvider } from './components/context/BackgroundSettingsContext';
+import { ClickProvider } from './components/context/CursorContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToggleBackgroundSettingsProvider>
       <AntdApp>
         <ToggleProvider>
-          <MainApp />  
+          <ClickProvider>
+            <MainApp />             
+          </ClickProvider>
         </ToggleProvider>
       </AntdApp>
     </ToggleBackgroundSettingsProvider>

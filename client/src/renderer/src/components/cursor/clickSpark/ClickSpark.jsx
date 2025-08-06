@@ -8,42 +8,26 @@ const ClickSpark = ({
   duration = 400,
   easing = "ease-out",
   extraScale = 1.0,
-  children
+  isEnabled
 }) => {
   const canvasRef = useRef(null);
-  const sparksRef = useRef([]);     
-  const startTimeRef = useRef(null); 
+  const sparksRef = useRef([]);
+  const startTimeRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const parent = canvas.parentElement;
-    if (!parent) return;
-
-    let resizeTimeout;
-
     const resizeCanvas = () => {
-      const { width, height } = parent.getBoundingClientRect();
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-      }
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
 
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(resizeCanvas, 100);
-    };
-
-    const ro = new ResizeObserver(handleResize);
-    ro.observe(parent);
-
+    window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
     return () => {
-      ro.disconnect();
-      clearTimeout(resizeTimeout);
+      window.removeEventListener("resize", resizeCanvas);
     };
   }, []);
 
@@ -72,7 +56,7 @@ const ClickSpark = ({
 
     const draw = (timestamp) => {
       if (!startTimeRef.current) {
-        startTimeRef.current = timestamp; 
+        startTimeRef.current = timestamp;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -84,7 +68,6 @@ const ClickSpark = ({
 
         const progress = elapsed / duration;
         const eased = easeFunc(progress);
-
         const distance = eased * sparkRadius * extraScale;
         const lineLength = sparkSize * (1 - eased);
 
@@ -112,12 +95,12 @@ const ClickSpark = ({
       cancelAnimationFrame(animationId);
     };
   }, [
-    sparkColor,
-    sparkSize,
-    sparkRadius,
-    sparkCount,
-    duration,
-    easeFunc,
+    sparkColor, 
+    sparkSize, 
+    sparkRadius, 
+    sparkCount, 
+    duration, 
+    easeFunc, 
     extraScale,
   ]);
 
@@ -139,30 +122,29 @@ const ClickSpark = ({
     sparksRef.current.push(...newSparks);
   };
 
+  // Attach a global click handler
+  useEffect(() => {
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
+
   return (
-    <div 
+    <canvas
+      ref={canvasRef}
       style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%'
+        position: "fixed",
+        top: 0,
+        left: 0,
+        pointerEvents: "none",
+        zIndex: 9999,
+        width: "100vw",
+        height: "100vh",
+        // display : 'none'
+        
       }}
-      onClick={handleClick}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "block",
-          userSelect: "none",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          pointerEvents: "none"
-        }}
-      />
-      {children}
-    </div>
+    />
   );
 };
 

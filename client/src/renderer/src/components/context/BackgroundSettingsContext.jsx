@@ -542,7 +542,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }
 
     async function getData() {
-        const req = await axios.get('http://localhost:8080/getBackgroundSettings')
+        const req = await axios.get('http://localhost:8080/getbackgroundsettings')
         setBackground(req.data[0])
 
 
