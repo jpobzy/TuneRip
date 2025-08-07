@@ -6,6 +6,7 @@ import { App as AntdApp } from "antd";
 import { ToggleProvider } from './components/context/UseContext';
 import { ToggleBackgroundSettingsProvider } from './components/context/BackgroundSettingsContext';
 import { ClickProvider } from './components/context/CursorContext';
+import { ResultProvider } from './components/context/ResultContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,7 +14,10 @@ createRoot(document.getElementById('root')).render(
       <AntdApp>
         <ToggleProvider>
           <ClickProvider>
-            <MainApp />             
+            <ResultProvider>
+              <MainApp />                 
+            </ResultProvider>
+          
           </ClickProvider>
         </ToggleProvider>
       </AntdApp>

@@ -1,10 +1,13 @@
-import { Button, Form, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox  } from "antd";
+import { Button, Form, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox, Spin  } from "antd";
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
 import RefactorSubmitButton from "../refactor/RefactorSubmitButton";
 import {App, Input } from 'antd'
 import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
+import './editMetaData.css'
+import { resultToggle } from "../context/ResultContext";
 
 function EditMetaData(){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
@@ -21,6 +24,18 @@ function EditMetaData(){
     const artistInput = useRef(null)
     const albumInput = useRef(null)
     const genreInput = useRef(null)
+    const [updateRequest, setUpdateRequest] = useState(false)
+    const [updateRequestStatus, setUpdateRequestStatus] = useState(null)
+    const [loading, setLoading] = useState(false)
+
+
+    const {ResultSuccess, ResultFailed, Loading} = resultToggle()
+    const [isLoading, setIsLoading] = useState(false)
+    const [showResult, setShowResult] = useState(false)
+    const [resultStatusCode, setResultStatusCode] = useState()
+
+
+
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
@@ -104,17 +119,24 @@ function EditMetaData(){
 
 
     const refactor = async () => {
-        console.log(playlistData)
         if (playlistData.length === 0){
             message.error('Error no folder is selected')
         }else{
-            // setButtonDisabled(true)
+            setIsLoading(true)
             if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && !Object.keys(playlistData).includes('artist')){
                 message.error('No inputs were added')
             }
-            // const request = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData})
-            // setButtonDisabled(false)
-           
+
+            const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData})
+            if (response.status === 200){
+                setResultStatusCode(200)
+                setIsLoading(false)
+                setShowResult(true)
+            }else{
+                setResultStatusCode(400)
+                setIsLoading(false)
+                setShowResult(true)
+            }  
         }
     }
 
@@ -163,6 +185,11 @@ function EditMetaData(){
         // setIsPlaylistChosen(false)
     }
 
+    const goBack = () => {
+        setIsLoading(false)
+        setShowResult(false)
+        setIsPlaylistChosen(false)
+    }
 
     useEffect(()=>{
             getExistingPlaylists();
@@ -171,141 +198,173 @@ function EditMetaData(){
     return (
         <div>
             <div className="mx-auto justify-center ">
-                {/* <div className="text-[40px] text-white">
-                    Reorder Tracks
-                </div> */}
-                <ConfigProvider
-                    theme={{
-                        components :{
-                            Form:{
-                               labelColor : "rgba(255, 255, 255, 1)"  
+                {!isLoading && !showResult &&
+                    <ConfigProvider
+                        theme={{
+                            components :{
+                                Form:{
+                                labelColor : "rgba(255, 255, 255, 1)"  
+                                }
                             }
-                        }
-                    }}
-                
-                >
-                    <Form
+                        }}
+                    
+                    >
+                        <Form
                             form={metadataForm}
                             name="refactor"
-                            // labelCol={{ span: 8 }}
-                            // wrapperCol={{ span: 16 }}
-                            // style={{ maxWidth: 600 }}
-                            // initialValues={{ remember: true }}
-                            // onFinish={onFinish}
-                            // onFinishFailed={onFinishFailed}
-                            // autoComplete="off"
-                            // style={{ maxWidth: 600 }}
-                        >
-                        <Form.Item>
-                            <div className="inline-block" ref={selectPlaylistsRef}>
-                                <Select
-                                    allowClear={true}
-                                    defaultValue={[]}
-                                    style={{ width: 600 }}
-                                    onChange={(e) => setPlaylistChosen(e)}
-                                    options={existingPlaylistNames}
-                                />                               
-                            </div>
-                        </Form.Item>
+                            >
+                            {!updateRequest && 
+                                <Form.Item>
+                                    <div className="inline-block" ref={selectPlaylistsRef}>
+                                        <Select
+                                            allowClear={true}
+                                            defaultValue={[]}
+                                            style={{ width: 600 }}
+                                            onChange={(e) => setPlaylistChosen(e)}
+                                            options={existingPlaylistNames}
+                                        />                               
+                                    </div>
+                                </Form.Item>                
+                            }
+                    
 
-                        {isPlaylistChosen &&
-                            <div className="flex justify-center" >
-                                <Form.Item
-                                ref={toggleDatabase}
-                                // wrapperCol={{ span: 15}}
-                                label="Update database"
-                                name="database"
-                                onChange={(e) => inputAlbum(e)}
-                                >  
-                                <div className="inline-block" ref={toggleDatabase}> 
-                                    <Checkbox checked={updateDatabase} onChange={e => toggleUpdateDatabase(e)}/>
+                            {isPlaylistChosen &&
+                                <div className="flex justify-center" >
+                                    <Form.Item
+                                    ref={toggleDatabase}
+                                    // wrapperCol={{ span: 15}}
+                                    label="Update database"
+                                    name="database"
+                                    onChange={(e) => inputAlbum(e)}
+                                    >  
+                                    <div className="inline-block" ref={toggleDatabase}> 
+                                        <Checkbox checked={updateDatabase} onChange={e => toggleUpdateDatabase(e)}/>
+                                    </div>
+
+                                    </Form.Item>                                     
                                 </div>
+                            }     
 
-                                </Form.Item>                                     
-                            </div>
-                        }     
-
-                        {isPlaylistChosen &&
-                            <div className="flex justify-center">
-                                <Form.Item
-                                wrapperCol={{ span: 15}}
-                                label="Artist"
-                                name="artist"
-                                onChange={(e) => inputAritst(e)}
-                                >  
-                                <div className="inline-block"ref={artistInput} >
-                                    <Input 
-                                    onClear={() => delete playlistData['artist']} 
-                                    allowClear={true}
-                                    style={{ width: 350 }}
-                                    placeholder="Change artist info"/>                                    
+                            {isPlaylistChosen &&
+                                <div className="flex justify-center">
+                                    <Form.Item
+                                    wrapperCol={{ span: 15}}
+                                    label="Artist"
+                                    name="artist"
+                                    onChange={(e) => inputAritst(e)}
+                                    >  
+                                    <div className="inline-block"ref={artistInput} >
+                                        <Input 
+                                        onClear={() => delete playlistData['artist']} 
+                                        allowClear={true}
+                                        style={{ width: 350 }}
+                                        placeholder="Change artist info"/>                                    
+                                    </div>
+        
+                                    </Form.Item>                                     
                                 </div>
-    
-                                </Form.Item>                                     
-                            </div>
-                        }  
+                            }  
 
-                        {isPlaylistChosen &&
-                            <div className="flex justify-center" >
-                                <Form.Item
-                                wrapperCol={{ span: 15}}
-                                label="Album Title"
-                                name="album"
-                                onChange={(e) => inputAlbum(e)}
-                                >  
-                                <div className="inline-block"ref={albumInput} >
-                                    <Input
-                                    onClear={() => delete playlistData['album']} 
-                                    allowClear={true}
-                                    style={{ width: 400 }}
-                                    placeholder="Change album info"/>                                    
+                            {isPlaylistChosen &&
+                                <div className="flex justify-center" >
+                                    <Form.Item
+                                    wrapperCol={{ span: 15}}
+                                    label="Album Title"
+                                    name="album"
+                                    onChange={(e) => inputAlbum(e)}
+                                    >  
+                                    <div className="inline-block"ref={albumInput} >
+                                        <Input
+                                        onClear={() => delete playlistData['album']} 
+                                        allowClear={true}
+                                        style={{ width: 400 }}
+                                        placeholder="Change album info"/>                                    
+                                    </div>
+
+                                    </Form.Item>                                     
                                 </div>
-
-                                </Form.Item>                                     
-                            </div>
-                        }
-                     
-                        {isPlaylistChosen &&
-                            <div className="flex justify-center" >
-                                <Form.Item
-                                wrapperCol={{ span: 15}}
-                                label="Genre"
-                                name="genre"
-                                onChange={(e) => inputGenre(e)}
-                                >  
-                                <div className="inline-block" ref={genreInput} >
-                                    <Input
-                                    onClear={() => delete playlistData['genre']} 
-                                    allowClear={true}
-                                    style={{ width: 350 }}
-                                    placeholder="Change genre"/>
+                            }
+                        
+                            {isPlaylistChosen &&
+                                <div className="flex justify-center" >
+                                    <Form.Item
+                                    wrapperCol={{ span: 15}}
+                                    label="Genre"
+                                    name="genre"
+                                    onChange={(e) => inputGenre(e)}
+                                    >  
+                                    <div className="inline-block" ref={genreInput} >
+                                        <Input
+                                        onClear={() => delete playlistData['genre']} 
+                                        allowClear={true}
+                                        style={{ width: 350 }}
+                                        placeholder="Change genre"/>
+                                    </div>
+                                    </Form.Item>                                     
                                 </div>
-                                </Form.Item>                                     
-                            </div>
-                        }
+                            }
+
+                            {!updateRequest && 
+                                <Form.Item>
+                                    <div className="flex justify-center">
+                                        <div className="flex" ref={submitPlaylistsRef}>
+                                            <RefactorSubmitButton buttonDisabled={buttonDisabled} refactor={refactor}/>                                
+                                        </div>
+                                        <div className="flex ml-[5px]" >
+                                            <Tooltip title="help">
+                                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                                            </Tooltip>                                    
+                                        </div>
+                                    </div>
+                                </Form.Item>
+                            }
+                        </Form>                            
+                    </ConfigProvider>
+                }        
 
 
-                        <Form.Item>
-                            <div className="flex justify-center">
-                                <div className="flex" ref={submitPlaylistsRef}>
-                                    <RefactorSubmitButton buttonDisabled={buttonDisabled} refactor={refactor}/>                                
-                                </div>
-                                <div className="flex ml-[5px]" >
-                                    <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                    </Tooltip>                                    
-                                </div>
-                            
-                            </div>
+                {loading &&
+                    <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] text-white '>
+                        <div >
+                        <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
+                        </div>
+                        <div>
+                        Edit is in progress
+                        </div>
+                    </div> 
+                }
 
-                        </Form.Item>
 
-                    </Form>                            
-                </ConfigProvider>
-             
+
+            {isLoading && !showResult && 
+                <>
+                    <div className="mt-[100px]">
+                       {Loading('Tracks are being reordered in folder')}
+                    </div>
+                    
+                </>
+            } 
+            {!isLoading && showResult && 
+                <>
+                    {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
+                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                </>
+            }    
+
+
+
+
+
+
+
             </div>
             <div className="mb-[100px]"></div>
             <Tour open={open} onClose={() => endTour()} steps={steps} />
+            {/* <div className="mt-[200px]">
+                <Button  onClick={()=> {setLoading(true);setUpdateRequest(true) }}>start loading</Button>
+                <Button  onClick={()=> {setLoading(false); setUpdateRequestStatus(400)}}>end loading</Button>                
+            </div> */}
+
         </div>
     )
 }

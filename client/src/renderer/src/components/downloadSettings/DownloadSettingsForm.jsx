@@ -20,6 +20,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
     const [addToExistingPlaylist, setAddToExistingPlaylist] = useState(false)
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
+    
     const { message } = App.useApp();	
     const [form] = Form.useForm();
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
@@ -175,7 +176,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getexistingplaylists');
-        // console.log(`req is: ${JSON.stringify(req.data)}`)
         setExistingPlaylistNames(req.data)
     }
 

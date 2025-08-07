@@ -1,11 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Slider, Button, Divider, Space, Tour, InputNumber, ConfigProvider, Upload, Input } from 'antd';
+import { Slider, Button, Divider, Result, Tour, InputNumber, ConfigProvider, Spin, Input } from 'antd';
 import Cropper from "react-easy-crop";
 import axios from "axios";
 import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, QuestionCircleFilled, QuestionOutlined  } from '@ant-design/icons';
 import { Flex, Tooltip } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { App } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+import { resultToggle } from "../context/ResultContext";
 
 function Crop(){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -21,6 +23,11 @@ function Crop(){
     const [fileData, setFileData] = useState()
     const [validFile, setValidFile] = useState(true)
     const { message } = App.useApp();	
+
+    const {ResultSuccess, ResultFailed, Loading} = resultToggle()
+    const [isLoading, setIsLoading] = useState(false)
+    const [showResult, setShowResult] = useState(false)
+    const [resultStatusCode, setResultStatusCode] = useState()
 
     const [open, setOpen] = useState(false);
     const steps = [
@@ -84,99 +91,133 @@ function Crop(){
 
     async function save(){
         if (fileData){
+            setIsLoading(true)
             const formData = new FormData()
             formData.append('imageFile', fileData);
             formData.append('cropData', JSON.stringify(cropData))
-            const response = await axios.post('http://localhost:8080/crop',
-                formData,)
+            const response = await axios.post('http://localhost:8080/crop', formData,)
+            if (response.status === 200){
+                setResultStatusCode(200)
+                setIsLoading(false)
+                setShowResult(true)
+            }else{
+                setResultStatusCode(400)
+                setIsLoading(false)
+                setShowResult(true)
+            }
+
         }else{
             message.error('There is no cropped image to save')
         }
     }
 
+    const goBack = () => {
+        setIsLoading(false)
+        setShowResult(false)
+    }
+
+
     return(
         <div className=" mb-[100px]">
-            {/* <div className="mx-auto text-center text-[50px] text-white">
-                Crop an image
-            </div> */}
             <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
-            <div className="flex justify-center">
-                <div ref={refAdd} className="flex w-[200px]">
-                    <Input 
-                    type="file"
-                    onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file.type === 'image/jpeg' || file.type === 'image/png'){
-                            const url = URL.createObjectURL(file); 
-                            setBlobURL(url)
-                            setFileData(file)   
-                            setValidFile(true)
-                        }else{
-                            message.error('File is not a png or jpeg');                       
-                        }
-                    }}
-                />               
-                </div>
-                <Tooltip title="help">
-                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                </Tooltip>      
-            </div>
-
-            <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
-                <Cropper
-                image={blobURL}
-                crop={crop}
-                zoom={zoom}
-                aspect={3 / 3}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-                style={{'height': 500}}
-                />     
-            </div>
-            <div>
-                <div className="flex justify-center">
-                    <div className="flex gap-2 w-fit">
-                        <Button ref={refPreview} type="primary" onClick={preview}>Preview</Button>
-                        <Button ref={refSave} type="primary" onClick={save}>Save</Button>                                  
-                    </div>
-                </div>
-              
-                <div className="flex justify-center ml-[100px]">
-                    <div ref={refZoomSlider} className="w-[200px]   rounded-xl">
-                        <ConfigProvider
-                        theme={{
-                            components: {
-                            Slider: {
-                                railBg: "rgba(255,255,255, 0.9)",
-                                railHoverBg: "rgba(255,255,255, 0.9)",
-                            },
-                            },
-                        }}
-                        >
-                           <Slider   
-                            value={zoom}
-                            defaultValue={30} 
-                            onChange={onChange}
-                            min={1}
-                            max={3}
-                            step={0.01}
-                        /> 
-                        </ConfigProvider>
-                    </div>
-                    <div ref={refZoomInput}>
-                        <InputNumber
-                        min={1}
-                        max={3}
-                        style={{ margin: '0 16px' }}
-                        step={0.01}
-                        value={zoom}
-                        onChange={onChange}
-                        />                       
+            {!isLoading && !showResult &&
+                <>
+                    <div className="flex justify-center">
+                        <div ref={refAdd} className="flex w-[200px]">
+                            <Input 
+                            type="file"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file.type === 'image/jpeg' || file.type === 'image/png'){
+                                    const url = URL.createObjectURL(file); 
+                                    setBlobURL(url)
+                                    setFileData(file)   
+                                    setValidFile(true)
+                                }else{
+                                    message.error('File is not a png or jpeg');                       
+                                }
+                            }}
+                        />               
+                        </div>
+                        <Tooltip title="help">
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                        </Tooltip>      
                     </div>
 
-                </div>
-            </div>
+                    <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
+                        <Cropper
+                        image={blobURL}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={3 / 3}
+                        onCropChange={setCrop}
+                        onCropComplete={onCropComplete}
+                        onZoomChange={setZoom}
+                        style={{'height': 500}}
+                        />     
+                    </div>
+                    <div>
+                        <div className="flex justify-center">
+                            <div className="flex gap-2 w-fit">
+                                <Button ref={refPreview} type="primary" onClick={preview}>Preview</Button>
+                                <Button ref={refSave} type="primary" onClick={save}>Save</Button>                                  
+                            </div>
+                        </div>
+                    
+                        <div className="flex justify-center ml-[100px]">
+                            <div ref={refZoomSlider} className="w-[200px]   rounded-xl">
+                                <ConfigProvider
+                                theme={{
+                                    components: {
+                                    Slider: {
+                                        railBg: "rgba(255,255,255, 0.9)",
+                                        railHoverBg: "rgba(255,255,255, 0.9)",
+                                    },
+                                    },
+                                }}
+                                >
+                                <Slider   
+                                    value={zoom}
+                                    defaultValue={30} 
+                                    onChange={onChange}
+                                    min={1}
+                                    max={3}
+                                    step={0.01}
+                                /> 
+                                </ConfigProvider>
+                            </div>
+                            <div ref={refZoomInput}>
+                                <InputNumber
+                                min={1}
+                                max={3}
+                                style={{ margin: '0 16px' }}
+                                step={0.01}
+                                value={zoom}
+                                onChange={onChange}
+                                />                       
+                            </div>
+
+                        </div>
+                    </div>                
+                </>
+            }
+
+            {isLoading && !showResult && 
+                <>
+                    <div className="mt-[100px]">
+                       {Loading('Tracks are being reordered in folder')}
+                    </div>
+                    
+                </>
+            } 
+            {!isLoading && showResult && 
+                <>
+                    {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
+                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                </>
+            }    
+
+
         </div>
     )
 }

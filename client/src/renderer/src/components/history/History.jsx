@@ -5,6 +5,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import CountUp from './trackInfo/TrackCount';
 import GradientText from '../gradientText/GradientText';
+import { useToggle } from '../context/UseContext';
 
 export default function History() {
   const items = ['Item 1111111111111111111111111111111111111111111111111', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 
@@ -13,6 +14,7 @@ export default function History() {
   const [trackHistory, setTrackHistory] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [downloadCount, setDownloadCount] = useState(0)
+  const {httpRequestRequired, setHttpRequestRequired} = useToggle();
 
   async function getHistory() {
     const {data} = await axios.get('http://localhost:8080/history')
@@ -36,8 +38,11 @@ export default function History() {
   };
 
     useEffect(()=> {
-      getHistory();
-      getDownloadCount()
+      if (httpRequestRequired){
+        getHistory();
+        getDownloadCount()        
+      }
+
     },[]);
 
         

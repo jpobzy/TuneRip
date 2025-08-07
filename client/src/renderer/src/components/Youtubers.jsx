@@ -259,7 +259,7 @@ const Youtubers = forwardRef((props, ref) => {
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
-      {/* <Button onClick={()=> console.log(`download settings: ${JSON.stringify(downloadSettings)}`)}>click me</Button> */}
+      <Button onClick={()=> console.log(`download settings: ${JSON.stringify(users)}`)}>click me</Button>
 
 
       {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
