@@ -31,7 +31,6 @@ cursordata_obj = cursorData()
 
 @app.route("/")
 def hello_world():
-    print('root')
     return "hello world"
 
 

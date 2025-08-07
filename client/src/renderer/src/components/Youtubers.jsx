@@ -233,7 +233,10 @@ const Youtubers = forwardRef((props, ref) => {
                   </div>
                   <div>
                     {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>TuneRip</h1>}
-                      <div className='user-container inline-block' ref={userRef} >
+                      {/* <div className='user-container inline-block' ref={userRef} > */}
+                      <div className='user-container inline-block'
+                      ref={Object.keys(users).length > 0 ? userRef : null}
+                       >
                         { 
                         Object.entries(users).map((item, index) =>(
                           <YoutuberCard
@@ -259,9 +262,6 @@ const Youtubers = forwardRef((props, ref) => {
           <Switch onChange={() => setEdit(!edit)} />        
         </div>      
       }
-      <Button onClick={()=> console.log(`download settings: ${JSON.stringify(users)}`)}>click me</Button>
-
-
       {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
     </div>
   )

@@ -12,6 +12,8 @@ from datetime import datetime
 from PIL import Image
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1
+# from loggingController import logController
+from app.controllers.loggingController import logController
 
 class controller():
     def __init__(self, databaseFolderRoute):
@@ -19,6 +21,7 @@ class controller():
         self.db = database(databaseFolderRoute)
         self.queue = queue.Queue()
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
+        self.logger = logController(Path(self.projRoot / 'logs'))
 
     def pathMaker(self, path):
         """
@@ -43,28 +46,9 @@ class controller():
         self.pathMaker(basePath / 'downloads')
         self.pathMaker(basePath / 'downloads/playlists')
         self.pathMaker(basePath / 'downloads/customTracks')
-        self.pathMaker(basePath / 'debug')
+        self.pathMaker(basePath / 'logs')
         return
     
-
-    def handleDownloadError(self, error):
-        """
-        Creates a debug file so that user can see what error they encounter when downloading
-        """
-        if not Path(self.projRoot / 'debug').exists():
-            self.pathMaker(self.projRoot / 'debug')
-        
-        
-        fileRoute = self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'
-        fileData = f'[{datetime.now()}] {error}'
-        if Path(fileRoute).exists:
-            with open(fileRoute, 'a') as file:
-                file.write(fileData)
-        else:
-            with open(fileRoute, 'w') as file:
-                file.write(fileData)
-        file.close()
-        return
 
 
     def downloadVideos(self, request):
@@ -85,7 +69,7 @@ class controller():
             debugModeSkipDownload = False
             debugModeAddToDB = False
         #############################################
-        print(f'request is: {request.args}')
+
         url = request.args.get('url')
         user = request.args.get('user')
         albumCoverFile = request.args.get('albumCover')
@@ -127,9 +111,9 @@ class controller():
                 trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             erorrCount = 0
             
-            for video in playlist.video_urls:
+            for url in playlist.video_urls:
                 try:
-                    video = YouTube(video)
+                    video = YouTube(url)
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                 
@@ -148,8 +132,8 @@ class controller():
 
                     
                 except Exception as error:
-                    print(error)
-                    self.handleDownloadError(error)
+                    # self.logger.logInfo(f'video url: {url}')
+                    # self.logger.logError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
@@ -196,11 +180,12 @@ class controller():
                 self.queue.put(trackName)
                 
             except Exception as error:
-                print(error)
-                self.handleDownloadError(error)
+                # self.logger.logInfo(url)
+                # self.logger.logError(error)
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
+                
             if erorrCount > 0:
                 return {'message': f'Error when downloading, please check the log in {self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'}'}, 500
             else:
@@ -254,8 +239,8 @@ class controller():
                     self.queue.put(trackName)
                     
                 except Exception as error:
-                    print(error)
-                    self.handleDownloadError(error)
+                    # self.logger.logInfo(video.watch_url)
+                    # self.logger.logError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
@@ -308,8 +293,8 @@ class controller():
             return 'Success', 200
 
         except Exception as error:
-            print(f'ERROR USER {data['ytLink']} COULD NOT BE FOUND DUE TO ERROR {error}')
-            self.handleDownloadError(error)
+            # self.logger.logInfo(f'Looking for user {data['ytLink']}')
+            # self.logger.logError(error)
             return {error: 404}
 
 
@@ -334,8 +319,8 @@ class controller():
                 albumCoverFile = None
                 self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url)
             except Exception as error:
-                print(f'ERROR TRACK {url} COULD NOT BE FOUND DUE TO {error}')
-                self.handleDownloadError(error)
+                # self.logger.logInfo(f'Searching for track url: {url}')
+                # self.logger.logError(error)
                 return
         
         return
@@ -384,8 +369,10 @@ class controller():
                     if counter % 30 == 0:
                         time.sleep(60)
                     print(f'added track {track} with title {video.title}')
-                except Exception as err:
-                    self.handleDownloadError(err)
+                except Exception as error:
+                    # self.logger.logInfo(f'Adding track {track} to filter')
+                    # self.logger.logError(error)
+
                     failures.add(track)
                     continue
 
@@ -407,7 +394,8 @@ class controller():
                     self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
                     return success
                 except Exception as error:
-                    self.handleDownloadError(error)
+                    # self.logger.logInfo(f'Adding track to filter with request data: {request.data}')
+                    # self.logger.logError(error)
                     return {'message': f'Youtube link was invalid due to {error}'}, 207
                 
 
@@ -628,6 +616,4 @@ class controller():
                 if updateDatabase:
                     self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
         return f'Success', 200
-
-
 
