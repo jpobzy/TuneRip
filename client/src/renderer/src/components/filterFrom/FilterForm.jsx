@@ -185,7 +185,7 @@ export default function FilterForm({setRefresh}) {
         } 
         {!isLoading && showResult && 
             <>
-                {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
+                {resultStatusCode === 200  && ResultSuccess('Successfully added tracks to filter','', goBack)}
                 {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
             </>
         }    
