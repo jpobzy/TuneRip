@@ -4,6 +4,7 @@ import { Alert, Flex, Spin, ConfigProvider, Result, Button } from 'antd';
 import { App } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import './DownloadScreen.css'
 
 function DownloadScreen ({loading, responseData}) {
   return (
@@ -19,7 +20,8 @@ function DownloadScreen ({loading, responseData}) {
             
           </div> 
         :
-        <div className='bg-white rounded-lg w-[800px] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%]'>
+        <div className='bg-white rounded-lg w-[800px] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] test'>
+          hi
           {responseData.statusCode === 200 ?
             <Result
               status="success"

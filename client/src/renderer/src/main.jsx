@@ -17,7 +17,6 @@ createRoot(document.getElementById('root')).render(
             <ResultProvider>
               <MainApp />                 
             </ResultProvider>
-          
           </ClickProvider>
         </ToggleProvider>
       </AntdApp>

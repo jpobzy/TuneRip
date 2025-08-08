@@ -10,6 +10,7 @@ import {
 } from 'antd'
 import axios from 'axios'
 import { App } from 'antd';
+import { useHomeContext } from '../context/HomeContext';
 
 
 function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
@@ -26,7 +27,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
     const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
     const [debugMode, setDebugMode] = useState(false);
-
+    const { downloadScreenRefs  } = useHomeContext();
 
     const toggleDefaultSettings = async (e) => {
         setComponentDisabled(e.target.checked)
@@ -246,9 +247,12 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
     return (
         <div className='download-form '>
-        <Checkbox checked={componentDisabled} onChange={e => toggleDefaultSettings(e)}>
-            Use default settings
-        </Checkbox>
+            <div ref={downloadScreenRefs.defaultDownloadToggleRef}>
+                <Checkbox checked={componentDisabled} onChange={e => toggleDefaultSettings(e)}>
+                    Use default settings
+                </Checkbox>                
+            </div>
+
         <Form 
         form={form}
         name='basic'
@@ -265,59 +269,69 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
         {/* ############################## SKIP DOWNLOADING PREV DOWNLOADED TRACKS ################################ */}
         {!isTrack &&
-            <Form.Item style={{marginBottom: "0px"}}>
-                <Checkbox
-                    checked={skipDownload}
-                    onChange={(e) => setSkip(e)}
-                >
-                    Skip downloading track if its already downloaded
-                </Checkbox>                     
-            </Form.Item>
-                   
-                
+            <div ref={downloadScreenRefs.skipDownloadingPrevDownloadToggleRef}>
+                <Form.Item style={{marginBottom: "0px"}}>
+                    <Checkbox
+                        checked={skipDownload}
+                        onChange={(e) => setSkip(e)}
+                    >
+                        Skip downloading track if its already downloaded
+                    </Checkbox>                     
+                </Form.Item>                 
+            </div>
+
         }
 
         {/* ############################## SKIP DOWNLOADING BEATS AND INSTRUMENTALS ################################ */}
         {!isTrack &&
-            <Form.Item style={{marginBottom : "0px"}}>
-                <Checkbox
-                    checked={skipBeatsAndInstrumentals}
-                    onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
-                >
-                    Skip downloading beats and instrumental tracks
-                </Checkbox>             
-            </Form.Item>
+            <div ref={downloadScreenRefs.skipDownloadingBeatsAndInstrumentalsToggleRef}>
+                <Form.Item style={{marginBottom : "0px"}}>
+                    <Checkbox
+                        checked={skipBeatsAndInstrumentals}
+                        onChange={(e)=> setSkippingBeatsAndInstrumentals(e)}
+                    >
+                        Skip downloading beats and instrumental tracks
+                    </Checkbox>             
+                </Form.Item>                
+            </div>
+
         }
     
     
         {/* ############################## ADD TRACK TO EXISTING PLAYLISTS ################################ */}   
         {!isUser &&
-            <>
-                <Form.Item style={{marginBottom : "0px"}}>
-                    <Checkbox
-                        checked={addToExistingPlaylist}
-                        onChange={(e)=> handleAddToExistingPlaylist(e)}
-                    >
-                        {isTrack ? 
-                        'Add track to exisiting playlist' : 
-                        'Add tracks to exisiting playlist'
-                        }
-                    </Checkbox>             
-                </Form.Item>
+            <>  
+                <div ref={downloadScreenRefs.addToExistingPlaylistToggleRef}>
+                    <Form.Item style={{marginBottom : "0px"}}>
+                        <Checkbox
+                            checked={addToExistingPlaylist}
+                            onChange={(e)=> handleAddToExistingPlaylist(e)}
+                        >
+                            {isTrack ? 
+                            'Add track to exisiting playlist' : 
+                            'Add tracks to exisiting playlist'
+                            }
+                        </Checkbox>             
+                    </Form.Item>                    
+                </div>
+
 
                 {addToExistingPlaylist &&
-                    <Form.Item style={{marginLeft: "70px"}}>
-                        {/* <div className='ml-[70px] mt-[]'> */}
-                            <Select
-                                defaultValue=""
-                                style={{ width: 250 }}
-                                onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
-                                options={existingPlaylistNames}
-                            />
-                            <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
-                        {/* </div> */}
+                    <div >
+                        <Form.Item style={{marginLeft: "70px"}}>
+                            {/* <div className='ml-[70px] mt-[]'> */}
+                                <Select
+                                    defaultValue=""
+                                    style={{ width: 250 }}
+                                    onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
+                                    options={existingPlaylistNames}
+                                />
+                                <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
+                            {/* </div> */}
 
-                    </Form.Item>    
+                        </Form.Item>                          
+                    </div>
+  
                 }            
             </>
         }
@@ -325,14 +339,17 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
 
         {/* ############################## ADD TRACKS TO A NEW SUBFOLDER ################################ */}   
-        <Form.Item style={{marginBottom : "5px"}}>
-            <Checkbox
-                checked={createSubfolder}
-                onChange={(e)=> setSubFolderSettings(e)}
-            >
-                Create a subfolder and add all the tracks there
-            </Checkbox>             
-        </Form.Item>
+        <div ref={downloadScreenRefs.createSubfolderToggleRef}>
+            <Form.Item style={{marginBottom : "5px"}}>
+                <Checkbox
+                    checked={createSubfolder}
+                    onChange={(e)=> setSubFolderSettings(e)}
+                >
+                    Create a subfolder and add all the tracks there
+                </Checkbox>             
+            </Form.Item>            
+        </div>
+
                
 
 
@@ -352,14 +369,16 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
         {/* ############################## CHANGE INDIVIDUAL TRACK TITLE ################################ */}   
         {isTrack && 
-        <Form.Item 
-            wrapperCol={{ span: 15}}
-            label="TrackTitle"
-            name="title"
-            onChange={(e) => setTitle(e.target.value)}
-            >
-          <Input placeholder='Default: <Video title>'/>
-        </Form.Item>
+            <div ref={downloadScreenRefs.changeTrackTitleInputRef}>
+                <Form.Item 
+                    wrapperCol={{ span: 15}}
+                    label="TrackTitle"
+                    name="title"
+                    onChange={(e) => setTitle(e.target.value)}
+                    >
+                <Input placeholder='Default: <Video title>'/>
+                </Form.Item>            
+            </div>
         }
 
         {/* <Form.Item>
@@ -371,36 +390,40 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </Checkbox>  
         </Form.Item> */}
 
+        <div ref={downloadScreenRefs.artistInputRef}>
+            <Form.Item 
+                wrapperCol={{ span: 15}}
+                label="Artist"
+                name="artist"
+                onChange={(e) => setArtist(e.target.value)}
+                >
+            <Input placeholder='Default: Youtube Music' />
+            </Form.Item>            
+        </div>
 
-        <Form.Item 
-            wrapperCol={{ span: 15}}
-            label="Artist"
-            name="artist"
-            onChange={(e) => setArtist(e.target.value)}
-            >
-          <Input placeholder='Default: Youtube Music' />
-        </Form.Item>
-        
-        <Form.Item 
-            wrapperCol={{ span: 15}}
-            label="Genre"
-            name="genre"
-            onChange={(e) => setGenre(e.target.value)}
-            >
-          <Input placeholder='Default: None'/>
-        </Form.Item>
-
-        <Form.Item 
-            wrapperCol={{ span: 15}}
-            label="Album Title"
-            name="album"
-            
-            >
-          <Input 
-            placeholder='Default: YouTube Album Prod <YT channel>' 
-            onChange={(e) => setAlbum(e.target.value)}
-            />
-        </Form.Item>
+        <div ref={downloadScreenRefs.genreInputRef}>
+            <Form.Item 
+                wrapperCol={{ span: 15}}
+                label="Genre"
+                name="genre"
+                onChange={(e) => setGenre(e.target.value)}
+                >
+            <Input placeholder='Default: None'/>
+            </Form.Item>
+        </div>
+        <div ref={downloadScreenRefs.albumTitleRef}>
+            <Form.Item 
+                wrapperCol={{ span: 15}}
+                label="Album Title"
+                name="album"
+                
+                >
+            <Input 
+                placeholder='Default: YouTube Album Prod <YT channel>' 
+                onChange={(e) => setAlbum(e.target.value)}
+                />
+            </Form.Item>
+        </div>     
       </Form>
     </div>
     );

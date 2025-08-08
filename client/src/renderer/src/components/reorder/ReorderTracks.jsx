@@ -1,13 +1,13 @@
 import { Button, Form, Select, Tooltip, Result, Tour  } from "antd";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import RefactorSubmitButton from "./RefactorSubmitButton";
+import RefactorSubmitButton from "./ReorderTracksSubmitButton";
 import {App} from 'antd'
 import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
 import { resultToggle } from "../context/ResultContext";
 
-function RefactorTracks(){
+function ReorderTracks(){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState([])
     const {message} = App.useApp();
@@ -88,7 +88,7 @@ function RefactorTracks(){
 
     return (
         <div>
-            <div className="mx-auto justify-center ">
+            <div className="mx-auto justify-center -mt-[20px]">
                 {!isLoading && !showResult &&
                     <Form
                     name="refactor"
@@ -129,41 +129,25 @@ function RefactorTracks(){
             {isLoading && !showResult && 
                 <>
                     <div className="mt-[100px]">
-                       {Loading('Tracks are being reordered in folder')}
+                       {Loading('Tracks are being reordered')}
                     </div>
                     
                 </>
             } 
             {!isLoading && showResult && 
                 <>
-                    {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
-                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                    <div className="-mt-[30px]">
+                        {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
+                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                    </div>
                 </>
             }                
 
             </div>
             <div className="mb-[100px]"></div>
             <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
-
-
-
-
-
-
-            <div className="mt-[300px]">
-
-                <Button onClick={()=> setIsLoading(!isLoading)}>toggle isLoading</Button>
-                <Button onClick={()=> setShowResult(!showResult)}>toggle showResult</Button>
-                <Button onClick={()=> setResultStatusCode(200)}>status = 200</Button>
-                <Button onClick={()=> setResultStatusCode(400)}>status = 400</Button>
-                <div>
-                    <Button onClick={()=> console.log(isLoading, showResult, resultStatusCode)}>print all</Button>    
-                </div>                
-            </div>
-
-
         </div>
     )
 }
 
-export default RefactorTracks;
+export default ReorderTracks;

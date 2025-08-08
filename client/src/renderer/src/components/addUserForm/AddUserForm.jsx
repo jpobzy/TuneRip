@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button } from 'antd';
+import { App, Form } from 'antd';
 
-
-export default function AddUserForm({setSearchURL}) {
+export default function AddUserForm({setSearchURL, handleUserAdded}) {
   const { Search } = Input;
   const [user, setUser] = useState('');
+  const { message } = App.useApp();	
 
   async function onSearch(value) {
+    if (value.length === 0){
+      return
+    }
     if (value.includes("@") ){
       const res = await fetch('http://localhost:8080/newUser', {
         method: 'POST',
@@ -15,7 +19,10 @@ export default function AddUserForm({setSearchURL}) {
         body: JSON.stringify({ ytLink: value }),
       });
       if (res.status === 200) {
-        window.location.reload();
+        handleUserAdded()
+        setUser('')
+      }else{
+        message.error(`Channel ${user} could not be found`)
       }
     } else {
        setSearchURL(value);
@@ -26,13 +33,12 @@ export default function AddUserForm({setSearchURL}) {
 
   return (
     <div className='searchbar'> 
-      <form
+      {/* <form
         className="user-form"
         onSubmit={(e) => {
           e.preventDefault(); // prevent form submission reload
-          onSearch(user);
         }}
-      >
+      > */}
         <label>
           <ConfigProvider
             theme={{
@@ -53,10 +59,11 @@ export default function AddUserForm({setSearchURL}) {
           >
             <Search
               placeholder="Paste Youtuber Channel/Video URL Here"
-              allowClear
+              allowClear={true}
               enterButton={
                 <Button
                   className="custom-search-btn"
+                  onClear={null}
                   style={{
                     borderColor: '#6c757d',
                     color: 'rgb(8, 1, 1)', // corrected property
@@ -77,7 +84,7 @@ export default function AddUserForm({setSearchURL}) {
             />
           </ConfigProvider>
         </label>
-      </form>
+      {/* </form> */}
     </div>
   );
 }

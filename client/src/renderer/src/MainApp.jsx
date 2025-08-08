@@ -1,5 +1,5 @@
 import electronLogo from './assets/electron.svg'
-import Youtubers from './components/Youtubers'
+import Home from './components/Home'
 import './assets/mainApp.css'
 import React, { useEffect, useState } from 'react'
 import { AnimatedBackground } from 'animated-backgrounds';
@@ -19,15 +19,16 @@ import { HomeProvider } from './components/context/HomeContext';
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [page, setPage] = useState("Settings");
-  // const [background, setbackground] = useState("");
+  const [page, setPage] = useState("Home");
   const ref = useRef(null);
+  const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
 
   const homeClicked = () => {
     setPage('Home')
     if (ref.current){
       ref.current.resetAll();
     }
+    setCollapseActiveKey(['0'])
   }
 
   const items = [
@@ -43,7 +44,7 @@ function MainApp() {
         <div >
           {page === 'Home' && 
             <HomeProvider>
-                <Youtubers ref={ref}/>       
+                <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
             </HomeProvider>
           }
 

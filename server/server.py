@@ -23,7 +23,6 @@ CORS(app, origins='*')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALBUM_COVER_FOLDER'] = ALBUM_COVER_FOLDER
 app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
-# path_env = 'MUSIC_PATH'
 
 controller_obj = controller(app.config['DATABASE_FOLDER'])
 backgrounddata_obj = backgroundData()

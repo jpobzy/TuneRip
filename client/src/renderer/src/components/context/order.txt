@@ -1,0 +1,26 @@
+user: 
+    defaultDownloadToggleSteps
+    downloadUserSteps
+    commonInputsSteps
+
+track:
+    defaultDownloadToggleSteps
+        const [userDownloadTourEnabled, setUserDownloadTourEnabled] = useState(false);
+    const [trackDownloadTourEnabled, setTrackDownloadTourEnabled] = useState(false);
+    const [playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled] = useState(false);
+                    downloadScreenValues : {userDownloadTourEnabled, setUserDownloadTourEnabled, trackDownloadTourEnabled, 
+                    setTrackDownloadTourEnabled, playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled
+                }
+
+  const {downloadScreenValues} = useHomeContext();
+
+downloadScreenValues : {userDownloadTourEnabled, setUserDownloadTourEnabled, trackDownloadTourEnabled, 
+setTrackDownloadTourEnabled, playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled
+                }
+
+
+
+ addCoverArtRef, selectCoverArtRef, defaultDownloadToggleRef, artistInputRef, 
+ genreInputRef, albumTitleRef, skipDownloadingPrevDownloadToggleRef, 
+ skipDownloadingBeatsAndInstrumentalsToggleRef, createSubfolderToggleRef, 
+ addToExistingPlaylistToggleRef, changeTrackTitleInputRef 

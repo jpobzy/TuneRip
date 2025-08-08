@@ -205,15 +205,15 @@ function Crop(){
             {isLoading && !showResult && 
                 <>
                     <div className="mt-[100px]">
-                       {Loading('Tracks are being reordered in folder')}
+                       {Loading('Cropped image is being saved')}
                     </div>
                     
                 </>
             } 
             {!isLoading && showResult && 
                 <>
-                    {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
-                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                    {resultStatusCode === 200  && ResultSuccess('Successfully saved the cropped image','', goBack)}
+                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the log folder', goBack)}             
                 </>
             }    
 

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react'
+import React, { forwardRef, use, useEffect, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
@@ -10,35 +10,43 @@ import { Collapse } from 'antd';
 import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
-import { Switch, Button, Tooltip } from 'antd';
+import { Switch, Button, Tooltip, Tour } from 'antd';
 import DownloadScreen from './downloadingScreen/DownloadScreen';
 import { useToggle } from './context/UseContext';
 import { QuestionOutlined } from '@ant-design/icons';
 import { useHomeContext } from './context/HomeContext';
+import { resultToggle } from './context/ResultContext';
 
-const Youtubers = forwardRef((props, ref) => {
-  const { message } = App.useApp();
+
+const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
+  const { message, notification  } = App.useApp();
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
   const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
   const [chosenUser, setChosenUser] = useState([]);
-  const [coverChosen, setCoverChosen] = useState('')
+  // const [coverChosen, setCoverChosen] = useState('')
   const [searchUrl, setSearchURL] = useState([])
-  const inputRef = useRef(null);
   const [isTrack, setIsTrack] = useState(false)
-  const [edit, setEdit] = useState(false)
-  const [reloadUserDataBool, setReload] = useState(false) 
+  const [editUsers, setEditUsers] = useState(false)
   const [prevImg, setPrevImg] = useState(null)
   const [editImgCard, setEditImgCard] = useState(false)
   const [downloadSettings, setDownloadSettings] = useState({});
-  const [loading, setLoading] = useState(true)
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
-  const {showDock, setShowDock} = useToggle()
-  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef} = useHomeContext();
-  const [prevPlaylistArt, setPrevPlaylistArt] = useState([])
+  const {setShowDock} = useToggle()
+  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
   const [isUser, setIsUser] = useState(false)
+
+  
+
+  const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
+  const [isLoading, setIsLoading] = useState(false)
+  const [showResult, setShowResult] = useState(false)
+  const [resultStatusCode, setResultStatusCode] = useState()
+
+
+
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -62,9 +70,9 @@ const Youtubers = forwardRef((props, ref) => {
   }
 
   const handleAlbumCoverClicked = async(file) =>{
-    setLoading(true)
+    setIsLoading(true)
     setShowDock(false)
-    setCoverChosen(file);
+    // setCoverChosen(file);
     setAlbumCoverChosen(true);
     try{
       const response = await axios.get(`http://localhost:8080/download/`, {params: {
@@ -73,22 +81,25 @@ const Youtubers = forwardRef((props, ref) => {
           albumCover: file,
           ...downloadSettings
         }});
-
+      setResultStatusCode(response.status)
       if (response.status === 207){
-        setLoading(false)
+        setIsLoading(false)
+        setShowResult(true)
         setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }else if (response.status === 200){
-        setLoading(false)
+        setIsLoading(false)
+        setShowResult(true)
         setShowDock(true)
         setResponseData(
           {'data': response.data, 'statusCode': response.status}
         )
       }
     }catch (err){
-      setLoading(false)
+      setIsLoading(false)
+      setShowResult(true)
       setShowDock(true)
       setResponseData(
          {'data': {'message': err.response.data.message}, 'statusCode': err.status}
@@ -101,6 +112,7 @@ const Youtubers = forwardRef((props, ref) => {
     setChosenUser(null);
     setDownloadSettings({})
     setskipDownload(false)
+
   }
 
   async function getNewAlbumCover() {
@@ -147,7 +159,7 @@ const Youtubers = forwardRef((props, ref) => {
   const debugMode = () => {
     setCardClicked(true)
     setAlbumCoverChosen(true)
-    setLoading(false)
+    setResultStatusCode(200)
     
     const data = {data: {message: 'All tracks downloaded successfully and can be foun…rs\\j03yp\\Documents\\TuneRip\\downloads\\Archimage999'}, statusCode : 200}
     setResponseData(data)
@@ -155,40 +167,109 @@ const Youtubers = forwardRef((props, ref) => {
 
 
   useEffect(()=> {
+    setCollapseActiveKey(['0'])
     getUsers();
     setEditImgCard(false)
   }, []);
 
 
-    
+  const goBack = () => {
+    setIsLoading(false)
+    setShowResult(false)
+
+    setCardClicked(false)
+    setResultStatusCode(null)
+    setAlbumCoverChosen(false)
+    setSearchURL('');
+    setChosenUser(null);
+    setDownloadSettings({})
+    setskipDownload(false)
+  }
+
+  const handleUserAdded = () => {
+    getUsers();
+  }
+
+  const handleUserRemoved = () => {
+    setEditUsers(false)
+    getUsers();
+  }
+
+  const handleTour = () => {
+    setCollapseActiveKey(['1'])
+    if (isUser) {
+      downloadScreenValues.setUserDownloadTourEnabled(true)
+    }else if (isTrack) {
+      downloadScreenValues.setTrackDownloadTourEnabled(true)
+    }else{
+      downloadScreenValues.setPlaylistDownloadTourEnabled(true)
+    }
+  }
 
 
   return (
     <div>
-      {/* <br /> */}
-
       <div >
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
-              <div className=''>
-                <DownloadScreen loading={loading} responseData={responseData}/>                
-              </div>
-              {/* <button onClick={()=> setLoading(!loading)} >loading</button> */}
+            {isLoading && !showResult && 
+                <>
+                    <div className="rounded-lg  fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] ">
+                       {Loading('Tracks are downloading')}
+                    </div>
+                    
+                </>
+            } 
+            {!isLoading && showResult && 
+                <> 
+                   <div className='bg-white fixed mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results'>
+                      {resultStatusCode === 200  && ResultSuccess('Successfully downloaded all tracks!', responseData.data.message, goBack)}
+                      {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.data.message, goBack)}   
+                      {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.data.message, goBack)}    
+                   </div>
+                           
+                </>
+            }    
             </div>
           ) : (
-          <div className='inline-block'>
-            <div className='mb-10  relative '>
-              <div className='flex  justify-center mt-[30px]'>
-                <UploadButton refresh={getNewAlbumCover} />
+          <div className='inlin'>
+            <div className='mb-10 justify-center flex '>
+              <div className='mt-[30px] ml-[50px]'>
+                <UploadButton refresh={getNewAlbumCover}/>
               </div>
+              {isTrack ?
+                <div className='ml-[10px] mt-[30px]'>
+                    <Tooltip title="help">
+                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
+                    </Tooltip>                      
+                </div>
+               : isUser ?
+                <div className='ml-[10px] mt-[30px]'>
+                    <Tooltip title="help">
+                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
+                    </Tooltip>                      
+                </div>
+              :
+                <div className='ml-[10px] mt-[30px]'>
+                    <Tooltip title="help">
+                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
+                    </Tooltip>                      
+                </div>
+              }
             </div>
 
             <div className='mx-auto text-center text-gray-200 text-[50px] -mt-[30px] z-10 font-bold '>
               Choose an album cover
             </div>            
             <div className='downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
-              <Collapse items={downloadItems} defaultActiveKey={['0']} />
+              <Collapse 
+                items={downloadItems} 
+                // defaultActiveKey={'1'} 
+                activeKey={collapseActiveKey}
+                // onChange={(e)=>console.log(`change: ${e}`)}
+                onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
+                />
             </div>
 
             <div className='album-cover-containter'>
@@ -203,6 +284,7 @@ const Youtubers = forwardRef((props, ref) => {
               />
             ))}
             </div>
+
 
           { Object.keys(albumCoverFileNames).length > 0 &&
             <div className='mt-[20px]'> 
@@ -222,6 +304,7 @@ const Youtubers = forwardRef((props, ref) => {
                       <div className='inline-block mt-[30px]' ref={searchBarRef}>
                         <AddUserForm 
                         setSearchURL={downloadVideo}
+                        handleUserAdded={handleUserAdded}
                         />                        
                       </div>
                     </div>
@@ -243,9 +326,10 @@ const Youtubers = forwardRef((props, ref) => {
                           name = {item[0]}
                           userPFP={item[0]}
                           onClick={()=>handleCardClicked(item[0])}
-                          edit = {edit}
+                          editUsers = {editUsers}
                           key = {index+1}
-                          setReload={setUsers}
+                          handleUserRemoved={handleUserRemoved}
+                          // setReload={setUsers}
                           />
                         ))}
                       </div>
@@ -259,12 +343,15 @@ const Youtubers = forwardRef((props, ref) => {
       </div>
       {Object.keys(users).length > 0  &&  !cardClicked && 
         <div className='mt-[20px] inline-block mb-[20px]' ref={deleteUserRef}>
-          <Switch onChange={() => setEdit(!edit)} />        
+          <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
+
       {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
+      {/* <Button type='primary' onClick={()=> setIsLoading(!isLoading)}>load toggle</Button> */}
+      {/* <Button type='primary' onClick={()=> console.log(collapseActiveKey)}>results toggle</Button> */}
     </div>
   )
 })
 
-export default Youtubers
+export default Home;

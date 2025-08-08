@@ -22,6 +22,7 @@ class controller():
         self.queue = queue.Queue()
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
         self.logger = logController(Path(self.projRoot / 'logs'))
+        self.logger.logInfo('Starting app')
 
     def pathMaker(self, path):
         """
@@ -69,6 +70,7 @@ class controller():
             debugModeSkipDownload = False
             debugModeAddToDB = False
         #############################################
+        self.logger.logInfo('Downloading videos')
 
         url = request.args.get('url')
         user = request.args.get('user')
@@ -82,6 +84,8 @@ class controller():
         skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
         addToExistingPlaylist = request.args.get('addToExistingPlaylistSettings')
         downloadCount = 0
+
+        self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
@@ -132,12 +136,13 @@ class controller():
 
                     
                 except Exception as error:
-                    # self.logger.logInfo(f'video url: {url}')
-                    # self.logger.logError(error)
+                    self.logger.logInfo(f'video url: {url}')
+                    self.logger.logError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
                     
+            self.logger.logInfo('Download complete')
             return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
         
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
@@ -180,15 +185,17 @@ class controller():
                 self.queue.put(trackName)
                 
             except Exception as error:
-                # self.logger.logInfo(url)
-                # self.logger.logError(error)
+                self.logger.logInfo(url)
+                self.logger.logError(error)
                 erorrCount += 1
                 if erorrCount == 3:
                     raise Exception(f'Too many errors cause this to fail')
                 
             if erorrCount > 0:
+                self.logger.logInfo('Download completed but with errors')
                 return {'message': f'Error when downloading, please check the log in {self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'}'}, 500
             else:
+                self.logger.logInfo('Download complete')
                 return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
             
         else:
@@ -239,20 +246,22 @@ class controller():
                     self.queue.put(trackName)
                     
                 except Exception as error:
-                    # self.logger.logInfo(video.watch_url)
-                    # self.logger.logError(error)
+                    self.logger.logInfo(video.watch_url)
+                    self.logger.logError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
             
             self.updateUserImg(user, albumCoverFile)
+            self.logger.logInfo('Download complete')
             return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
 
     def returnAlbumCoverFileNames(self):
         """
         Returns a dict containing a list of all album cover files for the front end to request 
         """
-        files = [file.name for file in Path(self.projRoot / f'server/static/albumCovers/').iterdir()]
+        # files = [file.name if '.png'in file.name or '.jpeg' in file.name else '' for file in Path(self.projRoot / f'server/static/albumCovers/').iterdir()]
+        files = [file.name for file in Path(Path.home() / 'Documents/TuneRip' / f'server/static/albumCovers/').iterdir() if file.suffix in ('.png', '.jpeg', '.jpg')]
         return {'files' : files}
 
 
@@ -269,10 +278,10 @@ class controller():
         """
         Add a new url to the database
         """
+        self.logger.logInfo(f'Looking for user {data['ytLink']}')
         if not data['ytLink'].startswith('https://www.youtube.com/@'):
             return {f'Incorrect youtube link' :400}
         try:
-            
             channel = Channel(data['ytLink'])
             url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/images/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
@@ -293,8 +302,7 @@ class controller():
             return 'Success', 200
 
         except Exception as error:
-            # self.logger.logInfo(f'Looking for user {data['ytLink']}')
-            # self.logger.logError(error)
+            self.logger.logError(error)
             return {error: 404}
 
 
@@ -319,8 +327,8 @@ class controller():
                 albumCoverFile = None
                 self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url)
             except Exception as error:
-                # self.logger.logInfo(f'Searching for track url: {url}')
-                # self.logger.logError(error)
+                self.logger.logInfo(f'Searching for track url: {url}')
+                self.logger.logError(error)
                 return
         
         return
@@ -370,8 +378,8 @@ class controller():
                         time.sleep(60)
                     print(f'added track {track} with title {video.title}')
                 except Exception as error:
-                    # self.logger.logInfo(f'Adding track {track} to filter')
-                    # self.logger.logError(error)
+                    self.logger.logInfo(f'Adding track {track} to filter')
+                    self.logger.logError(error)
 
                     failures.add(track)
                     continue
@@ -394,8 +402,8 @@ class controller():
                     self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
                     return success
                 except Exception as error:
-                    # self.logger.logInfo(f'Adding track to filter with request data: {request.data}')
-                    # self.logger.logError(error)
+                    self.logger.logInfo(f'Adding track to filter with request data: {request.data}')
+                    self.logger.logError(error)
                     return {'message': f'Youtube link was invalid due to {error}'}, 207
                 
 
@@ -501,7 +509,8 @@ class controller():
         bottom = data['y'] + data['height'] # y + height
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
-        path = Path(self.projRoot / f'server/static/albumCovers/{file.filename}.jpg')
+        filename = re.sub(r'[^\w_. -]', '', file.filename)
+        path = Path(self.projRoot / f'server/static/albumCovers/{filename}.jpg')
         # Shows the image in image viewer
         croppedImg.save(path)
         return 'ok', 200
