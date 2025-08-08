@@ -364,7 +364,7 @@ function EditMetaData(){
             <Tour open={open} onClose={() => endTour()} steps={steps} />
             <div className="mt-[200px]">
                 {/* <Button  onClick={()=> {setLoading(true);setUpdateRequest(true) }}>start loading</Button> */}
-                <Button  onClick={()=> {console.log(playlistData)}}>end loading</Button>                
+                {/* <Button  onClick={()=> {console.log(playlistData)}}>end loading</Button>                 */}
             </div>
 
         </div>

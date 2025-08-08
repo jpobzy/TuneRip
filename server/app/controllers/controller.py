@@ -6,7 +6,7 @@ from database.database import database
 import urllib.request
 import yaml, re, json
 from pathlib import Path
-import time, queue, time
+import time, time
 from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
@@ -19,7 +19,6 @@ class controller():
     def __init__(self, databaseFolderRoute):
         self.checkFolders()
         self.db = database(databaseFolderRoute)
-        self.queue = queue.Queue()
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
         self.logger = logController(Path(self.projRoot / 'logs'))
         self.logger.logInfo('Starting app')
@@ -132,7 +131,7 @@ class controller():
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
-                    self.queue.put(trackName)
+                    downloadCount += 1
 
                     
                 except Exception as error:
@@ -143,7 +142,10 @@ class controller():
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
                     
             self.logger.logInfo('Download complete')
-            return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
+            if downloadCount > 0:
+                return {'message': f'Downloaded {downloadCount} tracks which can be found in {downloadPath}'}, 200
+            else:
+                return {"message": "No new tracks do download were found"}, 200
         
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
             video = YouTube(url)
@@ -182,7 +184,6 @@ class controller():
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 trackNum += 1
 
-                self.queue.put(trackName)
                 
             except Exception as error:
                 self.logger.logInfo(url)
@@ -243,7 +244,7 @@ class controller():
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
 
-                    self.queue.put(trackName)
+                    downloadCount += 1
                     
                 except Exception as error:
                     self.logger.logInfo(video.watch_url)
@@ -254,7 +255,10 @@ class controller():
             
             self.updateUserImg(user, albumCoverFile)
             self.logger.logInfo('Download complete')
-            return {'message': f'All tracks downloaded successfully and can be found in {downloadPath}'}, 200
+            if downloadCount > 0:
+                return {'message': f'Downloaded {downloadCount} tracks which can be found in {downloadPath}'}, 200
+            else:
+                return {"message": "No new tracks do download were found"}, 200
 
     def returnAlbumCoverFileNames(self):
         """
