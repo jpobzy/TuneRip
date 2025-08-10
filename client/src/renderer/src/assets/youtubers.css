@@ -32,5 +32,16 @@
 } */
 
 
+.results .ant-result .ant-result-title {
+    color: black;
+}   
 
 
+.results .ant-result .ant-result-subtitle {
+    color:  black;
+}   
+
+.loadingSubtitle{
+   /* color:  black; */
+   color : white
+}

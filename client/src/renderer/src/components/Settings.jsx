@@ -9,7 +9,7 @@ import { DownOutlined } from '@ant-design/icons';
 import { Dropdown, message, Space } from 'antd';
 import {  SmileOutlined } from '@ant-design/icons';
 import './settings.css'
-import RefactorTracks from "./refactor/RefactorTracks";
+import ReorderTracks from "./reorder/ReorderTracks";
 import Crop from "./crop/Crop";
 import EditMetaData from "./editMetaData/EditMetaData";
 import SelectBackground from "./selectBackground/SelectBackground";
@@ -42,7 +42,7 @@ function Settings(){
         label: 'Reorder Tracks',
         children: 
         <div className="text-center mt-[50px]">
-            <RefactorTracks />
+            <ReorderTracks />
         </div>
     },
     {

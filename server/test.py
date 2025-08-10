@@ -5,25 +5,32 @@ from mutagen.easyid3 import EasyID3
 
 path = Path(r'C:\Users\j03yp\Documents\TuneRip\downloads\BisenasTrackz')
 
-mp3files = list(path.glob('*.mp3'))
+import logging
 
-def getTrackNum(file):
-    # {'album': ['YouTube Album Travis Scott'], 'title': ['Travis Scott - Mo City Flexologist (DAYS BEFORE RODEO Deluxe)'], 'artist': ['YouTube Music'], 'tracknumber': ['1']}
-    track = EasyID3(file)
-    track['album'] = 'end'
-    return int(track['tracknumber'][0])
+# logger = logging.getLogger(__name__)
 
-newlist = sorted(mp3files, key=getTrackNum)
-count = 86
-for path in newlist:
-    tags = ID3(path)
-    # tags["TALB"] = TALB(encoding=3, text='Youtube Music Prod Travis Scott')
-    trackNum = int(str(tags['TRCK']))
-    if trackNum != count:
-        tags['TRCK'] = TRCK(encoding=3, text=f'{count}')
-    count+=1
-    tags.save(path)
+# def main():
+#     logging.basicConfig(filename='myapp.log', level=logging.INFO)
+#     logger.info('Started')
+#     print('hello')
+#     logger.info('Finished')
+
+# if __name__ == '__main__':
+#     main()
 
 
+import logging
+
+class logController():
+    
+
+    def __init__(self):
+        logDir = Path(Path.home() / f'Documents/Github/TuneRip/server/')
+        fileNumber = sum(str(i).endswith('.log') for i in logDir.iterdir()) + 1
+        self.logFile = Path(logDir / f'logfile{fileNumber}.log')
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename='myapp.log', level=logging.INFO)
+                            
 
 
+logController()

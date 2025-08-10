@@ -3,7 +3,7 @@ import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button, Tour  } from 'antd';
 import './FilterForm.css'
 import axios from 'axios';
-// import { useTourContext } from '../context/SettingsTourContext';
+import { resultToggle } from "../context/ResultContext";
 
 import { InboxOutlined } from '@ant-design/icons';
 import { Upload, Tooltip, Result} from 'antd';
@@ -17,13 +17,19 @@ export default function FilterForm({setRefresh}) {
   const { Dragger } = Upload;
   const [filterSuccess, setFilterSuccess] = useState(false)
   const [filterError, setFilterError] = useState(false)
-  const [responseData, setResponseData] = useState({})
-
   const { message } = App.useApp();	
 
   const [open, setOpen] = useState(false); 
   const filterSearchBarRef = useRef(null) ;
   const filterFilesRef = useRef(null);
+
+
+    const {ResultSuccess, ResultFailed, Loading} = resultToggle()
+    const [isLoading, setIsLoading] = useState(false)
+    const [showResult, setShowResult] = useState(false)
+    const [resultStatusCode, setResultStatusCode] = useState()
+
+
 
   const steps = [   
     {
@@ -42,23 +48,17 @@ export default function FilterForm({setRefresh}) {
     if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
         setLoading(true)
         const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
-        
 
-      if (response.status === 200 || response.status === 304) {
-        setResponseData(response)
-        setLoading(false);
-        setUser('');
-        setFilterSuccess(true);
-        setRefresh(true);
-      }else{
-        setResponseData(response)
-        setFilterError(true)
-        setLoading(false);
-        setUser('');
-        
-        // setResponse(response)
-      }
-
+        if (response.status === 200 || response.status === 304) {
+            setLoading(false);
+            setUser('');
+            setFilterSuccess(true);
+            setRefresh(true);
+        }else{
+            setFilterError(true)
+            setLoading(false);
+            setUser('');
+        }
     } else if (value.length > 0){
         message.error(`Input ${value} is not a valid link`)
     } 
@@ -71,49 +71,34 @@ export default function FilterForm({setRefresh}) {
     onChange(info) {
         const { status } = info.file;
         if (status !== 'uploading') {
-            setLoading(true)
+            setIsLoading(true)
         }
 
         if (status === 'done') {
+            console.log(info)
+            setResultStatusCode(200)
+            setIsLoading(false)
+            setShowResult(true)
             message.success(`${info.file.name} file uploaded successfully.`);
-            setLoading(false);
-            setUser('');
-            setFilterSuccess(true);
-            setRefresh(true);
         } else if (status === 'error') {
+            setResultStatusCode(400)
+            setShowResult(true)
+            setIsLoading(false)
             message.error(`${info.file.name} file upload failed.`);
         }
     },
-    onDrop(e) {
-        
-    },
-    disabled: loading
+        onDrop(e) {},
+        disabled: loading
     };
     
+    const goBack = () => {
+        setIsLoading(false)
+        setShowResult(false)
+    }
 
   return (
     <div>
-      <br />
-        {filterSuccess ?
-            <Result
-            status="success"
-            title="Tracks were added to filter!"
-            // subTitle={`${responseData.data.message}`}
-            extra={[
-            <Button type="primary" onClick={()=> setFilterSuccess(false)}>Go back</Button>,
-            ]}
-            /> : filterError ? 
-            <div className='bg-white rounded-lg mx-auto w-[800px]'>
-                <Result
-                    status="error"
-                    title="Submission Failed"
-                    subTitle={`${responseData.data.message}`}
-                    extra={[
-                        <Button type="primary" onClick={()=> setFilterError(false)}>Go back</Button>,
-                    ]}
-                />
-            </div>
-            :
+        {!isLoading && !showResult &&
             <div >
                 <div className='flex justify-center items-center space-x-0'>
                     <div className='justify-center '>
@@ -189,9 +174,21 @@ export default function FilterForm({setRefresh}) {
                 <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
             </div>
         }
-            
-
      
+        {isLoading && !showResult && 
+            <>
+                <div className="mt-[100px]">
+                    {Loading('Tracks are being reordered in folder')}
+                </div>
+                
+            </>
+        } 
+        {!isLoading && showResult && 
+            <>
+                {resultStatusCode === 200  && ResultSuccess('Successfully added tracks to filter','', goBack)}
+                {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+            </>
+        }    
 
 
   {/* <Button type="primary" onClick={()=> setLoading(false)}>Primary Button</Button>

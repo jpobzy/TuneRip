@@ -4,11 +4,7 @@ import { useClickToggle } from "../context/CursorContext";
 import SplashCursorFormItems from "../cursor/splashCursor/SplashCursorFormItems";
 import ClickSparkFormItems from "../cursor/clickSpark/ClickSparkFormItems";
 import axios from "axios";
-import { LoadingOutlined } from '@ant-design/icons';
 
-//             splashCursorSettings : {splashCursorBackgroundSettings, setSplashCursorBackgroundSettings, splashCursorFormSettings},
-            // clickSparkSettings : {clickSparkBackgroundSettings, setClickSparkBackgroundSettings, clickSparkFormSettings},
-            // setClickState
 
 function SelectCursor(){
     const [cursor, setCursor] = useState('');
