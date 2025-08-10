@@ -63,7 +63,6 @@ export default function AddUserForm({setSearchURL, handleUserAdded}) {
               enterButton={
                 <Button
                   className="custom-search-btn"
-                  onClear={null}
                   style={{
                     borderColor: '#6c757d',
                     color: 'rgb(8, 1, 1)', // corrected property

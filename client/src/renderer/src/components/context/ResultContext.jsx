@@ -1,4 +1,4 @@
-import { Button, Result, Spin } from "antd";
+import { Button, ConfigProvider, Result, Spin } from "antd";
 import { Children, createContext, useContext, useEffect, useState } from "react";
 import { LoadingOutlined } from '@ant-design/icons';
 import './ResultContext.css'
@@ -64,7 +64,7 @@ export const ResultProvider = ({children}) =>{
             <>
                 <div className='mx-auto text-white'>
                     <div >
-                    <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
+                        <Spin indicator={<LoadingOutlined spin style={{ fontSize: 100 }} />} size="large" />
                     </div>
                     <div className="loadingSubtitle text-bold text-[20px]">
                         {loadMessage}

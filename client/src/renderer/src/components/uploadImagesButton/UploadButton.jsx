@@ -26,7 +26,11 @@ export default function UploadButton({refresh}){
   };
   return (
     <div ref={downloadScreenRefs.addCoverArtRef}>
-      <Upload {...props} showUploadList={false}>
+      <Upload 
+        {...props} 
+        showUploadList={false}
+        accept='.png,.jpg,.jpeg'
+      >
         <Button 
         className='custom-upload-button'
         icon={<UploadOutlined />}>Click to Upload your own album cover</Button>

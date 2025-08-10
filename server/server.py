@@ -12,7 +12,7 @@ from app.controllers.cursorDataController import cursorData
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
-UPLOAD_FOLDER = basePath / 'server/static/images'
+UPLOAD_FOLDER = basePath / 'server/static/userImages'
 ALBUM_COVER_FOLDER = basePath / 'server/static/albumCovers'
 DATABASE_FOLDER = basePath / 'server/database'
 
@@ -30,6 +30,7 @@ cursordata_obj = cursorData()
 
 @app.route("/")
 def hello_world():
+    controller_obj.test32(100)
     return "hello world"
 
 
@@ -252,6 +253,36 @@ def resetCursorSettings():
 def disableCurrentCursor():
     return cursordata_obj.disableCurrCursor()
 
+
+
+from datetime import datetime
+
+
+
+@app.route('/stream')
+def stream():
+    def getData():
+        count = 0
+        while True:
+            print('hello')
+            yield f"data: {datetime.now()}\n\n"
+            time.sleep(1)  # prevent hammering the CPU
+            count+=1
+            if count == 5:
+                break
+    return Response(getData(), mimetype="text/event-stream")
+
+@app.route('/downloadStream')
+def streamDownload():
+    print(request)
+    print(request.args)
+    print(request.data)
+    # print(request.query_string)
+    return Response(controller_obj.downloadStream(dict(request.args)), mimetype="text/event-stream")
+
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
-

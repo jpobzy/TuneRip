@@ -46,7 +46,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [resultStatusCode, setResultStatusCode] = useState()
 
 
-
+  const sseDownload = useRef()
+  const [currentlyDownloaded, setCurrentlyDownloaded] = useState(
+    []
+  )
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -72,48 +75,67 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
     setShowDock(false)
-    // setCoverChosen(file);
-    setAlbumCoverChosen(true);
-    try{
-      const response = await axios.get(`http://localhost:8080/download/`, {params: {
-          url: searchUrl,
-          user: chosenUser,
-          albumCover: file,
-          ...downloadSettings
-        }});
-      setResultStatusCode(response.status)
-      if (response.status === 207){
-        setIsLoading(false)
+    setAlbumCoverChosen(true)
+    setCurrentlyDownloaded([])
+    const params = new URLSearchParams({
+        url: searchUrl,
+        user: chosenUser,
+        albumCover: file,
+        // downloadsettings : JSON.stringify(downloadSettings)
+        ...downloadSettings
+    });
+
+    if (sseDownload.current){
+      sseDownload.current.close()
+      sseDownload.current = null
+    }
+
+    sseDownload.current = new EventSource(`http://localhost:8080/downloadStream?${params}`);
+    // sseDownload.current = new EventSource(`http://localhost:8080/stream?${params}`);
+
+    const skipAddingList = ['Connected']
+    sseDownload.current.onmessage = (event) => {
+      const data = JSON.parse(event.data.replaceAll("'", '"'))
+      const message = data.message
+
+
+      if (data.statusCode){
+        // setResponseData({'data': 'hi', 'statusCode': data.statusCode})
+        setResultStatusCode(parseInt(data.statusCode))
         setShowResult(true)
-        setShowDock(true)
-        setResponseData(
-          {'data': response.data, 'statusCode': response.status}
-        )
-      }else if (response.status === 200){
-        setIsLoading(false)
-        setShowResult(true)
-        setShowDock(true)
-        setResponseData(
-          {'data': response.data, 'statusCode': response.status}
-        )
+        setResponseData({message: message, statusCode: parseInt(data.statusCode)})
+      
+      } else if (!skipAddingList.includes(message)){
+        setCurrentlyDownloaded(prev => {
+          return [...prev, message]
+        })        
       }
-    }catch (err){
-      setIsLoading(false)
-      setShowResult(true)
-      setShowDock(true)
-      setResponseData(
-         {'data': {'message': err.response.data.message}, 'statusCode': err.status}
-      )      
-    }  
 
-    
-    // reset values 
-    setSearchURL('');
-    setChosenUser(null);
-    setDownloadSettings({})
-    setskipDownload(false)
 
+
+      if (message === 'Completed download'){
+        setShowResult(true)
+        console.log('closing session')
+        sseDownload.current.close()
+        sseDownload.current = null
+
+        setIsLoading(false)
+        setShowResult(true)
+        setShowDock(true)
+        setSearchURL('');
+        setChosenUser(null);
+        setDownloadSettings({})
+        setskipDownload(false)
+      }
+    };
+
+    sseDownload.current.onerror = (err) => {
+      console.error("EventSource failed:", err);
+      sseDownload.current.close()
+      sseDownload.current = null
+    };
   }
+
 
   async function getNewAlbumCover() {
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
@@ -167,6 +189,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   useEffect(()=> {
+    setResultStatusCode(null)
+    setCurrentlyDownloaded([])
+    setShowResult(false)
+    setIsLoading(false)
     setCollapseActiveKey(['0'])
     getUsers();
     setEditImgCard(false)
@@ -213,24 +239,48 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         {cardClicked ? (
           albumCoverChosen ? (
             <div>
-            {isLoading && !showResult && 
                 <>
-                    <div className="rounded-lg  fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] ">
-                       {Loading('Tracks are downloading')}
-                    </div>
-                    
+                  <div className='text-white'>
+                    {isLoading && !showResult && 
+                    <>
+
+                      <div className="rounded-lg mt-[150px] ">
+                        {Loading(
+                          isTrack ? 'Track is downloading' : 'Tracks are downloading'
+                        )}
+                      </div>                    
+                      <div className="rounded-lg text-[15px]">
+                        Currently downloaded:
+                      </div>          
+                      <div className="mx-auto">
+                        {[...currentlyDownloaded].reverse().map((item, i) => (
+                          <div className="mt-[20px]" key={i}>{item}</div>
+                        ))}
+                      </div>
+                    </>
+
+                      
+                    }
+                    {!isLoading && showResult && 
+                      <> 
+                        <FadeContent  blur={true} duration={750} easing="ease-out" initialOpacity={0}>
+                          <div className='bg-white mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results'>
+                            
+                            {resultStatusCode === 200  && responseData.message === 'No new tracks to download were found' 
+                              ? ResultSuccess('No New Downloads', responseData.message, goBack)
+                              : ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)
+                            }
+                              {/* {resultStatusCode === 200  && ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)} */}
+                              {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
+                              {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)} 
+                              
+                          </div>
+                        </FadeContent>       
+                      </>
+                  }  
+            
+                  </div>
                 </>
-            } 
-            {!isLoading && showResult && 
-                <> 
-                   <div className='bg-white fixed mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results'>
-                      {resultStatusCode === 200  && ResultSuccess('Successfully downloaded all tracks!', responseData.data.message, goBack)}
-                      {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.data.message, goBack)}   
-                      {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.data.message, goBack)}    
-                   </div>
-                           
-                </>
-            }    
             </div>
           ) : (
           <div className='inlin'>
@@ -273,16 +323,16 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>
 
             <div className='album-cover-containter'>
-            {Object.entries(albumCoverFileNames).map((filename, index)=>(
-              <AlbumCoverCard 
-              filename={filename[1]}
-              cardClicked={()=>handleAlbumCoverClicked(filename[1])}
-              previousImg={prevImg}
-              edit={editImgCard}
-              refresh={getNewAlbumCover}
-              key = {index+1}
-              />
-            ))}
+              {Object.entries(albumCoverFileNames).map((filename, index)=>(
+                <AlbumCoverCard 
+                filename={filename[1]}
+                cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+                previousImg={prevImg}
+                edit={editImgCard}
+                refresh={getNewAlbumCover}
+                key = {index+1}
+                />
+              ))}
             </div>
 
 
@@ -349,7 +399,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
       {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
       {/* <Button type='primary' onClick={()=> setIsLoading(!isLoading)}>load toggle</Button> */}
-      {/* <Button type='primary' onClick={()=> console.log(collapseActiveKey)}>results toggle</Button> */}
+      {/* <Button type='primary' onClick={()=> sse()}>enable</Button> */}
+      {/* <Button type='primary' onClick={()=> console.log(isLoading, showResult)}>cliuck</Button> */}
+      {/* <Button type='primary' onClick={()=> (setIsLoading(false), setShowResult(true), setResultStatusCode(200), setResponseData({message : 'hello world'}))}>disable</Button> */}
     </div>
   )
 })

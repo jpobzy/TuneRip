@@ -72,7 +72,6 @@ class database():
         cur = database.cursor()
         self.userCache = {}
         for record in cur.execute("SELECT * FROM users"):
-            print(f'record is: {record}')
             self.userCache[str(record[0])] =  (record[1], record[2])
         database.close()
         return 
