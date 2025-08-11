@@ -30,7 +30,6 @@ cursordata_obj = cursorData()
 
 @app.route("/")
 def hello_world():
-    controller_obj.test32(100)
     return "hello world"
 
 
@@ -50,22 +49,15 @@ def get_image(route):
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
-@app.route('/getAlbumCovers/<string:route>.jpg')
+@app.route('/getAlbumCovers/<string:route>')
 def getAlbumCover(route):
     """
     get request for album cover photos
     example: http://localhost:8080/getAlbumCovers/1
     """
-    return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
-
-@app.route('/download/')
-def download():
-    """
-    downloads users choice of given user or individial video or playlist
-    """
-    response, statusCode = controller_obj.downloadVideos(request)
-    return make_response(response, statusCode)
+    print(f'route is: {route}')
+    return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}', mimetype='image/gif')
 
 
 @app.route('/uploadImg', methods=['POST'])
@@ -274,14 +266,13 @@ def stream():
 
 @app.route('/downloadStream')
 def streamDownload():
-    print(request)
-    print(request.args)
-    print(request.data)
-    # print(request.query_string)
     return Response(controller_obj.downloadStream(dict(request.args)), mimetype="text/event-stream")
 
 
-
+@app.route('/refactorpfp')
+def refactorpfp():
+    controller_obj.refactorpfp()
+    return 'ok'
 
 
 if __name__ == "__main__":

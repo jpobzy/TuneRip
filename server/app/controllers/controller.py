@@ -4,7 +4,7 @@ import os
 from pytubefix import YouTube, Channel, Playlist
 from database.database import database
 import urllib.request
-import yaml, re, json
+import yaml, re, json, shutil
 from pathlib import Path
 import time, time
 from colorthief import ColorThief
@@ -17,11 +17,14 @@ from app.controllers.loggingController import logController
 
 class controller():
     def __init__(self, databaseFolderRoute):
+        self.projRoot = Path.home() / 'Documents' / 'TuneRip'
+        self.logger = logController(Path(self.projRoot / 'logs'))
+        self.logger.logInfo('Starting app')
         self.checkFolders()
         self.db = database(databaseFolderRoute)
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
-        self.logger = logController(Path(self.projRoot / 'logs'))
-        self.logger.logInfo('Starting app')
+
+
 
     def pathMaker(self, path):
         """
@@ -35,230 +38,27 @@ class controller():
         """
         Checks to confirm that the url pfp, cover album, downloads static folders exist
         """
-        basePath = Path.home() / 'Documents' / 'TuneRip'
-        self.projRoot = basePath
-        self.pathMaker(basePath)
-        self.pathMaker(basePath / 'server')
-        self.pathMaker(basePath / 'server/static')
-        self.pathMaker(basePath / 'server/static/userImages')
-        self.pathMaker(basePath / 'server/static/albumCovers')
-        self.pathMaker(basePath / 'server/database')
-        self.pathMaker(basePath / 'downloads')
-        self.pathMaker(basePath / 'downloads/playlists')
-        self.pathMaker(basePath / 'downloads/customTracks')
-        self.pathMaker(basePath / 'logs')
-        return
-    
+        try:
+            basePath = Path.home() / 'Documents' / 'TuneRip'
+            self.pathMaker(basePath)
+            self.pathMaker(basePath / 'server')
+            self.pathMaker(basePath / 'server/static')
+            self.pathMaker(basePath / 'server/static/albumCovers')
+            self.pathMaker(basePath / 'server/database')
+            self.pathMaker(basePath / 'downloads')
+            self.pathMaker(basePath / 'downloads/playlists')
+            self.pathMaker(basePath / 'downloads/customTracks')
+            self.pathMaker(basePath / 'logs')
 
-
-    def downloadVideos(self, request):
-        """
-        download function to either 
-            - download all videos from the user
-            - download the video url 
-            - download all videos in the playlist url 
-        """
-        ############# TOGGLE DEBUG HERE ################
-        # debugModeSkipDownload = False # true to skip downloading
-        # debugModeAddToDB = False # true to skip adding to database
-        debugMode = request.args.get('debugMode')
-        if debugMode:
-            debugModeSkipDownload = True
-            debugModeAddToDB = True
-        else:
-            debugModeSkipDownload = False
-            debugModeAddToDB = False
-        #############################################
-        self.logger.logInfo('Downloading videos')
-
-        url = request.args.get('url')
-        user = request.args.get('user')
-        albumCoverFile = request.args.get('albumCover')
-        skipDownload = False if request.args.get('skipDownloadingPrevDownload') == None else True    
-        subFolderName = request.args.get('subFolderName')
-        trackTitle = request.args.get('trackTitle')
-        artist = request.args.get('artist')
-        genre = request.args.get('genre')
-        albumTitle = request.args.get('album')
-        skipBeatsAndInstrumentals = request.args.get('skipBeatsAndInstrumentals')
-        addToExistingPlaylist = request.args.get('addToExistingPlaylistSettings')
-        downloadCount = 0
-
-        self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
-
-        if url and 'playlist?list=' in url:
-            playlist = Playlist(url)
-            playlistRoute = self.projRoot / 'downloads/playlists'
-
-            if subFolderName != None:
-                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                downloadPath = playlistRoute / subFolderName
+            if (Path(basePath / 'server/static/images').exists()):
+                self.refactorpfp()
             else:
-                if addToExistingPlaylist != None:
-                    downloadPath = playlistRoute / addToExistingPlaylist
-                else:
-                    playlistTitle = playlist.title
-                    playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
-                    downloadPath = playlistRoute / f'{playlistTitle}'
-
-            
-
-            if not Path(downloadPath).exists():
-                os.mkdir(downloadPath)
-
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
-            trackNum = 1
-
-            if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-            erorrCount = 0
-            
-            for url in playlist.video_urls:
-                try:
-                    video = YouTube(url)
-                    if skipDownload and self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
-                
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
-                    status = 'downloaded'
-
-                    if f'beat/instrumental ### ' in trackName:
-                        trackName = trackName.replace('beat/instrumental ### ', '')
-                        status = 'filtered'
-
-                    if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
-                    trackNum += 1
-
-                    downloadCount += 1
-
-                    
-                except Exception as error:
-                    self.logger.logInfo(f'video url: {url}')
-                    self.logger.logError(error)
-                    erorrCount += 1
-                    if erorrCount == 3:
-                        raise Exception(f'Too many errors cause this to fail. Last url is {video}')
-                    
-            self.logger.logInfo('Download complete')
-            if downloadCount > 0:
-                return {'message': f'Downloaded {downloadCount} tracks which can be found in {downloadPath}'}, 200
-            else:
-                return {"message": "No new tracks do download were found"}, 200
-        
-        elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
-            video = YouTube(url)
-            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
-            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-
-            if subFolderName != None:
-                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
-            else:
-                if addToExistingPlaylist != None:
-                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
-                else:
-                    downloadPath = self.projRoot / f"downloads/customTracks"
-
-            
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
-            trackNum = 1
-            erorrCount = 0
-            if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-
-            
-            try:
-                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
-                status = 'downloaded'
-
-                if f'beat/instrumental ### ' in trackName:
-                    trackName = trackName.replace('beat/instrumental ### ', '')
-                    status = 'filtered'
-
-                if not debugModeAddToDB:
-                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
-                trackNum += 1
-
-                
-            except Exception as error:
-                self.logger.logInfo(url)
+                self.pathMaker(basePath / 'server/static/userImages')
+        except Exception as error:
+                self.logger.logInfo(f'Unable to create folders')
                 self.logger.logError(error)
-                erorrCount += 1
-                if erorrCount == 3:
-                    raise Exception(f'Too many errors cause this to fail')
-                
-            if erorrCount > 0:
-                self.logger.logInfo('Download completed but with errors')
-                return {'message': f'Error when downloading, please check the log in {self.projRoot / 'debug' / f'debug{self.currentDebugFile}.txt'}'}, 500
-            else:
-                self.logger.logInfo('Download complete')
-                return {'message': f'Track downloaded successfully and can be found in {downloadPath}'}, 200
-            
-        else:
-            ytLink = self.db.userCache[user][0]
-            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
-            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {user}' if albumTitle == None else albumTitle
-            trackNum = 1
+        return
 
-            if subFolderName != None:
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
-            else:
-                if addToExistingPlaylist != None:
-                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
-                else:
-                    downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
-
-            if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-            
-            c = Channel(ytLink)
-            erorrCount = 0
-            for video in c.videos:
-                try: 
-                    # print(downloadCount)   
-                    # downloadCount+=1
-                    # if downloadCount == 20:
-                    #     time.sleep()
-                    
-
-                    if skipDownload and self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
-
-                    
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
-                    status = 'downloaded'
-
-                    if f'beat/instrumental ### ' in trackName:
-                        trackName = trackName.replace('beat/instrumental ### ', '')
-                        status = 'filtered'
-                    if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
-                    trackNum += 1
-
-                    downloadCount += 1
-                    
-                except Exception as error:
-                    self.logger.logInfo(video.watch_url)
-                    self.logger.logError(error)
-                    erorrCount += 1
-                    if erorrCount == 3:
-                        raise Exception(f'Too many errors cause this to fail')
-            
-            self.updateUserImg(user, albumCoverFile)
-            self.logger.logInfo('Download complete')
-            if downloadCount > 0:
-                return {'message': f'Downloaded {downloadCount} tracks which can be found in {downloadPath}'}, 200
-            else:
-                return {"message": "No new tracks do download were found"}, 200
 
     def returnAlbumCoverFileNames(self):
         """
@@ -513,8 +313,16 @@ class controller():
         bottom = data['y'] + data['height'] # y + height
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
-        filename = re.sub(r'[^\w_. -]', '', file.filename)
-        path = Path(self.projRoot / f'server/static/albumCovers/{filename}.jpg')
+
+        folderPath = Path(self.projRoot / f'server/static/albumCovers/')
+        fileNum = 1
+        for i in Path(folderPath).iterdir():
+            if 'croppedImg' in str(i):
+                fileNum+=1
+            
+        fileSuffix = Path(file.filename).suffix
+        path = Path(self.projRoot / f'server/static/albumCovers/croppedImg{fileNum}{fileSuffix}')
+        
         # Shows the image in image viewer
         croppedImg.save(path)
         return 'ok', 200
@@ -645,7 +453,6 @@ class controller():
         """
         yield from self.clientMessageFormatter({"message" : f'Connected'})   
 
-
         ############# TOGGLE DEBUG HERE ################
         # debugModeSkipDownload = False # true to skip downloading
         # debugModeAddToDB = False # true to skip adding to database
@@ -717,7 +524,7 @@ class controller():
                     if not debugModeAddToDB:
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
-                    yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
+                    yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
                     downloadCount += 1
 
                     
@@ -776,7 +583,7 @@ class controller():
                 if not debugModeAddToDB:
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                 
-                yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
+                yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
                 trackNum += 1
 
                 
@@ -838,7 +645,7 @@ class controller():
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
                     trackNum += 1
                     
-                    yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
+                    yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
                     downloadCount += 1
                     
                 except Exception as error:
@@ -861,3 +668,53 @@ class controller():
         yield from self.clientMessageFormatter({"message" : f"Completed download"})   
         return 'ok'
         
+    def refactorpfp(self):
+        oldPath = Path(self.projRoot / 'server/static/images')
+        newPath = Path(self.projRoot / 'server/static/userImages')
+        if (oldPath).exists():
+            os.rename(oldPath, newPath)
+        return 
+    
+
+    def mergeFolders(self, request):
+        origin = request.args.get('origin')
+        folderToMerge = request.args.get('folderToMerge')
+        updateDatabase = request.args.get('updateDatabase')
+        album = artist = genre = ''
+        if origin.exists() and folderToMerge.exists():
+            trackNum = sum(1 for file in origin.iterdir() if file.suffix == '.mp3') + 1
+            for file in origin.iterdir():
+                if file.suffix == '.mp3':
+                    audio = MP3(file, ID3=ID3)
+
+                    if 'TALB' in audio: # album
+                        album = str(audio['TALB']) 
+
+                    if 'TPE1' in audio: # artist
+                        artist = str(audio['TPE1']) # Lead Artist/Performer/Soloist/Group
+
+                    if 'TCON' in audio: # genre
+                        genre = str(audio['TCON'])
+                    break
+
+            trackList = []
+            for path in folderToMerge.iterdir():
+                if '.mp3' in str(path):
+                    audio = MP3(path, ID3=ID3)
+                    trackList.append((int(str(audio['TRCK'])), path))
+            sortedTrackList = sorted(trackList, key=lambda x: x[0])
+
+
+            for num, path in sortedTrackList:
+                secondAudio = MP3(path, ID3=ID3)
+                
+                secondAudio['TALB'] = TALB(encoding=3, text=album) # Album 
+                secondAudio['TPE1'] = TPE1(encoding=3, text=artist)
+                secondAudio['TCON'] = TCON(encoding=3, text=genre)
+                secondAudio['TRCK'] = TRCK(encoding=3, text=str(trackNum))
+                secondAudio.save()
+                trackNum += 1
+
+                shutil.move(path, origin)
+                if updateDatabase:
+                    self.db.updateTrackData(album=album, artist=artist, trackName=str(path.parts[-1]).replace('.mp3', ''))

@@ -11,7 +11,6 @@ import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
 import { Switch, Button, Tooltip, Tour } from 'antd';
-import DownloadScreen from './downloadingScreen/DownloadScreen';
 import { useToggle } from './context/UseContext';
 import { QuestionOutlined } from '@ant-design/icons';
 import { useHomeContext } from './context/HomeContext';
@@ -25,7 +24,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
   const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
   const [chosenUser, setChosenUser] = useState([]);
-  // const [coverChosen, setCoverChosen] = useState('')
   const [searchUrl, setSearchURL] = useState([])
   const [isTrack, setIsTrack] = useState(false)
   const [editUsers, setEditUsers] = useState(false)
@@ -91,8 +89,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     }
 
     sseDownload.current = new EventSource(`http://localhost:8080/downloadStream?${params}`);
-    // sseDownload.current = new EventSource(`http://localhost:8080/stream?${params}`);
-
     const skipAddingList = ['Connected']
     sseDownload.current.onmessage = (event) => {
       const data = JSON.parse(event.data.replaceAll("'", '"'))
@@ -100,7 +96,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
       if (data.statusCode){
-        // setResponseData({'data': 'hi', 'statusCode': data.statusCode})
         setResultStatusCode(parseInt(data.statusCode))
         setShowResult(true)
         setResponseData({message: message, statusCode: parseInt(data.statusCode)})
@@ -110,8 +105,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           return [...prev, message]
         })        
       }
-
-
 
       if (message === 'Completed download'){
         setShowResult(true)
@@ -270,7 +263,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                               ? ResultSuccess('No New Downloads', responseData.message, goBack)
                               : ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)
                             }
-                              {/* {resultStatusCode === 200  && ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)} */}
                               {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
                               {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)} 
                               
@@ -315,9 +307,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             <div className='downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
               <Collapse 
                 items={downloadItems} 
-                // defaultActiveKey={'1'} 
                 activeKey={collapseActiveKey}
-                // onChange={(e)=>console.log(`change: ${e}`)}
                 onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
                 />
             </div>
@@ -337,7 +327,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
           { Object.keys(albumCoverFileNames).length > 0 &&
-            <div className='mt-[20px]'> 
+            <div className='mt-[20px] mb-[50px]'> 
               <Switch onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
           }
@@ -379,7 +369,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                           editUsers = {editUsers}
                           key = {index+1}
                           handleUserRemoved={handleUserRemoved}
-                          // setReload={setUsers}
+
                           />
                         ))}
                       </div>
@@ -396,12 +386,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
-
       {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
-      {/* <Button type='primary' onClick={()=> setIsLoading(!isLoading)}>load toggle</Button> */}
-      {/* <Button type='primary' onClick={()=> sse()}>enable</Button> */}
-      {/* <Button type='primary' onClick={()=> console.log(isLoading, showResult)}>cliuck</Button> */}
-      {/* <Button type='primary' onClick={()=> (setIsLoading(false), setShowResult(true), setResultStatusCode(200), setResponseData({message : 'hello world'}))}>disable</Button> */}
     </div>
   )
 })

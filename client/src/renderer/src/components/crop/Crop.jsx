@@ -126,6 +126,7 @@ function Crop(){
                         <div ref={refAdd} className="flex w-[200px]">
                             <Input 
                             type="file"
+                            accept='.png,.jpg,.jpeg'
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file.type === 'image/jpeg' || file.type === 'image/png'){

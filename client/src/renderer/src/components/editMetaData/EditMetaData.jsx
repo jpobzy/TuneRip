@@ -195,7 +195,7 @@ function EditMetaData(){
 
     useEffect(()=>{
             getExistingPlaylists();
-        }, [])
+    }, [])
 
     return (
         <div>
