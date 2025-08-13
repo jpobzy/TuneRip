@@ -1,25 +1,22 @@
+import { Button, Switch, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox, Spin  } from "antd";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
-import { App, Pagination, Button } from 'antd';
-
-import { resultToggle } from "../context/ResultContext";
+import { use, useEffect, useRef, useState } from "react";
+import CoverArtChanger from "../CoverArtChanger/CoverArtChanger";
+import { App, Pagination, Input } from 'antd';
 import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
+import { resultToggle } from "../context/ResultContext";
+import UploadButton from "../uploadImagesButton/UploadButton";
 
-function CoverArtChanger({imgClicked, setImgClicked}){
+function PhotoGallery(){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
-    
-    const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
-    const [isLoading, setIsLoading] = useState(false)
-    const [showResult, setShowResult] = useState(false)
-    const [resultStatusCode, setResultStatusCode] = useState()
+    const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
-    
+
     const [pagnationPages, setPagnationPages] = useState(10)
 
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
     
-
     const handleAlbumCoverClicked = async(file) =>{
         if (imgClicked === file){
             setImgClicked('')
@@ -36,7 +33,6 @@ function CoverArtChanger({imgClicked, setImgClicked}){
         setPagnationPages(roundUp)
 
         setShownImages(albumCoverResponse.data.files.slice(0, 6))
-
     }
 
 
@@ -53,9 +49,11 @@ function CoverArtChanger({imgClicked, setImgClicked}){
         setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
     }
     
-
     return (
         <>
+
+            <UploadButton refresh={getNewAlbumCover}/>
+
             <div className='album-cover-containter image-wrapper '>
               {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
@@ -66,11 +64,22 @@ function CoverArtChanger({imgClicked, setImgClicked}){
                         edit={editImgCard}
                         refresh={getNewAlbumCover}
                         key = {filename[1]}
-                        imgClicked={imgClicked}
+                        // imgClicked={imgClicked}
                         />
                     </div>                
               ))}
             </div>
+
+
+
+          { Object.keys(shownImages).length > 0 &&
+            <>
+                <div className='mt-[20px] '> 
+                    <Switch onChange={() => setEditImgCard(!editImgCard)} />        
+                 </div>                
+            </>
+          }
+
 
             <div className="flex mx-auto justify-center mt-[30px] mb-[20px]">
                 <Pagination 
@@ -85,4 +94,4 @@ function CoverArtChanger({imgClicked, setImgClicked}){
     )
 }
 
-export default CoverArtChanger;
+export default PhotoGallery;

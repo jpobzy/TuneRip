@@ -414,11 +414,13 @@ class controller():
     def updateMetaData(self, request):
         playlistData = request.get('playlistData')
         newCoverArt = request.get('newCoverArt')
+
         playlistPath = playlistData.get('playlist')
         updateDatabase = playlistData.get('updateDatabase')
         album = playlistData.get('album')
         artist = playlistData.get('artist')
         genre = playlistData.get('genre')
+        
 
 
   
@@ -426,17 +428,7 @@ class controller():
         for file in fullPath.iterdir():
             try:
                 if file.suffix == '.mp3':
-                #     audio = MP3(file, ID3=ID3)
-                #     if album:
-                #         audio['TALB'] = TALB(encoding=3, text=album) # Album 
-                #     if artist:
-                #         audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
-                #     if genre:
-                #         audio['TCON'] = TCON(encoding=3, text=f'{genre}')
-                #  # audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
-                #     audio.save()
                     editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre)
-                    
                     if updateDatabase:
                         self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
             except Exception as error:
@@ -725,7 +717,7 @@ class controller():
 
                 if editResult == None:
                     self.logger.logError(f'Request for track update for track {path} however no update happened')
-                    self.logger.logInfo(f'album : [{album}], artist : [{artist}], genre : [{genre}], album : [{trackNum}], album : [{coverArtFile}], album : [{coverArtFile}],')
+                    self.logger.logInfo(f'album : [{album}], artist : [{artist}], genre : [{genre}], trackNum : [{trackNum}]')
                 else:
                     trackNum += 1
 

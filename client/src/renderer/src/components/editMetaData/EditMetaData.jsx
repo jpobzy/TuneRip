@@ -229,14 +229,17 @@ function EditMetaData(){
                                         <Select
                                             allowClear={true}
                                             defaultValue={[]}
-                                            style={{ width: 600 }}
+                                            style={{ width: 500 }}
                                             onChange={(e) => playlistChoseon(e)}
                                             options={existingPlaylistNames}
                                         />                               
                                     </div>
+                                    <div className="ml-[20px] flex -mt-[32px] ml-[600px]">
                                         <Tooltip title="help">
                                                 <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                        </Tooltip>   
+                                        </Tooltip>                                           
+                                    </div>
+
                                 </Form.Item>                
                             }
                     
@@ -318,7 +321,7 @@ function EditMetaData(){
                             }
 
                             {isPlaylistChosen &&
-                                <div className="m">
+                                <div className="">
                                    <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked}/> 
                                 </div>
                             }

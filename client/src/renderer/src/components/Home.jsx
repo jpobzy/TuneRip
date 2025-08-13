@@ -277,7 +277,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           ) : (
           <div className='inlin'>
             <div className='mb-10 justify-center flex '>
-              <div className='mt-[30px] ml-[50px]'>
+              <div className='mt-[30px] ml-[50px] inline-block' ref={downloadScreenRefs.addCoverArtRef}>
                 <UploadButton refresh={getNewAlbumCover}/>
               </div>
               {isTrack ?

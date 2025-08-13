@@ -9,6 +9,7 @@ from flask import Flask, flash, request, redirect, url_for
 from pathlib import Path
 from app.controllers.backgroundDataController import backgroundData
 from app.controllers.cursorDataController import cursorData
+from datetime import datetime
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -245,8 +246,6 @@ def disableCurrentCursor():
     return cursordata_obj.disableCurrCursor()
 
 
-
-from datetime import datetime
 
 
 
