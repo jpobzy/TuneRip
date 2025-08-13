@@ -61,7 +61,6 @@ class database():
     def checkIfTrackExists(self, trackId):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        # print(f"SELECT trackId from tracks WHERE trackId='{trackId}'")
         cur.execute(f"SELECT trackId from tracks WHERE trackId=?", (trackId.strip(),))
         res = True if cur.fetchone() != None else False
         database.close()
@@ -161,7 +160,6 @@ class database():
             database.close()
             return 'Record not found', 204
         else:
-            print('deleting')
             cur.execute("DELETE FROM tracks WHERE trackId=?", (trackId,))
             database.commit()
             database.close()
@@ -226,7 +224,6 @@ class database():
         query = cur.execute('SELECT * FROM tracks WHERE trackName = ?', (trackName,))
         
         for track in query:
-            print(track)
             if artist:
                 cur.execute('UPDATE tracks SET user = ? WHERE trackName = ?', (artist, trackName))
             if album:

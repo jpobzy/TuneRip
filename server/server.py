@@ -214,8 +214,7 @@ def getPlaylistData():
 
 @app.put('/updatemetadata')
 def updateMetaData():
-    controller_obj.updateMetaData(json.loads(request.data))
-    return 'ok'
+    return controller_obj.updateMetaData(json.loads(request.data))
 
 @app.get('/getbackgroundsettings')
 def getBackgroundSettings():
@@ -273,6 +272,12 @@ def streamDownload():
 def refactorpfp():
     controller_obj.refactorpfp()
     return 'ok'
+
+@app.post('/foldermerge')
+def mergeStream():
+    return controller_obj.folderMerge(json.loads(request.data))
+
+
 
 
 if __name__ == "__main__":

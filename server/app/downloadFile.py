@@ -116,3 +116,46 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     os.rename(mp3_file_path, renamedFile)
     shutil.move(renamedFile, trackDst)
     return valid_title
+
+
+
+def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=None, coverArtFile=None, trackNum=None):
+    audio = MP3(filePath, ID3=ID3)
+    updateData = f'Updating {filePath} '
+    
+    if album:
+        audio['TALB'] = TALB(encoding=3, text=album) # Album 
+        updateData += 'album, '
+    if artist:
+        audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
+        updateData += 'artist, '
+    if genre:
+        audio['TCON'] = TCON(encoding=3, text=f'{genre}')
+        updateData += 'genre, '
+    if trackTitle:
+        audio['TIT2'] = TIT2(encoding=3, text=trackTitle) # Title
+        updateData += 'track title, '
+    if trackNum:
+        audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
+        updateData += 'track number, '
+    if coverArtFile and Path(Path.home() / 'Documents/server/static/albumCovers' / coverArtFile).exists:
+        with open( Path(Path.home() / 'Documents/TuneRip/server/static/albumCovers' / coverArtFile), 'rb') as coverArtFile:
+            cover_data = coverArtFile.read()
+            audio = MP3(filePath, ID3=ID3)
+            if 'APIC:Cover' in audio:
+                del audio['APIC:Cover']
+            apic = APIC(
+                encoding=3,
+                mime='image/jpeg',
+                type=3,
+                desc='Cover',
+                data=cover_data
+            )
+            audio.tags.add(apic) 
+            coverArtFile.close()
+        updateData += 'cover art'
+
+    audio.save()
+    if updateData == f'Updating {filePath} ':
+        updateData = None
+    return updateData 

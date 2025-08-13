@@ -2,26 +2,83 @@ import { Button, ConfigProvider, Form, Input, Upload, Select, Tooltip } from "an
 import { useEffect, useRef, useState } from "react"
 import { resultToggle } from "../context/ResultContext";
 import axios from "axios";
-import { UploadOutlined } from '@ant-design/icons';
+import { QuestionOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
+import { App } from 'antd';
+import './FolderMerge.css'
 
 function FolderMerge(){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [mergeFolderForm] = Form.useForm();
+    const [open, setOpen] = useState(false);    
 
-
+    const [destinationDir, setDestinationDir] = useState('')
+    const [mergeDir, setMergeDir] = useState('')
+    const [isDisabled, setIsDisabled] = useState(true)
+    const [imgClicked, setImgClicked] = useState('')
 
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
     const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
+    const { message, notification  } = App.useApp();
 
 
+    const mergeOperationRef = useRef()
 
+    const excludeMergeDirValue = existingPlaylistNames.filter(item => item.value !== String(mergeDir))
+    const excludedestinationDirValue = existingPlaylistNames.filter(item => item.value !== String(destinationDir))
+
+    const goBack = () => {
+        setIsLoading(false)
+        setShowResult(false)
+    }
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
         setExistingPlaylistNames(req.data)
     }
+
+    const submit = async () => {
+        if (destinationDir && destinationDir.length > 0 && mergeDir && mergeDir.length > 0){
+            if (destinationDir === mergeDir){
+                message.error('The same directory was choosen for both inputs')
+            }else{
+                setIsLoading(true)
+                const req = await axios.post('http://localhost:8080/foldermerge', { mergeDir : mergeDir, destinationDir : destinationDir, newCoverArt : imgClicked})
+                console.log(`req status is: ${req.status}`)
+                if (req.status === 200){
+                    setResultStatusCode(200)
+                    setIsLoading(false)
+                    setShowResult(true)
+                }else{
+                    setResultStatusCode(400)    
+                    setIsLoading(false)
+                    setShowResult(true)
+                }
+            }
+        }else{
+            if (!destinationDir && destinationDir.length == 0){
+                message.error('No destination directory chosen')
+            }
+            if (!mergeDir && mergeDir.length == 0){
+                message.error('No merge directory chosen')
+            }
+            
+        }
+    }
+
+    const handleMergeSelected = (e) =>{
+        setMergeDir(e)
+        setIsDisabled(false)
+    }
+
+    const handleMergeCleared = () =>{
+        setMergeDir(null)
+        setIsDisabled(true)
+        console.log('end')
+    }
+
 
     useEffect(()=>{
             getExistingPlaylists();
@@ -30,9 +87,9 @@ function FolderMerge(){
     return (
         <>
             <div>
-
                     <div className="mx-auto justify-center ">
                         {!isLoading && !showResult &&
+                            <div className="mt-[-50px]">
                             <ConfigProvider
                                 theme={{
                                     components :{
@@ -47,49 +104,111 @@ function FolderMerge(){
                                     form={mergeFolderForm}
                                     name="refactor"
                                 >
-                                    <div className="flex gap-[90px] mx-auto justify-center">
-                                        <Tooltip title="prompt 1">
-                                            <Form.Item>
-                                                <div className="inline-block" ref={null}>
-                                                    <Select
-                                                        allowClear={true}
-                                                        defaultValue={[]}
-                                                        style={{ width: 300 }}
-                                                        onChange={(e) => setPlaylistChosen(e)}
-                                                        options={existingPlaylistNames}
-                                                    />                               
-                                                </div>
-                                            </Form.Item>   
-                                        </Tooltip>
-                                    
+                                    <div className="text-white text-[20px]">
+                                        <div>
+                                            Directory to merge
+                                        </div>
 
-                                        <Tooltip title="prompt 2">
-                                            <Form.Item>
-                                                <div className="inline-block" ref={null}>
-                                                    <Select
-                                                        allowClear={true}
-                                                        defaultValue={[]}
-                                                        style={{ width: 300 }}
-                                                        onChange={(e) => setPlaylistChosen(e)}
-                                                        options={existingPlaylistNames}
-                                                    />                               
-                                                </div>
-                                            </Form.Item>   
-                                        </Tooltip>
+                                        <Form.Item>
+                                            <div className="inline-block" ref={null}>
+                                                <Select
+                                                    // onDeselect={()=>handleMergeCleared()}
+                                                    // onClear={()=>handleMergeCleared()}
+                                                    // allowClear={true}
+                                                    defaultValue={[]}
+                                                    style={{ width: 600 }}
+                                                    onChange={(e) => handleMergeSelected(e)}
+                                                    // options={excludedestinationDirValue}
+                                                    options={existingPlaylistNames}
+                                                />                               
+                                            </div>
+                                        </Form.Item>   
 
-                                        {/* <input type="file" id="ctrl" webkitdirectory directory multiple/> */}
 
-                                        
+                                        <div className=" mb-[20px]">
+                                            <ArrowDownOutlined style={{ fontSize: '70px', color: '#08c' }} />
+                                        </div>
+
+
+
+                                        <div>
+                                            Destination to merge
+                                        </div>
+
+                                        <Form.Item>
+                                            <div className="inline-block" ref={null}>
+                                                <Select
+                                                    allowClear={true}
+                                                    // defaultValue={[]}
+                                                    style={{ width: 600 }}
+                                                    onChange={(e) => setDestinationDir(e)}
+                                                    options={excludeMergeDirValue}
+                                                    disabled={isDisabled}
+                                                />                               
+                                            </div>
+                                        </Form.Item>   
+
+
+
+
+                                        {/* <div className="">
+                                             <CoverArtMapper imgClicked={imgClicked} setImgClicked={setImgClicked}/>                                            
+                                        </div> */}
+
+
+                                        <div className="flex justify-center ml-[40px]">
+                                            <div className="flex" ref={null}>
+                                                <GradientSubmitButton  callbackFunction={submit}/>                                
+                                            </div>
+                                            <div className="flex ml-[5px]" >
+                                                <Tooltip title="help">
+                                                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                                </Tooltip>                                    
+                                            </div>
+                                        </div>
                                     </div>
-                                    <Button type="primary"  >click me</Button>
-                                </Form>
-                            </ConfigProvider>
-                        }
-                    </div>
 
+                                    
+                                </Form>
+                            </ConfigProvider>                            
+                            </div>
+
+                        }
+
+
+                        {isLoading && !showResult && 
+                            <>
+                                <div className="mt-[100px]">
+                                {Loading('Folders are being merged')}
+                                </div>
+                                
+                            </>
+                        } 
+                        {!isLoading && showResult && 
+                            <>
+                                <div className="mt-[-20px]">
+                                    {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
+                                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}                                      
+                                </div>
+           
+                            </>
+                        }    
+
+                    </div>
             </div>
+
+
+
+            <div className="mb-[200px] mt-[20px]">
+               {/* <ImageCarousel/>                 */}
+               
+            </div>
+
+                    
         </>
     )
 }
+
+// label: '/downloads/customTracks', value: '/downloads/customTracks'}
 
 export default FolderMerge

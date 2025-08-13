@@ -1,7 +1,7 @@
 import { Button, Form, Select, Tooltip, Result, Tour  } from "antd";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import RefactorSubmitButton from "./ReorderTracksSubmitButton";
+import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
 import {App} from 'antd'
 import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
@@ -109,18 +109,15 @@ function ReorderTracks(){
                         <Form.Item>
                             <div className="flex justify-center">
                                 <div className="flex" ref={submitPlaylistsRef}>
-                                    <RefactorSubmitButton  refactor={refactor}/>                                
+                                    <GradientSubmitButton  callbackFunction={refactor}/>                                
                                 </div>
                                 <div className="flex ml-[5px]" >
                                     <Tooltip title="help">
                                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
                                     </Tooltip>                                    
                                 </div>
-                            
                             </div>
-
                         </Form.Item>
-
                     </Form>    
                 }          
 

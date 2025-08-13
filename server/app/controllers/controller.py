@@ -1,26 +1,28 @@
-from app.downloadFile import download_video
+from app.downloadFile import download_video, editTrackData
 # from oldcode.validator import validate_path
 import os
 from pytubefix import YouTube, Channel, Playlist
 from database.database import database
 import urllib.request
 import yaml, re, json, shutil
-from pathlib import Path
+from pathlib import Path, PurePath
 import time, time
 from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1
+from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1, APIC
 # from loggingController import logController
 from app.controllers.loggingController import logController
+
 
 class controller():
     def __init__(self, databaseFolderRoute):
         self.projRoot = Path.home() / 'Documents' / 'TuneRip'
+        self.checkFolders()
         self.logger = logController(Path(self.projRoot / 'logs'))
         self.logger.logInfo('Starting app')
-        self.checkFolders()
+        
         self.db = database(databaseFolderRoute)
         self.currentDebugFile = sum(1 for _ in Path(self.projRoot / 'debug').iterdir()) + 1
 
@@ -41,6 +43,7 @@ class controller():
         try:
             basePath = Path.home() / 'Documents' / 'TuneRip'
             self.pathMaker(basePath)
+            self.pathMaker(basePath / 'logs')
             self.pathMaker(basePath / 'server')
             self.pathMaker(basePath / 'server/static')
             self.pathMaker(basePath / 'server/static/albumCovers')
@@ -48,7 +51,6 @@ class controller():
             self.pathMaker(basePath / 'downloads')
             self.pathMaker(basePath / 'downloads/playlists')
             self.pathMaker(basePath / 'downloads/customTracks')
-            self.pathMaker(basePath / 'logs')
 
             if (Path(basePath / 'server/static/images').exists()):
                 self.refactorpfp()
@@ -354,9 +356,9 @@ class controller():
             if Path(i).is_dir():
                 if Path(i) == self.projRoot / 'downloads/playlists':
                     continue #skip playlist folder but not the contents within
-                folderName = str(i).replace('\\downloads\\playlists\\', '').replace('\\downloads\\', '').replace(str(self.projRoot), '')
-                path = str(i).replace(str(self.projRoot), '')
-                res.append({'value': path, 'label': folderName.rsplit('\\', 1)[-1]})
+                path = str(Path('/'.join(i.parts[5:])))
+                res.append({'value': path, 'label': path})
+                        
         return res
     
     def refactorPlaylist(self, request):
@@ -411,31 +413,36 @@ class controller():
 
     def updateMetaData(self, request):
         playlistData = request.get('playlistData')
+        newCoverArt = request.get('newCoverArt')
         playlistPath = playlistData.get('playlist')
         updateDatabase = playlistData.get('updateDatabase')
         album = playlistData.get('album')
         artist = playlistData.get('artist')
         genre = playlistData.get('genre')
 
-        subfolder = Path(playlistPath).relative_to(Path("\\downloads"))
-        fullPath = Path(self.projRoot) / "downloads" / subfolder
 
-        if not fullPath.exists():
-            return f'Could not find path {subfolder}', 404
-
+  
+        fullPath = Path(self.projRoot) / playlistPath
         for file in fullPath.iterdir():
-            if file.suffix == '.mp3':
-                audio = MP3(file, ID3=ID3)
-                if album:
-                    audio['TALB'] = TALB(encoding=3, text=album) # Album 
-                if artist:
-                    audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
-                if genre:
-                    audio['TCON'] = TCON(encoding=3, text=f'{genre}')
-             # audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
-                audio.save()
-                if updateDatabase:
-                    self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
+            try:
+                if file.suffix == '.mp3':
+                #     audio = MP3(file, ID3=ID3)
+                #     if album:
+                #         audio['TALB'] = TALB(encoding=3, text=album) # Album 
+                #     if artist:
+                #         audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
+                #     if genre:
+                #         audio['TCON'] = TCON(encoding=3, text=f'{genre}')
+                #  # audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
+                #     audio.save()
+                    editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre)
+                    
+                    if updateDatabase:
+                        self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
+            except Exception as error:
+                self.logger.logError(f'Error when trying to update files in folder metadata')
+                self.logger.logInfo(f'last data before error is: \nfilePath : {file}\nartist : {artist}\nalbum : {album}\ngenre : {genre}\n newCoverArtfile : {newCoverArt}')
+                self.logger.logError(error)
         return f'Success', 200
 
 
@@ -676,17 +683,22 @@ class controller():
         return 
     
 
-    def mergeFolders(self, request):
-        origin = request.args.get('origin')
-        folderToMerge = request.args.get('folderToMerge')
-        updateDatabase = request.args.get('updateDatabase')
+    def folderMerge(self, request):
+        self.logger.logInfo('Merge request started')
+        destination = Path(self.projRoot / request.get('destinationDir'))
+        folderToMerge = Path(self.projRoot / request.get('mergeDir'))
+        updateDatabase = request.get('updateDatabase')
         album = artist = genre = ''
-        if origin.exists() and folderToMerge.exists():
-            trackNum = sum(1 for file in origin.iterdir() if file.suffix == '.mp3') + 1
-            for file in origin.iterdir():
+
+        self.logger.logInfo(f'Folder to merge: {folderToMerge}')
+        self.logger.logInfo(f'Destination: {destination}')  
+
+
+        try:
+            trackNum = sum(1 for file in destination.iterdir() if file.suffix == '.mp3') + 1
+            for file in destination.iterdir():
                 if file.suffix == '.mp3':
                     audio = MP3(file, ID3=ID3)
-
                     if 'TALB' in audio: # album
                         album = str(audio['TALB']) 
 
@@ -706,15 +718,41 @@ class controller():
 
 
             for num, path in sortedTrackList:
-                secondAudio = MP3(path, ID3=ID3)
+                self.logger.logInfo(f'Current tracks path to merge is {path}')
+                print(path)
                 
-                secondAudio['TALB'] = TALB(encoding=3, text=album) # Album 
-                secondAudio['TPE1'] = TPE1(encoding=3, text=artist)
-                secondAudio['TCON'] = TCON(encoding=3, text=genre)
-                secondAudio['TRCK'] = TRCK(encoding=3, text=str(trackNum))
-                secondAudio.save()
-                trackNum += 1
+                editResult = editTrackData(path, album=album, artist=artist, genre=genre, trackNum=trackNum)
 
-                shutil.move(path, origin)
-                if updateDatabase:
-                    self.db.updateTrackData(album=album, artist=artist, trackName=str(path.parts[-1]).replace('.mp3', ''))
+                if editResult == None:
+                    self.logger.logError(f'Request for track update for track {path} however no update happened')
+                    self.logger.logInfo(f'album : [{album}], artist : [{artist}], genre : [{genre}], album : [{trackNum}], album : [{coverArtFile}], album : [{coverArtFile}],')
+                else:
+                    trackNum += 1
+
+                shutil.move(path, destination)
+
+                # if updateDatabase:
+                #     if album == '' or artist == '':
+                #         self.logger.logError(f'ERROR ARTIST OR ALBUM IS FOUND EMPTY')
+                #         raise Exception('ERROR ARTIST OR ALBUM IS FOUND EMPTY')
+                #     self.db.updateTrackData(album=album, artist=artist, trackName=str(path.parts[-1]).replace('.mp3', ''))
+            return f'Success', 200
+        
+        except Exception as error:
+            self.logger.logInfo('ERROR SOMETHING WENT WRONG')
+            self.logger.logError(error)
+            return f'Something went wrong {error}', 400
+
+
+    def changeCoverArt(self, request):
+        destination = Path(self.projRoot / request.get('destinationDir'))
+        coverArtFile = request.get('newCoverArt')
+        try:
+
+            for file in destination.iterdir():
+                if file.suffix == '.mp3':
+                    editTrackData(filePath=file, coverArtFile=coverArtFile)
+        except Exception as error: 
+            self.logger.logInfo('ERROR SOMETHING WENT WRONG')
+            self.logger.logError(error)
+            return f'Something went wrong {error}', 400

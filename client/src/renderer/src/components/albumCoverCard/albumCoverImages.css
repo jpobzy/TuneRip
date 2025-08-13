@@ -22,7 +22,7 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
-    margin-left: 20px;
+    /* margin-left: 20px; */
     background-color: #363e42;
     display: inline-block;
     transition: all 0.2s ease-in-out;
@@ -87,4 +87,21 @@
   80% { transform: translate(-1px, -1px) rotate(1deg); }
   90% { transform: translate(1px, 2px) rotate(0deg); }
   100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+
+.img-to-merge{
+    height: 150px;
+    width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 4px; 
+    padding: 5px;
+    margin-left: 20px;
+    background-color: #363e42;
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 0 20px rgb(206, 58, 21); 
+    transform: scale(1.25);
+    position: relative;
+    margin-right: 20px;
 }

@@ -28,7 +28,7 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
     }
   `,
 }));
-const RefactorSubmitButton = ({refactor, buttonDisabled}) => {
+const GradientSubmitButton = ({callbackFunction, buttonDisabled}) => {
   const { styles } = useStyle();
   const {submitPlaylistsRef} = useTourContext();
   return (
@@ -39,7 +39,7 @@ const RefactorSubmitButton = ({refactor, buttonDisabled}) => {
         }}
       >
         <Space>
-          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />}  onClick={() => refactor()}>
+          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />}  onClick={() => callbackFunction()}>
             Submit
           </Button>
 
@@ -49,4 +49,4 @@ const RefactorSubmitButton = ({refactor, buttonDisabled}) => {
 
   );
 };
-export default RefactorSubmitButton;
+export default GradientSubmitButton;
