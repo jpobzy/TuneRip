@@ -6,14 +6,19 @@ import { App, Pagination, Input } from 'antd';
 import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
 import { resultToggle } from "../context/ResultContext";
 import UploadButton from "../uploadImagesButton/UploadButton";
+import { QuestionOutlined  } from '@ant-design/icons';
 
 function PhotoGallery(){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
 
+    const [open, setOpen] = useState(false);
     const [pagnationPages, setPagnationPages] = useState(10)
 
+    const selectCoverArtRef = useRef(null)
+    const addCoverArtRef = useRef(null)
+    
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
     
@@ -36,6 +41,28 @@ function PhotoGallery(){
     }
 
 
+    const startTour = () =>{
+        setOpen(true)
+    }
+
+
+    const endTour = () => {
+        setOpen(false)
+    }
+
+    const steps = [
+        {
+        title: 'Add custom cover art',
+        description: 'Add custom cover art through here or through crop in the settings panel',
+        target: () => addCoverArtRef.current,
+        }, 
+        {
+        title: 'Select cover art below',
+        description: 'All available cover art to select will be shown below after being added',
+        target: () => selectCoverArtRef.current,
+        },          
+    ]
+
     useEffect(()=> {
         getNewAlbumCover();
     }, []);
@@ -51,11 +78,21 @@ function PhotoGallery(){
     
     return (
         <>
-
-            <UploadButton refresh={getNewAlbumCover}/>
+            <div>
+                <div className="inline-block" ref={addCoverArtRef}>
+                    <UploadButton refresh={getNewAlbumCover}/>  
+                </div>
+                 
+                <div className="ml-[20px] flex -mt-[32px] ml-[505px]">
+                    <Tooltip title="help">
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                    </Tooltip>                                           
+                </div>
+            </div>
+            
 
             <div className='album-cover-containter image-wrapper '>
-              {Object.entries(shownImages).map((filename, index)=>(
+                {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
                         <AlbumCoverCard 
                         filename={filename[1]}
@@ -64,10 +101,11 @@ function PhotoGallery(){
                         edit={editImgCard}
                         refresh={getNewAlbumCover}
                         key = {filename[1]}
-                        // imgClicked={imgClicked}
+                        imgClicked={imgClicked}
+                        enlargenImg={true}
                         />
                     </div>                
-              ))}
+                ))}
             </div>
 
 
@@ -90,6 +128,8 @@ function PhotoGallery(){
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
+
+            <Tour open={open} onClose={() => endTour()} steps={steps} />
         </>
     )
 }

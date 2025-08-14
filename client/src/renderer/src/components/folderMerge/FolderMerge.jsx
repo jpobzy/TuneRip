@@ -1,4 +1,4 @@
-import { Button, ConfigProvider, Form, Input, Upload, Select, Tooltip } from "antd"
+import { Button, ConfigProvider, Form, Tour, Upload, Select, Tooltip } from "antd"
 import { useEffect, useRef, useState } from "react"
 import { resultToggle } from "../context/ResultContext";
 import axios from "axios";
@@ -23,8 +23,9 @@ function FolderMerge(){
     const [resultStatusCode, setResultStatusCode] = useState()
     const { message, notification  } = App.useApp();
 
-
-    const mergeOperationRef = useRef()
+    const mergeFolderRef = useRef()
+    const destinationFolderRef = useRef()
+    const submitPlaylistsRef = useRef(null) 
 
     const excludeMergeDirValue = existingPlaylistNames.filter(item => item.value !== String(mergeDir))
     const excludedestinationDirValue = existingPlaylistNames.filter(item => item.value !== String(destinationDir))
@@ -79,6 +80,24 @@ function FolderMerge(){
         console.log('end')
     }
 
+    const steps = [
+    {
+      title: 'Choose a folder to merge',
+      description: 'Merges the current folder’s tracks into the selected folder and updates their metadata to match',
+       target: () => mergeFolderRef.current
+    },
+    {
+      title: 'Choose the destination folder to merge into',
+      description: 'Select a folder, then click Submit to merge the current folder’s tracks into it and update their metadata',
+       target: () => destinationFolderRef.current
+    },
+    {
+      title: 'Submit',
+      description: 'Click submit to start the process',
+       target: () => submitPlaylistsRef.current
+    },
+    ]
+
 
     useEffect(()=>{
             getExistingPlaylists();
@@ -110,7 +129,7 @@ function FolderMerge(){
                                         </div>
 
                                         <Form.Item>
-                                            <div className="inline-block" ref={null}>
+                                            <div className="inline-block" ref={mergeFolderRef}>
                                                 <Select
                                                     // onDeselect={()=>handleMergeCleared()}
                                                     // onClear={()=>handleMergeCleared()}
@@ -122,6 +141,12 @@ function FolderMerge(){
                                                     options={existingPlaylistNames}
                                                 />                               
                                             </div>
+                                            <div className="flex -mt-[32px] ml-[655px]" >
+                                                <Tooltip title="help">
+                                                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                                </Tooltip>                                    
+                                            </div>
+
                                         </Form.Item>   
 
 
@@ -136,7 +161,7 @@ function FolderMerge(){
                                         </div>
 
                                         <Form.Item>
-                                            <div className="inline-block" ref={null}>
+                                            <div className="inline-block" ref={destinationFolderRef}>
                                                 <Select
                                                     allowClear={true}
                                                     // defaultValue={[]}
@@ -148,27 +173,13 @@ function FolderMerge(){
                                             </div>
                                         </Form.Item>   
 
-
-
-
-                                        {/* <div className="">
-                                             <CoverArtMapper imgClicked={imgClicked} setImgClicked={setImgClicked}/>                                            
-                                        </div> */}
-
-
-                                        <div className="flex justify-center ml-[40px]">
-                                            <div className="flex" ref={null}>
+                                        <div className="flex justify-center">
+                                            <div className="flex" ref={submitPlaylistsRef}>
                                                 <GradientSubmitButton  callbackFunction={submit}/>                                
                                             </div>
-                                            <div className="flex ml-[5px]" >
-                                                <Tooltip title="help">
-                                                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                                                </Tooltip>                                    
-                                            </div>
+  
                                         </div>
-                                    </div>
-
-                                    
+                                    </div>    
                                 </Form>
                             </ConfigProvider>                            
                             </div>
@@ -205,6 +216,7 @@ function FolderMerge(){
             </div>
 
                     
+            <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
         </>
     )
 }

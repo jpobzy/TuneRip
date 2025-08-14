@@ -151,6 +151,7 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   if (app.isPackaged){
+    await autoUpdater.checkForUpdatesAndNotify();
     startServer();
   }
   if (app.isPackaged) {
@@ -176,10 +177,6 @@ app.whenReady().then(async () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
-  if (app.isPackaged) {
-    
-    autoUpdater.checkForUpdatesAndNotify();
-  } 
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

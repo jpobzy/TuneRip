@@ -19,6 +19,8 @@ function EditMetaData(){
     const [open, setOpen] = useState(false);
     const selectPlaylistsRef = useRef(null)
     const submitPlaylistsRef = useRef(null)
+    const coverArtRef = useRef(null)
+
     const [isPlaylistChosen, setIsPlaylistChosen] = useState(false)
     const [updateDatabase, setUpdateDatabase] = useState(true)
     const toggleDatabase = useRef(null)
@@ -171,6 +173,12 @@ function EditMetaData(){
            target: () => genreInput.current
         },
         {
+        title: 'Change cover album',
+        description: 'Change the current folders cover album to something new',
+        // target: () => submitPlaylistsRef.current
+        target: () => coverArtRef.current
+        },
+        {
         title: 'Submit',
         description: 'Click submit to start the process',
         target: () => submitPlaylistsRef.current
@@ -234,7 +242,7 @@ function EditMetaData(){
                                             options={existingPlaylistNames}
                                         />                               
                                     </div>
-                                    <div className="ml-[20px] flex -mt-[32px] ml-[600px]">
+                                    <div className="ml-[20px] flex -mt-[32px] ml-[605px]">
                                         <Tooltip title="help">
                                                 <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
                                         </Tooltip>                                           
@@ -321,7 +329,7 @@ function EditMetaData(){
                             }
 
                             {isPlaylistChosen &&
-                                <div className="">
+                                <div className="" ref={coverArtRef}>
                                    <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked}/> 
                                 </div>
                             }
@@ -333,11 +341,11 @@ function EditMetaData(){
                                         <div className="flex" ref={submitPlaylistsRef}>
                                             <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor}/>                                
                                         </div>
-                                        <div className="flex ml-[5px]" >
+                                        {/* <div className="flex ml-[5px]" >
                                             <Tooltip title="help">
                                                 <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
                                             </Tooltip>                                    
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </Form.Item>
                             }

@@ -67,6 +67,7 @@ function CoverArtChanger({imgClicked, setImgClicked}){
                         refresh={getNewAlbumCover}
                         key = {filename[1]}
                         imgClicked={imgClicked}
+                        enlargenImg={false}
                         />
                     </div>                
               ))}

@@ -72,7 +72,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
-    setShowDock(false)
+    // setShowDock(false)
     setAlbumCoverChosen(true)
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
@@ -321,6 +321,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                 edit={editImgCard}
                 refresh={getNewAlbumCover}
                 key = {index+1}
+                enlargenImg={false}
                 />
               ))}
             </div>

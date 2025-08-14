@@ -102,7 +102,12 @@ function ReorderTracks(){
                                     style={{ width: 600 }}
                                     onChange={(value, label) => setPlaylistChosen(value, label)}
                                     options={existingPlaylistNames}
-                                />                               
+                                />      
+                                <div className="flex ml-[5px] -mt-[32px] ml-[650px]" >
+                                    <Tooltip title="help">
+                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                    </Tooltip>                                    
+                                </div>                         
                             </div>
                         
                         </Form.Item>
@@ -111,11 +116,7 @@ function ReorderTracks(){
                                 <div className="flex" ref={submitPlaylistsRef}>
                                     <GradientSubmitButton  callbackFunction={refactor}/>                                
                                 </div>
-                                <div className="flex ml-[5px]" >
-                                    <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                                    </Tooltip>                                    
-                                </div>
+
                             </div>
                         </Form.Item>
                     </Form>    

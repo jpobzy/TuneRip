@@ -140,11 +140,14 @@ function Crop(){
                             }}
                         />               
                         </div>
-                        <Tooltip title="help">
-                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                        </Tooltip>      
-                    </div>
+     
 
+                    </div>
+                   <div className="flex ml-[455px] -mt-[32px] mb-[10px]">
+                            <Tooltip title="help" >
+                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                            </Tooltip>                                  
+                        </div>
                     <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
                         <Cropper
                         image={blobURL}

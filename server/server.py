@@ -56,8 +56,6 @@ def getAlbumCover(route):
     get request for album cover photos
     example: http://localhost:8080/getAlbumCovers/1
     """
-
-    print(f'route is: {route}')
     return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}', mimetype='image/gif')
 
 
@@ -254,7 +252,6 @@ def stream():
     def getData():
         count = 0
         while True:
-            print('hello')
             yield f"data: {datetime.now()}\n\n"
             time.sleep(1)  # prevent hammering the CPU
             count+=1
@@ -263,7 +260,7 @@ def stream():
     return Response(getData(), mimetype="text/event-stream")
 
 @app.route('/downloadStream')
-def streamDownload():
+def streamDownload(): 
     return Response(controller_obj.downloadStream(dict(request.args)), mimetype="text/event-stream")
 
 

@@ -23,79 +23,78 @@ function Settings(){
     const [current, setCurrent] = useState('mail');
 
     const tabItems = [
-    // {
-    //     key: '1',
-    //     label: 'Add to Filter',
-    //     children: 
-    //     <div className="text-center mt-[20px]">
-    //         <FilterForm setRefresh={setRefresh}/>
-    //     </div>
-    // },
-    // {
-    //     key: '2',
-    //     label: 'Track Database',
-    //     children:
-    //     <div className="text-center mt-[20px]">
-    //         <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-    //     </div>
-    // },
-    // {
-    //     key: '3',
-    //     label: 'Reorder Tracks',
-    //     children: 
-    //     <div className="text-center mt-[50px]">
-    //         <ReorderTracks />
-    //     </div>
-    // },
-    // {
-    //     key: '4',
-    //     label: 'Crop',
-    //     children: 
-    //     <div className="text-center mt-[0px]">
-    //         <Crop />
-    //     </div>
-    // },
-    // {
-    //     key: '5',
-    //     label: 'Edit Meta Data',
-    //     children: 
-    //     <div className="text-center mt-[30px]">
-    //         <EditMetaData />
-    //     </div>
-    // },
-   {
+    {
+        key: '1',
+        label: 'Add to Filter',
+        children: 
+        <div className="text-center mt-[20px]">
+            <FilterForm setRefresh={setRefresh}/>
+        </div>
+    },
+    {
+        key: '2',
+        label: 'Track Database',
+        children:
+        <div className="text-center mt-[20px]">
+            <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+        </div>
+    },
+    {
+        key: '3',
+        label: 'Reorder Tracks',
+        children: 
+        <div className="text-center mt-[50px]">
+            <ReorderTracks />
+        </div>
+    },
+    {
+        key: '4',
+        label: 'Crop',
+        children: 
+        <div className="text-center mt-[0px]">
+            <Crop />
+        </div>
+    },
+    {
         key: '5',
+        label: 'Edit Meta Data',
+        children: 
+        <div className="text-center mt-[30px]">
+            <EditMetaData />
+        </div>
+    },
+    {
+        key: '6',
         label: 'Edit photo album',
         children: 
         <div className="text-center mt-[30px]">
             <PhotoGallery />
         </div>
     },
-
-    // {
-    //     key: '6',
-    //     label: 'Change background',
-    //     children: 
-    //     <div className="text-center mt-[60px]">
-    //         <SelectBackground />
-    //     </div>
-    // },
-    // {
-    //     key: '7',
-    //     label: 'Change Cursor',
-    //     children: 
-    //     <div className="text-center mt-[50px]">
-    //         <SelectCursor />
-    //     </div>
-    // },
-    // {
-    //     key: '8',
-    //     label: 'Merge folders',
-    //     children: 
-    //     <div className="text-center mt-[50px]">
-    //         <FolderMerge />
-    //     </div>
-    // }
+    {
+        key: '7',
+        label: 'Merge folders',
+        children: 
+        <div className="text-center mt-[50px]">
+            <FolderMerge />
+        </div>
+    },
+    {
+        key: '8',
+        label: 'Change background',
+        children: 
+        <div className="text-center mt-[60px]">
+            <SelectBackground />
+        </div>
+    },
+    {
+        key: '9',
+        label: 'Change Cursor',
+        children: 
+        <div className="text-center mt-[50px]">
+            <SelectCursor />
+        </div>
+    },
     ];
 
 

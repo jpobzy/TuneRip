@@ -75,7 +75,7 @@ function SelectCursor(){
 
     return (
         <>
-            <div className="-mt-[30px]">
+            <div className="-mt-[20px]">
                 <Select
                     defaultValue=""
                     style={{ width: 220 }}

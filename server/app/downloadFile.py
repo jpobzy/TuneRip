@@ -51,7 +51,6 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     if skipBeatsAndInstrumentals:
         if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
             # log_warning(f'Beat video found, skipping {vid.title}')
-            print(f'Beat video found, skipping {vid.title}')
             return f'beat/instrumental ### {vid.title}'
     
     if debugModeSkipDownload == True: ##################################################################################################
