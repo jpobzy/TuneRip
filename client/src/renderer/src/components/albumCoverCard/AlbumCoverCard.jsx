@@ -49,7 +49,7 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                         onLoad={() => setLoaded(true)}
                         /> */}
                         <Image 
-                        className='image'
+                        className='image relative'
                         src={`http://localhost:8080/getAlbumCovers/${filename}`} 
                         preview={enlargenImg}
                         // style={{display: loaded ? 'block' : 'none'}}
@@ -57,7 +57,7 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                         />
     
                         {previousImg == filename && 
-                            <div className='text-[16px] mx-auto text-white font-bold'>Last used</div>
+                            <div className='text-[16px] absolute ml-[30px] justify-center  text-center text-white font-bold '>Last used</div>
                         }    
 
                         {imgClicked == filename && enlargenImg !== true &&

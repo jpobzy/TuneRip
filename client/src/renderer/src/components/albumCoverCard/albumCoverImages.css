@@ -26,6 +26,7 @@
     background-color: #363e42;
     display: inline-block;
     transition: all 0.2s ease-in-out;
+    position: relative;
 }
 
 .album-cover-image:hover {
@@ -61,11 +62,12 @@
     border: 1px solid #ddd;
     border-radius: 4px; 
     padding: 5px;
-    margin-left: 20px;
+    /* margin-left: 20px; */
     background-color: #363e42;
     display: inline-block;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 0 20px rgb(206, 58, 21); 
+    position: relative;
 }
 
 

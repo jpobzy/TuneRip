@@ -11,7 +11,7 @@ import {
 import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
-
+const { ipcRenderer } = window.electron;
 
 function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
     const [componentDisabled, setComponentDisabled] = useState(true);
@@ -28,6 +28,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
     const [debugMode, setDebugMode] = useState(false);
     const { downloadScreenRefs  } = useHomeContext();
+    const [isAppPackaged, setIsAppPackaged] = useState(false)
 
     const toggleDefaultSettings = async (e) => {
         setComponentDisabled(e.target.checked)
@@ -200,9 +201,27 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         })
     }
 
-    const getPlaylistData = async() => {
+    const fillPlaylistData = async() => {
+
+        if (chosenPlaylistSetting.length === 0){
+            message.error('No playlist was chosen')
+            return
+        }
         const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {params: {playlist : chosenPlaylistSetting}})
-        
+        // console.log(Object.keys(getPlaylistData.data).length)
+        // console.log()
+
+        if (Object.keys(getPlaylistData.data).length === 0){
+            form.setFieldsValue({'album': null})
+            form.setFieldsValue({'genre': null})
+            form.setFieldsValue({'artist': null})
+
+            setAlbum('')  
+            setArtist('')    
+            setGenre('')       
+            setPrevPlaylistArt(null)
+        }
+
         if (getPlaylistData.data.album){
             const albumData = getPlaylistData.data.album
             form.setFieldsValue({'album': albumData})
@@ -245,6 +264,10 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         getExistingPlaylists();
     }, [])
 
+    useEffect(() => {
+        ipcRenderer.on('isPackaged', (_, value) => setIsAppPackaged(value));
+    }, []);
+
     return (
         <div className='download-form '>
             <div ref={downloadScreenRefs.defaultDownloadToggleRef}>
@@ -252,7 +275,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                     Use default settings
                 </Checkbox>                
             </div>
-
         <Form 
         form={form}
         name='basic'
@@ -326,7 +348,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                                     onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
                                     options={existingPlaylistNames}
                                 />
-                                <Button type='primary' onClick={() => getPlaylistData()}>Fill From Playlist</Button>                    
+                                <Button type='primary' onClick={() => fillPlaylistData()}>Fill From Playlist</Button>                    
                             {/* </div> */}
 
                         </Form.Item>                          
@@ -381,14 +403,17 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </div>
         }
 
-        {/* <Form.Item>
-            <Checkbox
-                checked={debugMode}
-                onChange={(e)=> handleDebugMode(e)}
-            >   
-                Debug mode
-            </Checkbox>  
-        </Form.Item> */}
+        {!isAppPackaged  &&
+            <Form.Item>
+                <Checkbox
+                    checked={debugMode}
+                    onChange={(e)=> handleDebugMode(e)}
+                >   
+                    Debug mode
+                </Checkbox>  
+            </Form.Item>         
+        }
+
 
         <div ref={downloadScreenRefs.artistInputRef}>
             <Form.Item 

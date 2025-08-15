@@ -18,7 +18,8 @@ import { HomeProvider } from './components/context/HomeContext';
 
 
 function MainApp() {
-  // const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+  const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+  
   const [page, setPage] = useState("Home");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
@@ -38,6 +39,10 @@ function MainApp() {
   ];
 
   const {showDock} = useToggle()
+
+
+
+
 
   return (
     <>

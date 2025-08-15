@@ -315,15 +315,17 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
             <div className='album-cover-containter'>
               {Object.entries(albumCoverFileNames).map((filename, index)=>(
-                <AlbumCoverCard 
-                filename={filename[1]}
-                cardClicked={()=>handleAlbumCoverClicked(filename[1])}
-                previousImg={prevImg}
-                edit={editImgCard}
-                refresh={getNewAlbumCover}
-                key = {index+1}
-                enlargenImg={false}
-                />
+                <div key={filename} className={'mt-[20px] mb-[20px]'}>
+                  <AlbumCoverCard 
+                  filename={filename[1]}
+                  cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+                  previousImg={prevImg}
+                  edit={editImgCard}
+                  refresh={getNewAlbumCover}
+                  key = {index+1}
+                  enlargenImg={false}
+                  />
+                </div>
               ))}
             </div>
 

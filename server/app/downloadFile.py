@@ -7,7 +7,7 @@ from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=True):
+def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=None):
     count = 0
     
     vid = YouTube(url) # set both to true 
@@ -47,8 +47,10 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     else:
         genre = genre
 
+    print(f'skipping1, with param {skipBeatsAndInstrumentals}, as its type: {type(skipBeatsAndInstrumentals)}')
 
     if skipBeatsAndInstrumentals:
+        print(f'skipping2, with param {skipBeatsAndInstrumentals}')
         if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
             # log_warning(f'Beat video found, skipping {vid.title}')
             return f'beat/instrumental ### {vid.title}'

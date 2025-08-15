@@ -421,7 +421,7 @@ class controller():
                 artist = str(audio['TPE1'])
                 album = str(audio['TALB'])
                 if 'TCON' in audio:
-                    genre = audio['TCON']
+                    genre = str(audio['TCON'])
                     res['genre'] = genre
 
                 res['artist'] = artist
@@ -513,17 +513,19 @@ class controller():
         artist = request.get('artist')
         genre = request.get('genre')
         albumTitle = request.get('album')
-        skipBeatsAndInstrumentals = request.get('skipBeatsAndInstrumentals')
+        skipBeatsAndInstrumentals = False if request.get('skipBeatsAndInstrumentals') == 'false' else True
         addToExistingPlaylist = request.get('addToExistingPlaylistSettings')
         self.downloadCount = 0
         self.errorCount = 0
+
+
 
         self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
         
-            downloadPath, albumTitle, albumCoverPath, trackNum = self.helper2(downloadType='playlist', albumTitle=albumTitle, albumCoverFile=albumCoverFile, playlistTitle=playlist.title, addToExistingPlaylist=addToExistingPlaylist, subFolderName=subFolderName)    
+            downloadPath, albumTitle, albumCoverPath, self.trackNum = self.helper2(downloadType='playlist', albumTitle=albumTitle, albumCoverFile=albumCoverFile, playlistTitle=playlist.title, addToExistingPlaylist=addToExistingPlaylist, subFolderName=subFolderName)    
 
             for url in playlist.video_urls:
                 video = YouTube(url)
@@ -532,7 +534,7 @@ class controller():
                                     albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre,
                                     debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals,
                                     debugModeAddToDB=debugModeAddToDB, videoAuthor=video.author, albumCoverFile=albumCoverFile,
-                                    videoTitle=video.title, trackNum=trackNum
+                                    videoTitle=video.title, trackNum=self.trackNum
                                     )
 
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
@@ -584,22 +586,25 @@ class controller():
             self.checkDownloadCount(self.downloadCount)
             if skipDownload and self.db.checkIfTrackExists(videoId):
                 return # skips track if track exists in database and user requests to skip prev downloaded tracks
-
+            print(f'skip is: {skipBeatsAndInstrumentals}')
             trackName = download_video(url=videoWatchURL, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, 
                                        albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, 
                                        debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
             
             status = 'downloaded'
             if f'beat/instrumental ### ' in trackName:
+                print(f'skipped download: ')
+                self.logger.logInfo('beat found skipping track')
+                self.logger.logInfo(f'confirming skip req, track name: [{videoWatchURL}] with skip status [{skipBeatsAndInstrumentals}]')
                 trackName = trackName.replace('beat/instrumental ### ', '')
                 status = 'filtered'
-            if not debugModeAddToDB:
-                self.db.insertTrackIntoDB(videoAuthor, albumTitle, trackName, videoId, status, albumCoverFile, videoWatchURL,  str(Path('/'.join(downloadPath.parts[3:]))))
-            trackNum += 1
+
+            # if not debugModeAddToDB:
+            #     self.db.insertTrackIntoDB(videoAuthor, albumTitle, trackName, videoId, status, albumCoverFile, videoWatchURL,  str(Path('/'.join(downloadPath.parts[3:]))))
+            self.trackNum += 1
             
             yield from self.clientMessageFormatter({'message' : f'{videoTitle}\n\n'})
             self.downloadCount += 1
-            print(self.downloadCount)
             
         except Exception as error:
             print(f'error hit {error}')

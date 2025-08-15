@@ -133,7 +133,11 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  
+
+  const isPackaged = app.isPackaged;
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('isPackaged', isPackaged);
+  });
   // mainWindow.openDevTools();
   // autoUpdater.check
   // if (app.isPackaged) {
