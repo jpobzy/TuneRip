@@ -52,7 +52,7 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                         className='image'
                         src={`http://localhost:8080/getAlbumCovers/${filename}`} 
                         preview={enlargenImg}
-                        style={{display: loaded ? 'block' : 'none'}}
+                        // style={{display: loaded ? 'block' : 'none'}}
                         onLoad={() => setLoaded(true)}
                         />
     

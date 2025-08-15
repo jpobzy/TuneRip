@@ -385,7 +385,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             <Checkbox
                 checked={debugMode}
                 onChange={(e)=> handleDebugMode(e)}
-            >
+            >   
                 Debug mode
             </Checkbox>  
         </Form.Item> */}

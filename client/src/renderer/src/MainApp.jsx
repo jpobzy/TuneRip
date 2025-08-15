@@ -18,8 +18,8 @@ import { HomeProvider } from './components/context/HomeContext';
 
 
 function MainApp() {
-  const ipcHandle = () => window.electron.ipcRenderer.send('ping')
-  const [page, setPage] = useState("Settings");
+  // const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+  const [page, setPage] = useState("Home");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
 
@@ -40,35 +40,38 @@ function MainApp() {
   const {showDock} = useToggle()
 
   return (
+    <>
     <div className='wrapper'>
-        <div >
-          {page === 'Home' && 
-            <HomeProvider>
-                <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
-            </HomeProvider>
-          }
+          <div >
+            {page === 'Home' && 
+              <HomeProvider>
+                  <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
+              </HomeProvider>
+              
+            }
 
-          {page === 'History' && <History />}
-          {page === 'Settings' && 
-            <TourProvider>
-              <Settings/> 
-            </TourProvider>
-          }
-        </div>
-        
-      { showDock &&
-        <div className='dock-wrapper flex justify-center items-center '>
-          <Dock
-            className='custom-dock'
-            items={items}
-            panelHeight={68}
-            baseItemSize={50}
-            magnification={70}
-          /> 
-        </div>
-      }
-
-    </div>
+            {page === 'History' && <History />}
+            {page === 'Settings' && 
+              <TourProvider>
+                <Settings/> 
+              </TourProvider>
+            }
+          </div>
+          
+        { showDock &&
+          <div className='dock-wrapper flex justify-center items-center '>
+            <Dock
+              className='custom-dock'
+              items={items}
+              panelHeight={68}
+              baseItemSize={50}
+              magnification={70}
+            /> 
+          </div>
+        }
+      </div>    
+    </>
+ 
   )
 }
 

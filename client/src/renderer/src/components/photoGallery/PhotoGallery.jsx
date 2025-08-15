@@ -16,9 +16,9 @@ function PhotoGallery(){
     const [open, setOpen] = useState(false);
     const [pagnationPages, setPagnationPages] = useState(10)
 
-    const selectCoverArtRef = useRef(null)
     const addCoverArtRef = useRef(null)
-    
+    const editSwitchCoverArtRef = useRef(null)
+
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
     
@@ -57,9 +57,9 @@ function PhotoGallery(){
         target: () => addCoverArtRef.current,
         }, 
         {
-        title: 'Select cover art below',
-        description: 'All available cover art to select will be shown below after being added',
-        target: () => selectCoverArtRef.current,
+        title: 'Toggle to edit current available cover art',
+        description: 'Toggle to remove current available cover art',
+        target: () => editSwitchCoverArtRef.current,
         },          
     ]
 
@@ -112,7 +112,7 @@ function PhotoGallery(){
 
           { Object.keys(shownImages).length > 0 &&
             <>
-                <div className='mt-[20px] '> 
+                <div className='mt-[20px] inline-block' ref={editSwitchCoverArtRef}> 
                     <Switch onChange={() => setEditImgCard(!editImgCard)} />        
                  </div>                
             </>
@@ -124,7 +124,6 @@ function PhotoGallery(){
                 showSizeChanger={false}
                 defaultCurrent={1} 
                 total={pagnationPages} 
-                // total={50} 
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>

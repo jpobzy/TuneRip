@@ -65,10 +65,20 @@ class controller():
             if (Path(basePath / 'server/static/images').exists()):
                 oldPath = Path(self.projRoot / 'server/static/images')
                 newPath = Path(self.projRoot / 'server/static/userImages')
+                oldDebugPath = Path(Path(self.projRoot / 'debug'))
                 if oldPath.exists() and newPath.exists():
+                    self.logger.logInfo('Attempting to remove old images folder')
                     os.rmdir(oldPath)
+                    self.logger.logInfo('Removal successful')
                 if (oldPath).exists():
+                    self.logger.logInfo('Attempting to rename old images folder')
                     os.rename(oldPath, newPath)
+                    self.logger.logInfo('Removal successful')
+                if oldDebugPath.exists():
+                    self.logger.logInfo('Attempting to remove old debug folder')
+                    os.rmdir(oldDebugPath)
+                    self.logger.logInfo('Removal successful')
+
             else:
                 self.pathMaker(basePath / 'server/static/userImages')
         except Exception as error:
@@ -458,6 +468,8 @@ class controller():
         return
     
     def handleDownloadComplete(self, downloadCount, errorCount, downloadPath):
+        # print(f'download complete1 {self.downloadCount}')
+        # print(f'download complete2 {downloadCount}')
         if downloadCount > 0:
             if errorCount > 0:
                 yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
@@ -569,7 +581,6 @@ class controller():
                         trackNum
                         ):
         try: 
-            print('attempting download')
             self.checkDownloadCount(self.downloadCount)
             if skipDownload and self.db.checkIfTrackExists(videoId):
                 return # skips track if track exists in database and user requests to skip prev downloaded tracks
@@ -583,11 +594,12 @@ class controller():
                 trackName = trackName.replace('beat/instrumental ### ', '')
                 status = 'filtered'
             if not debugModeAddToDB:
-                self.db.insertTrackIntoDB(videoAuthor, albumTitle, trackName, videoId, status, albumCoverFile, videoWatchURL)
+                self.db.insertTrackIntoDB(videoAuthor, albumTitle, trackName, videoId, status, albumCoverFile, videoWatchURL,  str(Path('/'.join(downloadPath.parts[3:]))))
             trackNum += 1
             
             yield from self.clientMessageFormatter({'message' : f'{videoTitle}\n\n'})
             self.downloadCount += 1
+            print(self.downloadCount)
             
         except Exception as error:
             print(f'error hit {error}')

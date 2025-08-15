@@ -35,6 +35,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const {setShowDock} = useToggle()
   const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
   const [isUser, setIsUser] = useState(false)
+  const [switchToggled, setSwitchToggled] = useState(false)
 
   
 
@@ -68,11 +69,12 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setUsers(response.data);
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
+
   }
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
-    // setShowDock(false)
+    setShowDock(false)
     setAlbumCoverChosen(true)
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
@@ -145,7 +147,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function downloadVideo(videosearchURL){
-    //https://www.youtube.com/playlist?list=PLQLeP-y1PipMahmS_f1vCSKNvNee3ytnG
       if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') ){
         setCardClicked(true);
         setIsTrack(true);
@@ -210,7 +211,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
   const handleUserRemoved = () => {
-    setEditUsers(false)
+    // setEditUsers(false)
     getUsers();
   }
 
@@ -329,7 +330,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
           { Object.keys(albumCoverFileNames).length > 0 &&
             <div className='mt-[20px] mb-[50px]'> 
-              <Switch onChange={() => setEditImgCard(!editImgCard)} />        
+              <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
           }
 
@@ -387,7 +388,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
-      {/* <Button type='primary' onClick={()=> debugMode()}>click me</Button> */}
     </div>
   )
 })
