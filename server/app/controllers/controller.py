@@ -265,23 +265,37 @@ class controller():
         """
         Deletes one record in DB, chosen in Table.jsx
         """
-        return self.db.deleteRecord(query['link'].split('https://youtube.com/watch?v=')[1])
-    
+        try: 
+            self.logger.logInfo('Request for single database track deletion was made')
+            return self.db.deleteRecord(query['link'].split('https://youtube.com/watch?v=')[1])
+        except Exception as error:
+            self.logger.logInfo('ERROR SOMETHING WENT WRONG')
+            self.logger.logError(error)
+            self.logger.logInfo(f'Deletion query: [{query}]')
+            return f'Something went wrong {error}', 400    
 
     def deleteMultipleRecords(self, query):
         """
         Deletes multiple records in DB, chosen in Table.jsx
         """
-        tracksNotFound = []
-        for record in query['records']:
-            message, status = self.db.deleteRecord(record['trackId'])
-            if status == 204:
-                tracksNotFound.append(record)
+        try:
+            self.logger.logInfo('Request for multiple database tracks deletion was made')
+            tracksNotFound = []
+            for record in query['records']:
+                print(record)
+                message, status = self.db.deleteRecord(record['trackId'])
+                if status == 204:
+                    tracksNotFound.append(record)
 
-        if len(tracksNotFound) > 0:
-            return f'Failed to find and remove {tracksNotFound}', 204
-        else:
-            return 'All chosen tracks deleted from DB', 200
+            if len(tracksNotFound) > 0:
+                return f'Failed to find and remove {tracksNotFound}', 204
+            else:
+                return 'All chosen tracks deleted from DB', 200
+        except Exception as error:
+            self.logger.logInfo('ERROR SOMETHING WENT WRONG')
+            self.logger.logError(error)
+            self.logger.logInfo(f'Deletion query: [{query}]')
+            return f'Something went wrong {error}', 400
 
     def deleteUser(self, query):
         """

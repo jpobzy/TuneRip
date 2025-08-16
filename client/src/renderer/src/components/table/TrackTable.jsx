@@ -7,7 +7,6 @@ import { App } from 'antd';
 import './table.css'
 import { QuestionOutlined  } from '@ant-design/icons';
 
-
 function TrackTable({refreshRecords, setRefresh}){
   const [users, setUsers] = useState([]) // for user filter
   const [records, setRecords] = useState() // format: {1: [records]}
@@ -16,12 +15,14 @@ function TrackTable({refreshRecords, setRefresh}){
   const [isLoading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [albumTitles, setAlbumTitles] = useState([])
-  const [filteredUsers, setFilteredUsers] = useState([])
+  const [test, setTest] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
   const tableRef = useRef(null)
   const deleteSelectedButtonRef = useRef(null);
   const deleteSingleRecordRef = useRef(null);
   const [open, setOpen] = useState(false);
+
+
 
   const steps = [
     {
@@ -67,8 +68,11 @@ function TrackTable({refreshRecords, setRefresh}){
         } else {
           message.success(`Selected record have been deleted`);
         }
+        populateUsers();
+        getCoverAlbums();
         getRecords();
       }      
+      setSelectedRowKeys([])
     }
     setLoading(false)
   }
@@ -87,7 +91,7 @@ function TrackTable({refreshRecords, setRefresh}){
   };
 
   const cancel = () => {
-    message.error('clicked on cancel');
+    message.error('Canceled deletion');
   };
 
   const filter = () => {
@@ -173,8 +177,8 @@ function TrackTable({refreshRecords, setRefresh}){
       <div >
         <Space size="middle">
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
+            title="Delete the record"
+            description="Are you sure to delete this record?"
             onConfirm={() => confirm(record)}
             onCancel={cancel}
             okText="Yes"
@@ -201,6 +205,7 @@ function TrackTable({refreshRecords, setRefresh}){
   }
 
   async function getRecords(){
+    // setRecords(null);
     const res = await axios.get('http://localhost:8080/getData',{
       params: {'page': 1, 'limit': 100}
     });
@@ -218,12 +223,6 @@ function TrackTable({refreshRecords, setRefresh}){
   },[refreshRecords])
 
 
-  const rowSelection = {
-    onChange : (selectedRowKeys, selectedRows) => {
-      setRecordsToDelete(selectedRows);
-    } 
-  }
-
   const handleFilters = (user, albumTitle)=>{
     if (user && !albumTitle){
       setSelectedUsers(user)
@@ -237,6 +236,16 @@ function TrackTable({refreshRecords, setRefresh}){
     }
   }
 
+  const onSelectChange = (newSelectedRowKeys, selectedRows) => {
+    setSelectedRowKeys(newSelectedRowKeys)
+    setRecordsToDelete(selectedRows);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+
 
   return (
     <div>
@@ -245,8 +254,8 @@ function TrackTable({refreshRecords, setRefresh}){
           <div className='flex justify-center'>
             <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
               <Popconfirm
-              title="Delete the task"
-              description="Are you sure to delete this task?"
+              title="Delete the selected records"
+              description="Are you sure to delete  the selected records?"
               onConfirm={() => deleteSelected()}
               onCancel={cancel}
               okText="Yes"
@@ -272,7 +281,8 @@ function TrackTable({refreshRecords, setRefresh}){
                         onChange={(pagination, filters, sorter, extra) => {
                           handleFilters(filters.user, filters.albumTitle)           
                         }}
-                      rowSelection={Object.assign({ type: 'checkbox'}, rowSelection)}
+                      selectedRowKeys={test}
+                      rowSelection={rowSelection}
                       loading={isLoading}
                       columns={cols} 
                       dataSource={records} 
