@@ -49,16 +49,24 @@ function ReorderTracks(){
             message.error('Error no folder is selected')
         }else{
             setIsLoading(true)
-            const response = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
-            if (response.status === 200){
-                setResultStatusCode(200)
-                setIsLoading(false)
-                setShowResult(true)
-            }else{
+            try{
+                const response = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
+                if (response.status === 200){
+                    setResultStatusCode(200)
+                    setIsLoading(false)
+                    setShowResult(true)
+                }                
+            }catch (error){
                 setResultStatusCode(400)
                 setIsLoading(false)
                 setShowResult(true)
-            }  
+            }
+
+                // else{
+
+                // }  
+            
+
         }
        
        
@@ -86,6 +94,9 @@ function ReorderTracks(){
             getExistingPlaylists();
         }, [])
 
+
+
+
     return (
         <div>
             <div className="mx-auto justify-center -mt-[20px]">
@@ -99,11 +110,11 @@ function ReorderTracks(){
                                     allowClear={true}
                                     mode="multiple"
                                     defaultValue={[]}
-                                    style={{ width: 600 }}
+                                    style={{ width: 500 }}
                                     onChange={(value, label) => setPlaylistChosen(value, label)}
                                     options={existingPlaylistNames}
                                 />      
-                                <div className="flex ml-[5px] -mt-[32px] ml-[650px]" >
+                                <div className="flex  -mt-[32px] ml-[541px]" >
                                     <Tooltip title="help">
                                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
                                     </Tooltip>                                    
@@ -134,9 +145,9 @@ function ReorderTracks(){
             } 
             {!isLoading && showResult && 
                 <>
-                    <div className="-mt-[30px]">
-                        {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks','', goBack)}
-                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                    <div className="-mt-[30px] results bg-white rounded-xl">
+                        {resultStatusCode === 200  && ResultSuccess('Successfully reordered tracks',`Tracks were reordered, plase check playlists chosen`, goBack)}
+                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the log folder in TuneRip/server/logs', goBack)}             
                     </div>
                 </>
             }                

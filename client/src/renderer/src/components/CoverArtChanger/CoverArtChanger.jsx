@@ -5,7 +5,7 @@ import { App, Pagination, Button } from 'antd';
 import { resultToggle } from "../context/ResultContext";
 import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
 
-function CoverArtChanger({imgClicked, setImgClicked}){
+function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     
     const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
@@ -32,10 +32,10 @@ function CoverArtChanger({imgClicked, setImgClicked}){
         const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
         setAlbumCoverFileNames(albumCoverResponse.data.files);
 
-        const roundUp = Math.ceil(albumCoverResponse.data.files.length / 6) * 10;
+        const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
         setPagnationPages(roundUp)
 
-        setShownImages(albumCoverResponse.data.files.slice(0, 6))
+        setShownImages(albumCoverResponse.data.files.slice(0, imagesPerPage))
 
     }
 
@@ -44,12 +44,9 @@ function CoverArtChanger({imgClicked, setImgClicked}){
         getNewAlbumCover();
     }, []);
 
-    const arr = Array.from(Array(10).keys())
-
-
     const chooseWhichImagesToShow = (e) =>{
-        const startAmount = (Number(e) - 1) * 6
-        const endAmount = Number(e) * 6
+        const startAmount = (Number(e) - 1) * imagesPerPage
+        const endAmount = Number(e) * imagesPerPage
         setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
     }
     
@@ -57,7 +54,7 @@ function CoverArtChanger({imgClicked, setImgClicked}){
     return (
         <>
             <div className='album-cover-containter image-wrapper '>
-              {Object.entries(shownImages).map((filename, index)=>(
+                {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
                         <AlbumCoverCard 
                         filename={filename[1]}
@@ -70,10 +67,10 @@ function CoverArtChanger({imgClicked, setImgClicked}){
                         enlargenImg={false}
                         />
                     </div>                
-              ))}
+                ))}
             </div>
 
-            <div className="flex mx-auto justify-center mt-[30px] mb-[20px]">
+            <div className="flex mx-auto justify-center mt-[40px] mb-[20px]">
                 <Pagination 
                 showSizeChanger={false}
                 defaultCurrent={1} 

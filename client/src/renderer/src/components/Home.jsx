@@ -10,11 +10,12 @@ import { Collapse } from 'antd';
 import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
-import { Switch, Button, Tooltip, Tour } from 'antd';
+import { Switch, Button, Tooltip, Tour, Pagination } from 'antd';
 import { useToggle } from './context/UseContext';
 import { QuestionOutlined } from '@ant-design/icons';
 import { useHomeContext } from './context/HomeContext';
 import { resultToggle } from './context/ResultContext';
+import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
 
 
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
@@ -36,8 +37,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
   const [isUser, setIsUser] = useState(false)
   const [switchToggled, setSwitchToggled] = useState(false)
-
-  
+  const [shownImages, setShownImages] = useState([])
+  const [imgClicked, setImgClicked] = useState('')
+  const [pagnationPages, setPagnationPages] = useState(10)
+  const imagesPerPage = 8
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
@@ -71,6 +74,12 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setAlbumCoverFileNames(albumCoverResponse.data.files);
 
   }
+
+    const chooseWhichImagesToShow = (e) =>{
+        const startAmount = (Number(e) - 1) * imagesPerPage
+        const endAmount = Number(e) * imagesPerPage
+        setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
+    }
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
@@ -135,6 +144,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   async function getNewAlbumCover() {
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
+    const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
+    setPagnationPages(roundUp)
+
+    setShownImages(albumCoverResponse.data.files.slice(0, imagesPerPage))
   }
 
 
@@ -183,6 +196,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   useEffect(()=> {
+    getNewAlbumCover();
     setResultStatusCode(null)
     setCurrentlyDownloaded([])
     setShowResult(false)
@@ -194,6 +208,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   const goBack = () => {
+    getNewAlbumCover();
     setIsLoading(false)
     setShowResult(false)
 
@@ -211,7 +226,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
   const handleUserRemoved = () => {
-    // setEditUsers(false)
     getUsers();
   }
 
@@ -228,7 +242,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   return (
-    <div>
+    <div className='mb-[50px]'>
       <div >
         {cardClicked ? (
           albumCoverChosen ? (
@@ -276,7 +290,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                 </>
             </div>
           ) : (
-          <div className='inlin'>
+          <div className=''>
             <div className='mb-10 justify-center flex '>
               <div className='mt-[30px] ml-[50px] inline-block' ref={downloadScreenRefs.addCoverArtRef}>
                 <UploadButton refresh={getNewAlbumCover}/>
@@ -312,29 +326,38 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                 onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
                 />
             </div>
-
-            <div className='album-cover-containter'>
-              {Object.entries(albumCoverFileNames).map((filename, index)=>(
-                <div key={filename} className={'mt-[20px] mb-[20px]'}>
-                  <AlbumCoverCard 
-                  filename={filename[1]}
-                  cardClicked={()=>handleAlbumCoverClicked(filename[1])}
-                  previousImg={prevImg}
-                  edit={editImgCard}
-                  refresh={getNewAlbumCover}
-                  key = {index+1}
-                  enlargenImg={false}
-                  />
-                </div>
-              ))}
+            <div className='album-cover-containter '>
+                {Object.entries(shownImages).map((filename, index)=>(
+                    <div key={filename} className={'mt-[20px] mb-[20px]'}>
+                        <AlbumCoverCard 
+                        filename={filename[1]}
+                        cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+                        previousImg={prevImg}
+                        edit={editImgCard}
+                        refresh={getNewAlbumCover}
+                        key = {filename[1]}
+                        imgClicked={imgClicked}
+                        enlargenImg={false}
+                        />
+                    </div>                
+                ))}
             </div>
 
 
           { Object.keys(albumCoverFileNames).length > 0 &&
-            <div className='mt-[20px] mb-[50px]'> 
+            <div className='mt-[50px] mb-[10px]'> 
               <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
           }
+
+            <div className="flex mx-auto justify-center">
+                <Pagination 
+                showSizeChanger={false}
+                defaultCurrent={1} 
+                total={pagnationPages} 
+                onChange={(e)=> chooseWhichImagesToShow(e)}
+                />
+            </div>
 
            </div>
           )
@@ -373,7 +396,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                           editUsers = {editUsers}
                           key = {index+1}
                           handleUserRemoved={handleUserRemoved}
-
                           />
                         ))}
                       </div>
@@ -390,6 +412,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
+
     </div>
   )
 })

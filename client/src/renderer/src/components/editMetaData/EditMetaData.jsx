@@ -330,7 +330,7 @@ function EditMetaData(){
 
                             {isPlaylistChosen &&
                                 <div className="" ref={coverArtRef}>
-                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked}/> 
+                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked} imagesPerPage={6}/> 
                                 </div>
                             }
 

@@ -1,7 +1,6 @@
 import { Button, Switch, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox, Spin  } from "antd";
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
-import CoverArtChanger from "../CoverArtChanger/CoverArtChanger";
 import { App, Pagination, Input } from 'antd';
 import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
 import { resultToggle } from "../context/ResultContext";
