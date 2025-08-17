@@ -16,6 +16,7 @@ import SelectBackground from "./selectBackground/SelectBackground";
 import SelectCursor from "./selectCursor/SelectCursor";
 import FolderMerge from "./folderMerge/FolderMerge";
 import PhotoGallery from "./photoGallery/PhotoGallery";
+import FileNameFilter from "./fileNameFilter/FileNameFilter";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
@@ -23,14 +24,22 @@ function Settings(){
     const [current, setCurrent] = useState('mail');
 
     const tabItems = [
+    // {
+    //     key: '1',
+    //     label: 'Add to Filter',
+    //     children: 
+    //     <div className="text-center mt-[20px]">
+    //         <FilterForm setRefresh={setRefresh}/>
+    //     </div>
+    // },
     {
         key: '1',
-        label: 'Add to Filter',
-        children: 
+        label: 'File name filter',
+        children:
         <div className="text-center mt-[20px]">
-            <FilterForm setRefresh={setRefresh}/>
+            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
         </div>
-    },
+    },    
     {
         key: '2',
         label: 'Track Database',

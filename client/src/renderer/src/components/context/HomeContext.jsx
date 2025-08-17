@@ -30,7 +30,6 @@ export const HomeProvider = ({children}) =>{
 
     const [test, settest] = useState()
     const handleChange = (e) =>{
-        console.log(`change is ${e}`)
         settest(e)
     }
 
