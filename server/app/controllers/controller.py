@@ -155,7 +155,7 @@ class controller():
                 trackName = video.title
                 albumTitle = None
                 albumCoverFile = None
-                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url)
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url, '')
             except Exception as error:
                 self.logger.logInfo(f'Searching for track url: {url}')
                 self.logger.logError(error)
@@ -200,7 +200,7 @@ class controller():
                     if self.db.checkIfTrackExists(video.video_id):
                         # double check
                         continue
-                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url, '')
                     counter+=1
                     if counter % 30 == 0:
                         time.sleep(60)
@@ -226,7 +226,7 @@ class controller():
             else:
                 try:
                     video = YouTube(track)
-                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url)
+                    self.db.insertTrackIntoDB(video.author, '', video.title, video.video_id , 'Filter', '', video.watch_url, '')
                     return success
                 except Exception as error:
                     self.logger.logInfo(f'Adding track to filter with request data: {request.data}')
@@ -608,7 +608,7 @@ class controller():
         albumTitle = request.get('album')
         skipBeatsAndInstrumentals = request.get('skipBeatsAndInstrumentals')
         addToExistingPlaylist = request.get('addToExistingPlaylistSettings')
-        downloadCount = 0
+
 
         self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
 
@@ -631,10 +631,11 @@ class controller():
 
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
-            trackNum = 1
+            self.trackNum = 1
+            self.downloadCount = 0
 
             if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+                self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             erorrCount = 0
 
             for url in playlist.video_urls:
@@ -643,7 +644,7 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
                    
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
+                    trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
@@ -651,24 +652,32 @@ class controller():
                         status = 'filtered'
 
                     if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
-                    trackNum += 1
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                    self.trackNum += 1
+                    self.downloadCount += 1
                     yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
-                    downloadCount += 1
+
 
                     
                 except Exception as error:
+                    if 'Premieres in' in str(error):
+                        self.logger.logInfo(f'Skipping video [{video.watch_url}] as it is a premier video')
+                        self.logger.logInfo('Logging error regardless')
+                        self.logger.logError(error)
+                        yield from self.clientMessageFormatter({'message' : f'Skipped url [{video.watch_url}] as it will premier in {str(error).split('Premieres in ')[1]} \n\n'})
+                        continue
+
                     self.logger.logInfo(f'video url: {url}')
                     self.logger.logError(error)
                     erorrCount += 1
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail. Last url is {video}')
                     
-            if downloadCount > 0:
+            if self.downloadCount > 0:
                 if erorrCount > 0:
                     yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks do download were found", "statusCode" : 200})
 
@@ -693,14 +702,14 @@ class controller():
             
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
-            trackNum = 1
+            self.trackNum = 1
             erorrCount = 0
             if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+                self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
 
             
             try:
-                trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
+                trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -710,10 +719,10 @@ class controller():
                 yield from self.clientMessageFormatter(f'{trackName}')      
 
                 if not debugModeAddToDB:
-                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
+                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                 
                 yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
-                trackNum += 1
+                
 
                 
             except Exception as error:
@@ -727,7 +736,7 @@ class controller():
             if erorrCount > 0:
                 yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
             else:
-                yield from self.clientMessageFormatter({"message" : f'Downloaded {downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
 
 
         else:
@@ -736,7 +745,7 @@ class controller():
             sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {user}' if albumTitle == None else albumTitle
-            trackNum = 1
+            self.trackNum = 1
 
             if subFolderName != None:
                 downloadPath = self.projRoot / f"downloads/{subFolderName}"
@@ -749,7 +758,7 @@ class controller():
                     downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
 
             if Path(downloadPath).exists():
-                trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
+                self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             
             c = Channel(ytLink)
             erorrCount = 0
@@ -758,20 +767,28 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and user requests to skip prev downloaded tracks
 
-                    trackName = download_video(url=video.watch_url, trackNum=trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
+                    trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals)
                     
                     status = 'downloaded'
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
                     if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url)
-                    trackNum += 1
-                    
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                    self.trackNum += 1
+                    self.downloadCount += 1
+                
                     yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
-                    downloadCount += 1
+
                     
                 except Exception as error:
+                    if 'Premieres in' in str(error):
+                        self.logger.logInfo(f'Skipping video [{video.watch_url}] as it is a premier video')
+                        self.logger.logInfo('Logging error regardless')
+                        self.logger.logError(error)
+                        yield from self.clientMessageFormatter({'message' : f'Skipped url [{video.watch_url}] as it will premier in {str(error).split('Premieres in ')[1]} \n\n'})
+                        continue
+
                     self.logger.logInfo(video.watch_url)
                     self.logger.logError(error)
                     erorrCount += 1
@@ -780,11 +797,12 @@ class controller():
             
             self.updateUserImg(user, albumCoverFile)
             self.logger.logInfo('Download complete')
-            if downloadCount > 0:
+            
+            if self.downloadCount > 0:
                 if erorrCount > 0:
                     yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks do download were found", "statusCode" : 200})
 

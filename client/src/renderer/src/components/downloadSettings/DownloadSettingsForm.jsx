@@ -11,7 +11,6 @@ import {
 import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
-const { ipcRenderer } = window.electron;
 
 function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
     const [componentDisabled, setComponentDisabled] = useState(true);
@@ -28,7 +27,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
     const [debugMode, setDebugMode] = useState(false);
     const { downloadScreenRefs  } = useHomeContext();
-    const [isAppPackaged, setIsAppPackaged] = useState(false)
 
     const toggleDefaultSettings = async (e) => {
         setComponentDisabled(e.target.checked)
@@ -264,9 +262,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         getExistingPlaylists();
     }, [])
 
-    useEffect(() => {
-        ipcRenderer.on('isPackaged', (_, value) => setIsAppPackaged(value));
-    }, []);
 
     return (
         <div className='download-form '>
@@ -403,7 +398,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </div>
         }
 
-        {!isAppPackaged  &&
+        {/* 
             <Form.Item>
                 <Checkbox
                     checked={debugMode}
@@ -412,7 +407,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                     Debug mode
                 </Checkbox>  
             </Form.Item>         
-        }
+         */}
 
 
         <div ref={downloadScreenRefs.artistInputRef}>
