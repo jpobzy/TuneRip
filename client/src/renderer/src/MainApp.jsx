@@ -20,7 +20,7 @@ import { HomeProvider } from './components/context/HomeContext';
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   
-  const [page, setPage] = useState("Home");
+  const [page, setPage] = useState("Settings");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
 
