@@ -72,7 +72,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setUsers(response.data);
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
-
   }
 
     const chooseWhichImagesToShow = (e) =>{

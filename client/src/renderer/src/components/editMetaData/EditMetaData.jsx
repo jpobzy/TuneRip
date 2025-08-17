@@ -384,7 +384,6 @@ function EditMetaData(){
 
             <Tour open={open} onClose={() => endTour()} steps={steps} />
 
-
         </div>
     )
 }

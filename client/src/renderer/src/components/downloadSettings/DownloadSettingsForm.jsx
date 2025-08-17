@@ -409,6 +409,16 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </Form.Item>         
          */}
 
+        <div ref={downloadScreenRefs.artistInputRef}>
+            <Form.Item 
+                wrapperCol={{ span: 15}}
+                label="Artist"
+                name="artist"
+                onChange={(e) => setArtist(e.target.value)}
+                >
+            <Input placeholder='Default: Youtube Music' />
+            </Form.Item>            
+        </div>
 
         <div ref={downloadScreenRefs.artistInputRef}>
             <Form.Item 
