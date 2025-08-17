@@ -274,7 +274,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         <FadeContent  blur={true} duration={750} easing="ease-out" initialOpacity={0}>
                           <div className='bg-white mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results'>
                             
-                            {resultStatusCode === 200  && responseData.message === 'No new tracks to download were found' 
+                            {resultStatusCode === 200  && String(responseData.message) === 'No new tracks to download were found' 
                               ? ResultSuccess('No New Downloads', responseData.message, goBack)
                               : ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)
                             }

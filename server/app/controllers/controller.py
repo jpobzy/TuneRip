@@ -496,7 +496,7 @@ class controller():
             else:
                 yield from self.clientMessageFormatter({"message" : f'Downloaded {downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
         else:
-            yield from self.clientMessageFormatter({"message" : "No new tracks do download were found", "statusCode" : 200})
+            yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
         
         yield from self.clientMessageFormatter({"message" : f"Completed download"})
         return
@@ -608,7 +608,7 @@ class controller():
         albumTitle = request.get('album')
         skipBeatsAndInstrumentals = request.get('skipBeatsAndInstrumentals')
         addToExistingPlaylist = request.get('addToExistingPlaylistSettings')
-
+        self.downloadCount = 0
 
         self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
 
@@ -632,7 +632,7 @@ class controller():
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
             self.trackNum = 1
-            self.downloadCount = 0
+
 
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -679,7 +679,7 @@ class controller():
                 else:
                     yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
-                yield from self.clientMessageFormatter({"message" : "No new tracks do download were found", "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
             
 
@@ -804,7 +804,7 @@ class controller():
                 else:
                     yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
-                yield from self.clientMessageFormatter({"message" : "No new tracks do download were found", "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
         yield from self.clientMessageFormatter({"message" : f"Completed download"})   
         return 'ok'
