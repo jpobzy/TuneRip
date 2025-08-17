@@ -64,27 +64,34 @@ const path = require('path');
 let flaskProcess;
 
 function startServer(){
-  const exePath = path.join(process.resourcesPath, 'server.exe');
-  // console.log('Starting Flask server at:', exePath);
-  flaskProcess = spawn(exePath);
-  flaskProcess.stdout.on('data', data => {
-    console.log(`Flask stdout: ${data.toString()}`);
-  });
+  try{
+    const exePath = path.join(process.resourcesPath, 'server.exe');
+    // console.log('Starting Flask server at:', exePath);
+    flaskProcess = spawn(exePath);
+    flaskProcess.stdout.on('data', data => {
+      console.log(`Flask stdout: ${data.toString()}`);
+    });
 
-  flaskProcess.stderr.on('data', data => {
-    console.error(`Flask stderr: ${data.toString()}`);
-  });
+    flaskProcess.stderr.on('data', data => {
+      console.error(`Flask stderr: ${data.toString()}`);
+    });
 
-  flaskProcess.on('close', code => {
-    console.log(`Flask process exited with code ${code}`);
-  });
+    flaskProcess.on('close', code => {
+      console.log(`Flask process exited with code ${code}`);
+      log.info(`Server is shutting down due to code: ${code}`)
+    });
 
-  flaskProcess.on('error', err => {
-    console.error('Flask process failed:', err);
-  });
-
-  return 
-}
+    flaskProcess.on('error', err => {
+      log.error('SERVER FAILED TO START')
+      log.error(err)
+      console.error('Flask process failed:', err);
+    });
+    
+    return 
+  } catch {
+    log.error('SERVER FAILED TO RUN ')
+  }
+} 
 
 // #################### app section #########################
 
@@ -126,7 +133,11 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  
+
+  const isPackaged = app.isPackaged;
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('isPackaged', isPackaged);
+  });
   // mainWindow.openDevTools();
   // autoUpdater.check
   // if (app.isPackaged) {
@@ -139,6 +150,7 @@ function createWindow() {
     while (true) {
       try {
         await fetch('http://localhost:8080/');
+        log.info('Server was pinged')
         break;
       } catch {
         await new Promise(res => setTimeout(res, 200));
@@ -150,10 +162,10 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  if (app.isPackaged){
-    startServer();
-  }
   if (app.isPackaged) {
+    log.info('Server is starting')
+    startServer();
+    log.info('Attempting to ping server')
     await waitForServerReady();
   }
   // Set app user model id for windows
@@ -168,7 +180,7 @@ app.whenReady().then(async () => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
-
+  log.info('Creating window')
   createWindow()
 
   app.on('activate', function () {
@@ -177,8 +189,9 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
   if (app.isPackaged) {
-    
+    log.info('Checking for update')
     autoUpdater.checkForUpdatesAndNotify();
+    log.info('Update check completed')
   } 
 })
 

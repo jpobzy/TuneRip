@@ -1,13 +1,14 @@
 import { Button, Form, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox, Spin  } from "antd";
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
-import RefactorSubmitButton from "../reorder/ReorderTracksSubmitButton";
+import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
 import {App, Input } from 'antd'
 import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
 import { LoadingOutlined } from '@ant-design/icons';
 import './editMetaData.css'
 import { resultToggle } from "../context/ResultContext";
+import CoverArtChanger from "../CoverArtChanger/CoverArtChanger";
 
 function EditMetaData(){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
@@ -18,6 +19,8 @@ function EditMetaData(){
     const [open, setOpen] = useState(false);
     const selectPlaylistsRef = useRef(null)
     const submitPlaylistsRef = useRef(null)
+    const coverArtRef = useRef(null)
+
     const [isPlaylistChosen, setIsPlaylistChosen] = useState(false)
     const [updateDatabase, setUpdateDatabase] = useState(true)
     const toggleDatabase = useRef(null)
@@ -27,6 +30,7 @@ function EditMetaData(){
     const [updateRequest, setUpdateRequest] = useState(false)
     const [updateRequestStatus, setUpdateRequestStatus] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [imgClicked, setImgClicked] = useState('')
 
 
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
@@ -123,11 +127,11 @@ function EditMetaData(){
             message.error('Error no folder is selected')
         }else{
             
-            if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && !Object.keys(playlistData).includes('artist')){
+            if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && !Object.keys(playlistData).includes('artist') && imgClicked == ''){
                 message.error('No inputs were added')
             }else{
                 setIsLoading(true)
-                const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData})
+                const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData, newCoverArt : imgClicked})
                 if (response.status === 200){
                     setResultStatusCode(200)
                     setIsLoading(false)
@@ -169,6 +173,12 @@ function EditMetaData(){
            target: () => genreInput.current
         },
         {
+        title: 'Change cover album',
+        description: 'Change the current folders cover album to something new',
+        // target: () => submitPlaylistsRef.current
+        target: () => coverArtRef.current
+        },
+        {
         title: 'Submit',
         description: 'Click submit to start the process',
         target: () => submitPlaylistsRef.current
@@ -193,9 +203,15 @@ function EditMetaData(){
         setIsPlaylistChosen(false)
     }
 
+
+    const playlistChoseon = (e) => {
+        setPlaylistChosen(e)
+        setImgClicked('')
+    }
+
     useEffect(()=>{
             getExistingPlaylists();
-        }, [])
+    }, [])
 
     return (
         <div>
@@ -221,11 +237,17 @@ function EditMetaData(){
                                         <Select
                                             allowClear={true}
                                             defaultValue={[]}
-                                            style={{ width: 600 }}
-                                            onChange={(e) => setPlaylistChosen(e)}
+                                            style={{ width: 500 }}
+                                            onChange={(e) => playlistChoseon(e)}
                                             options={existingPlaylistNames}
                                         />                               
                                     </div>
+                                    <div className="ml-[20px] flex -mt-[32px] ml-[605px]">
+                                        <Tooltip title="help">
+                                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                                        </Tooltip>                                           
+                                    </div>
+
                                 </Form.Item>                
                             }
                     
@@ -306,17 +328,24 @@ function EditMetaData(){
                                 </div>
                             }
 
+                            {isPlaylistChosen &&
+                                <div className="" ref={coverArtRef}>
+                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked}/> 
+                                </div>
+                            }
+
+
                             {!updateRequest && 
                                 <Form.Item>
                                     <div className="flex justify-center">
                                         <div className="flex" ref={submitPlaylistsRef}>
-                                            <RefactorSubmitButton buttonDisabled={buttonDisabled} refactor={refactor}/>                                
+                                            <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor}/>                                
                                         </div>
-                                        <div className="flex ml-[5px]" >
+                                        {/* <div className="flex ml-[5px]" >
                                             <Tooltip title="help">
                                                 <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
                                             </Tooltip>                                    
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </Form.Item>
                             }
@@ -328,44 +357,32 @@ function EditMetaData(){
                 {loading &&
                     <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] text-white '>
                         <div >
-                        <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
+                            <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
                         </div>
                         <div>
-                        Edit is in progress
+                            Edit is in progress
                         </div>
                     </div> 
                 }
 
+                {isLoading && !showResult && 
+                    <>
+                        <div className="mt-[100px]">
+                        {Loading('Tracks meta data is being adjusted')}
+                        </div>
+                        
+                    </>
+                } 
 
-
-            {isLoading && !showResult && 
-                <>
-                    <div className="mt-[100px]">
-                       {Loading('Tracks meta data is being adjusted')}
-                    </div>
-                    
-                </>
-            } 
-            {!isLoading && showResult && 
-                <>
-                    {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
-                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
-                </>
-            }    
-
-
-
-
-
-
-
+                {!isLoading && showResult && 
+                    <>
+                        {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
+                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                    </>
+                }  
             </div>
-            <div className="mb-[100px]"></div>
+
             <Tour open={open} onClose={() => endTour()} steps={steps} />
-            <div className="mt-[200px]">
-                {/* <Button  onClick={()=> {setLoading(true);setUpdateRequest(true) }}>start loading</Button> */}
-                {/* <Button  onClick={()=> {console.log(playlistData)}}>end loading</Button>                 */}
-            </div>
 
         </div>
     )

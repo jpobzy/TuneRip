@@ -14,6 +14,8 @@ import Crop from "./crop/Crop";
 import EditMetaData from "./editMetaData/EditMetaData";
 import SelectBackground from "./selectBackground/SelectBackground";
 import SelectCursor from "./selectCursor/SelectCursor";
+import FolderMerge from "./folderMerge/FolderMerge";
+import PhotoGallery from "./photoGallery/PhotoGallery";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
@@ -49,7 +51,7 @@ function Settings(){
         key: '4',
         label: 'Crop',
         children: 
-        <div className="text-center mt-[20px]">
+        <div className="text-center mt-[0px]">
             <Crop />
         </div>
     },
@@ -57,26 +59,42 @@ function Settings(){
         key: '5',
         label: 'Edit Meta Data',
         children: 
-        <div className="text-center mt-[50px]">
+        <div className="text-center mt-[30px]">
             <EditMetaData />
         </div>
     },
     {
         key: '6',
-        label: 'Change background',
+        label: 'Edit photo album',
         children: 
-        <div className="text-center mt-[50px]">
-            <SelectBackground />
+        <div className="text-center mt-[30px]">
+            <PhotoGallery />
         </div>
     },
     {
         key: '7',
+        label: 'Merge folders',
+        children: 
+        <div className="text-center mt-[50px]">
+            <FolderMerge />
+        </div>
+    },
+    {
+        key: '8',
+        label: 'Change background',
+        children: 
+        <div className="text-center mt-[60px]">
+            <SelectBackground />
+        </div>
+    },
+    {
+        key: '9',
         label: 'Change Cursor',
         children: 
         <div className="text-center mt-[50px]">
             <SelectCursor />
         </div>
-    }
+    },
     ];
 
 
@@ -88,7 +106,7 @@ function Settings(){
             </div>
             
             <div className="w-[700px] mx-auto mb-[00px]">
-                <Tabs defaultActiveKey="1" items={tabItems} />
+                <Tabs destroyOnHidden={true} defaultActiveKey="1" items={tabItems} />
             </div>
         </div>
     )

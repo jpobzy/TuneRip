@@ -1,7 +1,7 @@
 import { Button, Form, Select, Tooltip, Result, Tour  } from "antd";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import RefactorSubmitButton from "./ReorderTracksSubmitButton";
+import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
 import {App} from 'antd'
 import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
@@ -102,25 +102,23 @@ function ReorderTracks(){
                                     style={{ width: 600 }}
                                     onChange={(value, label) => setPlaylistChosen(value, label)}
                                     options={existingPlaylistNames}
-                                />                               
+                                />      
+                                <div className="flex ml-[5px] -mt-[32px] ml-[650px]" >
+                                    <Tooltip title="help">
+                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                    </Tooltip>                                    
+                                </div>                         
                             </div>
                         
                         </Form.Item>
                         <Form.Item>
                             <div className="flex justify-center">
                                 <div className="flex" ref={submitPlaylistsRef}>
-                                    <RefactorSubmitButton  refactor={refactor}/>                                
+                                    <GradientSubmitButton  callbackFunction={refactor}/>                                
                                 </div>
-                                <div className="flex ml-[5px]" >
-                                    <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                                    </Tooltip>                                    
-                                </div>
-                            
+
                             </div>
-
                         </Form.Item>
-
                     </Form>    
                 }          
 

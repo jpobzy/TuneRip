@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './albumCoverImages.css'
-import { Popconfirm } from 'antd';
+import { Button, Popconfirm, Image} from 'antd';
 import minusIcon from '../../assets/minusIcon.svg'
 import axios from 'axios';
 
-export default function AlbumCoverCard({filename, cardClicked, previousImg, edit, refresh}) {
+
+export default function AlbumCoverCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg}) {
     const [loaded, setLoaded] = useState(false);
 
     async function deleteImg() {
@@ -13,6 +14,8 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
             refresh?.()
         } 
     }
+
+
 
   return (
     <div >
@@ -31,22 +34,40 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                 }
         
                 <div className={edit ? 'editing ' : ''}>
-                    <div className={previousImg == filename ? 'prev-img prev-img-wrapper': 'img-wrapper album-cover-image'} onClick={cardClicked}>
-                        
-                        <img
+                    {/* <div className={previousImg == filename ? 'prev-img prev-img-wrapper': 'img-wrapper album-cover-image'} onClick={cardClicked}> */}
+                    {/* <div className={previousImg === filename ? 'prev-img prev-img-wrapper' : imgClicked === filename ? 'img-to-merge' : 'img-wrapper album-cover-image'} onClick={cardClicked}> */}
+                    <div className={previousImg === filename ? 'prev-img prev-img-wrapper' 
+                    : imgClicked === filename && enlargenImg === true ? "mt-[200px]"
+                    : imgClicked === filename ? 'img-to-merge' 
+                    : 'img-wrapper album-cover-image'} onClick={enlargenImg === true ? null : cardClicked}>
+
+                        {/* <img
                         className='image'
                         src={`http://localhost:8080/getAlbumCovers/${filename}`}
                         // className='album-cover-image' 
                         // style={{display: loaded ? 'block' : 'none'}}
                         onLoad={() => setLoaded(true)}
+                        /> */}
+                        <Image 
+                        className='image relative'
+                        src={`http://localhost:8080/getAlbumCovers/${filename}`} 
+                        preview={enlargenImg}
+                        // style={{display: loaded ? 'block' : 'none'}}
+                        onLoad={() => setLoaded(true)}
                         />
     
                         {previousImg == filename && 
-                            <div className='text-[16px] mx-auto text-white font-bold'>Last used</div>
+                            <div className='text-[16px] absolute ml-[30px] justify-center  text-center text-white font-bold '>Last used</div>
                         }    
+
+                        {imgClicked == filename && enlargenImg !== true &&
+                            <div className='text-[16px] absolute mx-auto text-white font-bold mt-[5px]'>New cover album</div>
+                        }    
+
+                        
+                        {/* <div className='text-[16px] absolute mx-auto text-white font-bold mt-[5px]'>{imgClicked == filename &&  'New cover album'}</div> */}
                     </div>
                 </div>
-
             </div>
         )}
 

@@ -8,6 +8,7 @@ class database():
         self.userCache = {}
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
         self.loadCache()
+        self.checkForFileLocation()
         
 
 
@@ -36,7 +37,7 @@ class database():
         database.close()
         return
 
-    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile, link):
+    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile, link, fileLocation):
         data = {
             'user': user,
             'albumTitle': albumTitle,
@@ -51,8 +52,8 @@ class database():
         whenRecordAdded = datetime.now()
         
         cur.execute("""
-            INSERT INTO tracks (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded))
+            INSERT INTO tracks (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation))
     
         database.commit()
         database.close()
@@ -61,7 +62,6 @@ class database():
     def checkIfTrackExists(self, trackId):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        # print(f"SELECT trackId from tracks WHERE trackId='{trackId}'")
         cur.execute(f"SELECT trackId from tracks WHERE trackId=?", (trackId.strip(),))
         res = True if cur.fetchone() != None else False
         database.close()
@@ -107,6 +107,7 @@ class database():
                 'albumCoverFile' : record[5],
                 'link' : record[6],
                 'whenRecordAdded' : record[7],
+                'fileLocation' : record[8],
             })
             keyNum += 1
         database.close()
@@ -161,7 +162,6 @@ class database():
             database.close()
             return 'Record not found', 204
         else:
-            print('deleting')
             cur.execute("DELETE FROM tracks WHERE trackId=?", (trackId,))
             database.commit()
             database.close()
@@ -226,7 +226,6 @@ class database():
         query = cur.execute('SELECT * FROM tracks WHERE trackName = ?', (trackName,))
         
         for track in query:
-            print(track)
             if artist:
                 cur.execute('UPDATE tracks SET user = ? WHERE trackName = ?', (artist, trackName))
             if album:
@@ -236,3 +235,15 @@ class database():
         database.commit()
         database.close()
         return 
+    
+    def checkForFileLocation(self):
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+
+        try:
+            cur.execute('SELECT DISTINCT fileLocation FROM tracks')
+        except:
+            cur.execute('ALTER TABLE tracks ADD fileLocation VARCHAR')
+
+        database.commit()
+        database.close()

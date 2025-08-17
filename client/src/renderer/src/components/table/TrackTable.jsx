@@ -155,6 +155,11 @@ function TrackTable({refreshRecords, setRefresh}){
     key: 'status'
   },
   {
+    title: 'File location',
+    dataIndex: 'fileLocation',
+    key: 'fileLocation'
+  },
+  {
     title: 'Album Cover File',
     dataIndex: 'albumCoverFile',
     key: 'albumCoverFile'

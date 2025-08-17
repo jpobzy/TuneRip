@@ -9,6 +9,7 @@ from flask import Flask, flash, request, redirect, url_for
 from pathlib import Path
 from app.controllers.backgroundDataController import backgroundData
 from app.controllers.cursorDataController import cursorData
+from datetime import datetime
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -30,7 +31,6 @@ cursordata_obj = cursorData()
 
 @app.route("/")
 def hello_world():
-    controller_obj.test32(100)
     return "hello world"
 
 
@@ -50,22 +50,13 @@ def get_image(route):
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
-@app.route('/getAlbumCovers/<string:route>.jpg')
+@app.route('/getAlbumCovers/<string:route>')
 def getAlbumCover(route):
     """
     get request for album cover photos
     example: http://localhost:8080/getAlbumCovers/1
     """
-    return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}.jpg', mimetype='image/gif')
-
-
-@app.route('/download/')
-def download():
-    """
-    downloads users choice of given user or individial video or playlist
-    """
-    response, statusCode = controller_obj.downloadVideos(request)
-    return make_response(response, statusCode)
+    return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}', mimetype='image/gif')
 
 
 @app.route('/uploadImg', methods=['POST'])
@@ -222,8 +213,7 @@ def getPlaylistData():
 
 @app.put('/updatemetadata')
 def updateMetaData():
-    controller_obj.updateMetaData(json.loads(request.data))
-    return 'ok'
+    return controller_obj.updateMetaData(json.loads(request.data))
 
 @app.get('/getbackgroundsettings')
 def getBackgroundSettings():
@@ -255,8 +245,6 @@ def disableCurrentCursor():
 
 
 
-from datetime import datetime
-
 
 
 @app.route('/stream')
@@ -264,7 +252,6 @@ def stream():
     def getData():
         count = 0
         while True:
-            print('hello')
             yield f"data: {datetime.now()}\n\n"
             time.sleep(1)  # prevent hammering the CPU
             count+=1
@@ -273,13 +260,18 @@ def stream():
     return Response(getData(), mimetype="text/event-stream")
 
 @app.route('/downloadStream')
-def streamDownload():
-    print(request)
-    print(request.args)
-    print(request.data)
-    # print(request.query_string)
+def streamDownload(): 
     return Response(controller_obj.downloadStream(dict(request.args)), mimetype="text/event-stream")
 
+
+@app.route('/refactorpfp')
+def refactorpfp():
+    controller_obj.refactorpfp()
+    return 'ok'
+
+@app.post('/foldermerge')
+def mergeStream():
+    return controller_obj.folderMerge(json.loads(request.data))
 
 
 

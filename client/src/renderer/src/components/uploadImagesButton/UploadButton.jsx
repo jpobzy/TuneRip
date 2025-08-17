@@ -25,7 +25,7 @@ export default function UploadButton({refresh}){
     },
   };
   return (
-    <div ref={downloadScreenRefs.addCoverArtRef}>
+    <div>
       <Upload 
         {...props} 
         showUploadList={false}
