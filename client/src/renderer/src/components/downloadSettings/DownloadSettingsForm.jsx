@@ -2,10 +2,9 @@ import React, {useState, useEffect, use} from 'react'
 import {
     Button,
     Checkbox,
-    Popconfirm,
     Form,
     Input,
-    Space,
+    Tooltip,
     Select
 } from 'antd'
 import axios from 'axios'
@@ -20,6 +19,8 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
     const [addToExistingPlaylist, setAddToExistingPlaylist] = useState(false)
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
+    const [useTrackFilter, setUseTrackFilter] = useState(true)
+    const newFeatureText = <span>All track titles will remove any text thats in the filter titles table in settings</span>;
     
     const { message } = App.useApp();	
     const [form] = Form.useForm();
@@ -36,10 +37,11 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                     // form.setFieldValue({'': ''})
                     setDownloadSettings({})
             }else{
-                setDownloadSettings({"skipDownloadingPrevDownload": true, "skipBeatsAndInstrumentals" : true})
+                setDownloadSettings({"skipDownloadingPrevDownload": true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
                 setskipDownload(true)
                 setCreateSubfolder(false)
                 setSkipBeatsAndInstrumentals(true)
+                setUseTrackFilter(true)
             }
 
             if (requestedPrevPlaylistData){
@@ -255,6 +257,20 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         })
     }
 
+    const handleTrackFilter = (e) => {
+        setUseTrackFilter(e.target.checked)
+        setDownloadSettings(prev => {
+        const newSettings = {
+            ...prev,
+            useTrackFilter: e.target.checked
+        };
+        return newSettings;
+        })
+    }
+
+
+
+
     useEffect(()=>{
         if (isTrack){
             setskipDownload(false)
@@ -409,7 +425,24 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </Form.Item>         
          */}
 
-        <div ref={downloadScreenRefs.artistInputRef}>
+        <div className='inline-block'>
+            <Tooltip placement="right" title={newFeatureText}>
+                <Form.Item>
+                    <Checkbox
+                        checked={useTrackFilter}
+                        onChange={(e)=> handleTrackFilter(e)}
+                    >   
+                        Filter track titles via trackFilter in settings
+                    </Checkbox>                  
+                </Form.Item>
+            </Tooltip>
+        </div>
+            
+        <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[105px]'>
+            NEW
+        </div>
+
+        {/* <div ref={downloadScreenRefs.artistInputRef}>
             <Form.Item 
                 wrapperCol={{ span: 15}}
                 label="Artist"
@@ -418,7 +451,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 >
             <Input placeholder='Default: Youtube Music' />
             </Form.Item>            
-        </div>
+        </div> */}
 
         <div ref={downloadScreenRefs.artistInputRef}>
             <Form.Item 

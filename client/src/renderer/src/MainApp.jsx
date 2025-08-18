@@ -65,6 +65,10 @@ function MainApp() {
           
         { showDock &&
           <div className='dock-wrapper flex justify-center items-center '>
+            {/* <div className='absolute bottom-0 mx-auto text-red-900 z-999 ml-[130px] mb-[15px]'>
+              new
+            </div> */}
+            
             <Dock
               className='custom-dock'
               items={items}

@@ -1,8 +1,6 @@
-import React, { useRef } from 'react';
-import { Space, Table, Popconfirm, Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Button, Form, Input, message, Popconfirm, Table, Tooltip,  Tour } from 'antd';
 import axios from 'axios';
-import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
 import { App } from 'antd';
 import './FileNameFilter.css'
 import { QuestionOutlined  } from '@ant-design/icons';
@@ -14,54 +12,124 @@ import Highlighter from 'react-highlight-words';
 
 
 
-function FileNameFilter({refreshRecords, setRefresh}){
-  const [users, setUsers] = useState([]) // for user filter
-  const [records, setRecords] = useState() // format: {1: [records]}
-  const { message } = App.useApp();
-  const [recordsToDelete, setRecordsToDelete] = useState([])
-  const [isLoading, setLoading] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [albumTitles, setAlbumTitles] = useState([])
-  const [test, setTest] = useState([])
-  const [selectedUsers, setSelectedUsers] = useState([])
+
+
+
+
+
+
+
+
+const EditableContext = React.createContext(null);
+
+
+const EditableRow = ({ index, ...props }) => {
+  const [form] = Form.useForm();
+  return (
+    <Form form={form} component={false}>
+      <EditableContext.Provider value={form}>
+        <tr {...props} />
+      </EditableContext.Provider>
+    </Form>
+  );
+};
+
+
+const EditableCell = ({
+  title,
+  editable,
+  children,
+  dataIndex,
+  record,
+  handleSave,
+  ...restProps
+}) => {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef(null);
+  const form = useContext(EditableContext);
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+    }
+  }, [editing]);
+  const toggleEdit = () => {
+    setEditing(!editing);
+    form.setFieldsValue({ [dataIndex]: record[dataIndex] });
+  };
+  const save = async () => {
+    try {
+      const values = await form.validateFields();
+      toggleEdit();
+      handleSave({ ...record, ...values });
+    } catch (errInfo) {
+      console.log('Save failed:', errInfo);
+    }
+  };
+  let childNode = children;
+  if (editable) {
+    childNode = editing ? (
+      <Form.Item
+        style={{ margin: 0 }}
+        name={dataIndex}
+        rules={[{ required: true, message: `${title} is required.` }]}
+      >
+        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+      </Form.Item>
+    ) : (
+      <div
+        className="editable-cell-value-wrap"
+        style={{ paddingInlineEnd: 24 }}
+        onClick={toggleEdit}
+      >
+        {children}
+      </div>
+    );
+  }
+  return <td {...restProps}>{childNode}</td>;
+};
+
+
+
+
+
+
+
+const FileNameFilter = ({refreshRecords, setRefresh}) => {
+  const [dataSource, setDataSource] = useState() // format: {1: [records]} 
+  const [count, setCount] = useState();
+  const [edit, setEdit] = useState()
+  const [originalData, setOriginalData] = useState()
+
+  const handleDelete = key => {
+    setCount(count-1)
+    const newData = dataSource.filter(item => item.key !== key);
+    setDataSource(newData);
+  };
+
+
+
   const tableRef = useRef(null)
   const deleteSelectedButtonRef = useRef(null);
   const deleteSingleRecordRef = useRef(null);
-  const [open, setOpen] = useState(false);
+  const [isLoading, setLoading] = useState(false)
 
 
-  const [searchText, setSearchText] = useState('');
+  const confirm = async (record) =>{
+    console.log(`record: ${record.titleFilter}`)
+    // setLoading(true)
+    // const req = await axios.delete('http://localhost:8080/deleteWord', {data: {'titleFilter': record.titleFilter}})
+    // if (req.status === 204){
+    //   message.info('No track was found');
+    // }else if (req.status === 200){
+    //   message.success(`Record with URL ${record.link} has been deleted`)
+    //   getRecords();
+    // }
+    // setLoading(false)
+  };
 
-
-  const steps = [
-    {
-      title: 'Downloads records table',
-      description: 'This table will show all downloads and all filtered records',
-      target: () => tableRef.current,
-    },
-    {
-      title: 'Delete an individual record',
-      description: 'Click on the delete button that corresponds with the records row and click on "yes" in the popup to delete it',
-      target: () => deleteSingleRecordRef.current,
-    },
-    {
-      title: 'Select multiple records',
-      description: 'Select multiple records to be deleted, using the top checkbox at the top will only select the records on the current page',
-       target: () => document.querySelector('.ant-table-selection-col'),
-    },
-    {
-      title: 'Delete multiple records',
-      description: 'After selecting multiple records delete, delete them',
-      target: () => deleteSelectedButtonRef.current,
-    },
-    {
-      title: 'Filter',
-      description: 'Use the filter button to help with sorting for specific records',
-       target: () => document.querySelector('.user-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
-    }
-  ] 
-
-
+  const cancel = () => {
+    // message.error('Canceled deletion');
+  };
 
   const deleteSelected = async() => {
     setLoading(true)
@@ -86,194 +154,13 @@ function FileNameFilter({refreshRecords, setRefresh}){
     setLoading(false)
   }
 
-
-  const confirm = async (record) =>{
-    setLoading(true)
-    const req = await axios.delete('http://localhost:8080/deleteRecord', {data: {'link': record.link}})
-    if (req.status === 204){
-      message.info('No track was found');
-    }else if (req.status === 200){
-      message.success(`Record with URL ${record.link} has been deleted`)
-      getRecords();
-    }
-    setLoading(false)
-  };
-
-  const cancel = () => {
-    message.error('Canceled deletion');
-  };
-
-
-
-
-
-
-
-
-
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const searchInput = useRef(null);
-  
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-  const handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    setSearchText('');
-    confirm();
-  };
-
-
-
-  const getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-      <div style={{ padding: 8 }} onKeyDown={e => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters, confirm)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button> */}
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    filterDropdownProps: {
-      onOpenChange(open) {
-        if (open) {
-          setTimeout(() => searchInput.current?.select(), 100);
-        }
-      },
-    },
-    render: text =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const cols = [
-
-    {
-        title: 'Keyword',
-        dataIndex: 'tracktitle',
-        key: 'tracktitle',
-          ...getColumnSearchProps('tracktitle'),
-    },
-
-
-  {
-    title: <div ref={deleteSingleRecordRef}>Delete</div>,
-    dataIndex: '',
-    key: 'x',
-    fixed: 'right',
-      render: (_, record) => (
-      <div >
-        <Space size="middle">
-          <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
-            onConfirm={() => confirm(record)}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          >
-            <a >Delete</a>
-          </Popconfirm>
-        </Space>        
-      </div>
-
-    ),
-
-  },
-  ]
-
-  async function populateUsers(){
-    const res = await axios.get('http://localhost:8080/getusers')
-    setUsers(res.data)
-  }
-
-  async function getCoverAlbums(){
-    const res = await axios.get('http://localhost:8080/getalbumtitles')
-    setAlbumTitles(res.data)
-  }
-
   async function getRecords(){
-    // setRecords(null);
-    const res = await axios.get('http://localhost:8080/getData',{
-      params: {'page': 1, 'limit': 100}
-    });
-    setRecords(res.data);
+    const res = await axios.get('http://localhost:8080/filterWords');
+    setDataSource(res.data);
+    setCount(res.data.length)
   }
   
   useEffect(()=>{ 
-    populateUsers();
-    getCoverAlbums();
     getRecords();
     if (refreshRecords){
       getRecords();
@@ -282,103 +169,183 @@ function FileNameFilter({refreshRecords, setRefresh}){
   },[refreshRecords])
 
 
-  const handleFilters = (user, albumTitle)=>{
-    if (user && !albumTitle){
-      setSelectedUsers(user)
-    }
-    if (!user){
-      setSelectedUsers([])
-    }
-
-    if (!user && !albumTitle){
-      setSelectedUsers([])
-    }
+  const cancelEdit = () =>{
+    // console.log(`current edit is ${editMade}`)
+    // setEditMade(null)
+    setDataSource(prev => {
+      const newData = [...prev]
+      newData[originalData.key].titleFilter = originalData.data
+      return newData
+    })
+    setEdit(null)
+    setOriginalData(null)
   }
 
-  const onSelectChange = (newSelectedRowKeys, selectedRows) => {
-    setSelectedRowKeys(newSelectedRowKeys)
-    setRecordsToDelete(selectedRows);
-  };
+  const saveEdit = async () =>{
+    if (String(edit.data).includes('[Enter new data here]')){
+      message.error('Please change the default input for adding a new record before saving')
+      return
+    }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
+    const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit})
 
-
-
-
-
+    setLoading(false)
+    setEdit(null)
+    setOriginalData(null)
+  }
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  return (
-    <div>
-      <div className='-ml-[100px]'>
-        <div className='relative right-[330px] h-[50px]'>
-          <div className='flex justify-center'>
-            <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
-              <Popconfirm
-              title="Delete the selected records"
-              description="Are you sure to delete  the selected records?"
-              onConfirm={() => deleteSelected()}
+  const defaultColumns = [
+    {
+        title: 'Keyword',
+        dataIndex: 'titleFilter',
+        key: 'titleFilter',
+          // ...getColumnSearchProps('titleFilter'),
+        editable: true,
+    },
+    {
+      title: <div ref={deleteSingleRecordRef}>Delete</div>,
+      dataIndex: 'operation',
+      key: 'x',
+      width: '20%',
+      render: (_, record) =>
+        dataSource.length >= 1 ? (
+          <>
+          {edit && edit.data === record.titleFilter ?
+            <>
+              <a onClick={()=> saveEdit()} className='mr-[20px]'>Save</a>
+              <a onClick={()=> cancelEdit()}>Cancel</a>
+            </>
+          :
+            <Popconfirm
+              title="Delete the record"
+              description="Are you sure to delete this record?"
+              onConfirm={() => confirm(record)}
               onCancel={cancel}
               okText="Yes"
               cancelText="No"
-              >
-              <Button type="primary">
-                {/* <Button type="primary" onClick={deleteSelected}> */}
-                  Delete selected
-                </Button>    
-              </Popconfirm>
-            </div>  
-              <div className="flex ml-[5px]" >
-                  <Tooltip title="help">
-                      <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                  </Tooltip>                                    
-              </div>      
-          </div>
-          </div>
-          <div className='inline-block'>
-            <div className='mx-auto ml-[50px] w-[800px]'>
-                  <div ref={tableRef} >
-                    <Table 
-                        onChange={(pagination, filters, sorter, extra) => {
-                          handleFilters(filters.user, filters.albumTitle)           
-                        }}
-                      selectedRowKeys={test}
-                      rowSelection={rowSelection}
-                      loading={isLoading}
-                      columns={cols} 
-                      dataSource={records} 
-                      scroll={{ x: 'max-content' }}  
-                      />;            
-                  </div>
-                </div>
-          </div>
-      </div>
-      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
-    </div>
-  )
+            >
+              <a >Delete</a>
+            </Popconfirm>
+          }
 
-}
+          </>
+        ) : null,
+    },
+  ];
+
+  const handleAdd = () => {
+    const newData = {
+      key: count,
+      titleFilter: `[Enter new data here]`,
+    };
+    setDataSource([...dataSource, newData]);
+    setCount(count + 1);
+  };
+
+  const handleSave = row => {
+    const newData = [...dataSource];
+    const index = newData.findIndex(item => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, {
+      ...item,
+      ...row,
+    });
+
+    // if (item.titleFilter === '[Enter new data here]'){
+    //   console.log('editing new item')
+      
+    // }else{
+      console.log(`index: ${index}`)
+      if (edit && edit.key !== index){
+        console.log('trying to edit another cell without saving')
+        return
+      }
+      if (newData[index].titleFilter === item.titleFilter){
+        if (edit){
+          console.log('no new changes were made to the record being currently edited')
+          return
+        }
+        console.log('no new changes were made')
+        setEdit(null)
+        return
+      }
+      if (!edit){
+        setOriginalData({"key" : dataSource[index].key,"data" : dataSource[index].titleFilter})
+      }
 
 
+      setEdit({'key' : newData[index].key, 
+        'data' : newData[index].titleFilter
+     
+      })
+
+      console.log('saving changes')
+      console.log(newData[index].titleFilter)
+      setDataSource(newData);
+    // }
+    console.log('\n\n')
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+  const columns = defaultColumns.map(col => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: record => ({
+        record,
+        editable: col.editable,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        handleSave,
+      }),
+    };
+  });
+  
+
+  return (
+    <>
+      <div>
+        <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+          Add a row
+        </Button>
+        <Table
+          components={components}
+          rowClassName={() => 'editable-row'}
+          bordered
+          dataSource={dataSource}
+          columns={columns}
+          loading={isLoading}
+        />
+      </div>    
+
+      {/* <Button onClick={()=> console.log(edit)}>edit</Button>
+      <Button onClick={()=> console.log(originalData)}>original</Button> */}
+      
+    </>
+
+  );
+};
 export default FileNameFilter;

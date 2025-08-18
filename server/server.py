@@ -9,6 +9,7 @@ from flask import Flask, flash, request, redirect, url_for
 from pathlib import Path
 from app.controllers.backgroundDataController import backgroundData
 from app.controllers.cursorDataController import cursorData
+from app.controllers.titleFilterController import titleFilterController
 from datetime import datetime
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
@@ -28,6 +29,7 @@ app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 controller_obj = controller(app.config['DATABASE_FOLDER'])
 backgrounddata_obj = backgroundData()
 cursordata_obj = cursorData()
+titleFilterObj = titleFilterController()
 
 @app.route("/")
 def hello_world():
@@ -274,6 +276,21 @@ def mergeStream():
     return controller_obj.folderMerge(json.loads(request.data))
 
 
+@app.get('/filterWords')
+def getFilterWords():
+    return jsonify(titleFilterObj.getFilterSettings())
+
+@app.delete('/deleteWord')
+def deleteWord():
+    return titleFilterObj.deleteTitleFilterFromData(json.loads(request.data))
+
+@app.post('/addWord')
+def addWord():
+    return 
+
+@app.put('/editTitleFilter')
+def editTitleFilter():
+    return titleFilterObj.editTitleFilter(json.loads(request.data))
 
 
 if __name__ == "__main__":

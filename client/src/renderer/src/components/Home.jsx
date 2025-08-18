@@ -63,7 +63,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setChosenUser(username)
     setIsTrack(false);
     setPrevImg(users[username][1])
-    setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true})
+    setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
     setIsUser(true)
   }
 
@@ -82,7 +82,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
-    setShowDock(false)
+    // setShowDock(false)
     setAlbumCoverChosen(true)
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
@@ -317,14 +317,34 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
             <div className='mx-auto text-center text-gray-200 text-[50px] -mt-[30px] z-10 font-bold '>
               Choose an album cover
-            </div>            
-            <div className='downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
-              <Collapse 
-                items={downloadItems} 
-                activeKey={collapseActiveKey}
-                onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
-                />
+            </div>    
+            <div>
+            <div className='mt-[50px]'>
+              <div className='flex justify-center  -mb-[55px] mr-[130px] text-red-500'>
+                NEW
+              </div>                
+              <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
+                <Collapse 
+                  items={downloadItems} 
+                  activeKey={collapseActiveKey}
+                  onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
+                  />
+              </div>
             </div>
+            
+              
+            </div>        
+
+
+
+              {/* <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
+                <Collapse 
+                  items={downloadItems} 
+                  activeKey={collapseActiveKey}
+                  onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
+                  />
+              </div> */}
+
             <div className='album-cover-containter '>
                 {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
@@ -411,7 +431,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
-
     </div>
   )
 })
