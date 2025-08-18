@@ -61,15 +61,8 @@ function ReorderTracks(){
                 setIsLoading(false)
                 setShowResult(true)
             }
-
-                // else{
-
-                // }  
-            
-
         }
-       
-       
+    
     }
 
     const steps = [

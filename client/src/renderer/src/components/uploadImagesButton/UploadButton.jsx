@@ -3,10 +3,8 @@ import { UploadOutlined } from '@ant-design/icons';
 import { Button, Upload } from 'antd';
 import './uploadButton.css'
 import { App } from 'antd';
-import { useHomeContext } from '../context/HomeContext';
 
 export default function UploadButton({refresh}){
-    // const {downloadScreenRefs } = useHomeContext();
     const { message } = App.useApp();	
     const props = {
     name: 'file',

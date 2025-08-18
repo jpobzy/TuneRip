@@ -1,22 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Form, Input, message, Popconfirm, Table, Tooltip,  Tour } from 'antd';
+import { Button, Form, Input, App, Popconfirm, Table, Tooltip,  Tour, Space } from 'antd';
 import axios from 'axios';
-import { App } from 'antd';
 import './FileNameFilter.css'
 import { QuestionOutlined  } from '@ant-design/icons';
 
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -99,6 +88,17 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
   const [originalData, setOriginalData] = useState()
+  const [open, setOpen] = useState(false);
+  const addRowRef = useRef(null)
+  const [existingRecordsAmount, setExistingRecordsAmount] = useState(0)
+  const {message} = App.useApp();
+
+
+  // search 
+  const searchInput = useRef(null);
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const searchRef = useRef(null)
 
   const handleDelete = key => {
     setCount(count-1)
@@ -113,51 +113,61 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   const deleteSingleRecordRef = useRef(null);
   const [isLoading, setLoading] = useState(false)
 
+  const steps = [
+    {
+      title: 'Add phrases to be filtered out in track names when downloading',
+      description: 'Add one or multiple phrases that will be removed from a video title when downloading',
+      //  target: () => selectPlaylistsRef.current
+    },
+    {
+      title: 'Add a row to add a new phrase',
+      description: "Create a new row then edit the row to add a new phrase",
+       target: () => addRowRef.current
+    },
+    {
+      title: 'Search for a phrase',
+      description: "Search for a specific phrase to edit or delete",    
+      // target: () => searchRef.current  
+      target: () => document.querySelector('.ant-table-wrapper .ant-table-filter-trigger')
+    },
+    {
+      title: 'Save/Cancel',
+      description: 'After editing click on save or cancel to save or cancel your edits',
+      //  target: () => submitPlaylistsRef.current
+    },
+  ]
 
-  const confirm = async (record) =>{
-    console.log(`record: ${record.titleFilter}`)
-    // setLoading(true)
-    // const req = await axios.delete('http://localhost:8080/deleteWord', {data: {'titleFilter': record.titleFilter}})
-    // if (req.status === 204){
-    //   message.info('No track was found');
-    // }else if (req.status === 200){
-    //   message.success(`Record with URL ${record.link} has been deleted`)
-    //   getRecords();
-    // }
-    // setLoading(false)
-  };
+  const help = (i, v) => {
+    return i != v
+  }
 
-  const cancel = () => {
-    // message.error('Canceled deletion');
-  };
 
-  const deleteSelected = async() => {
+  const confirmDeletion = async (record) =>{
+    if (record.key > existingRecordsAmount){
+      setDataSource(dataSource.filter((i)=> help(i, record)))
+      return
+    }
     setLoading(true)
-    if (recordsToDelete.length === 0){
-      message.info('No tracks was were selected');
-    }else{
-      const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
-      if (req.status === 204){
-        message.info('No track was found');
-      }else if (req.status === 200){
-        if (recordsToDelete.length > 1){
-          message.success(`Selected records have been deleted`);       
-        } else {
-          message.success(`Selected record have been deleted`);
-        }
-        populateUsers();
-        getCoverAlbums();
-        getRecords();
-      }      
-      setSelectedRowKeys([])
+    const req = await axios.delete('http://localhost:8080/deleteTitleFilter', {data: {'titleFilter': record.titleFilter}})
+    if (req.status === 204){
+      message.info('No record was found');
+    }else if (req.status === 200){
+      message.success(`Record ${record.titleFilter} has been deleted`)
+      getRecords();
     }
     setLoading(false)
-  }
+  };
+
+  const cancelDeletion = () => {
+    message.error('Canceled deletion');
+  };
+
 
   async function getRecords(){
     const res = await axios.get('http://localhost:8080/filterWords');
     setDataSource(res.data);
     setCount(res.data.length)
+    setExistingRecordsAmount(res.data.length - 1)
   }
   
   useEffect(()=>{ 
@@ -170,8 +180,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
 
   const cancelEdit = () =>{
-    // console.log(`current edit is ${editMade}`)
-    // setEditMade(null)
     setDataSource(prev => {
       const newData = [...prev]
       newData[originalData.key].titleFilter = originalData.data
@@ -182,19 +190,132 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   }
 
   const saveEdit = async () =>{
+    // #####################################################################################
     if (String(edit.data).includes('[Enter new data here]')){
       message.error('Please change the default input for adding a new record before saving')
       return
     }
-
-    const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit})
-
+    setLoading(true)
+    console.log(`edit: ${JSON.stringify(edit)} \n with records amount = ${existingRecordsAmount}`)
+    if (edit.key <= existingRecordsAmount){
+      const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit}) 
+      if (req.status === 200){
+        message.success('Successfully modified existing record')
+      }else{
+        message.error('Something went wrong')
+      }
+    }else{
+      console.log('adding new record')
+      const req = await axios.post('http://localhost:8080/addTitleFilter', {data : edit}) 
+      if (req.status === 200){
+        message.success('Successfully added new record')
+      }else{
+        message.error('Something went wrong')
+      }
+    }
+    getRecords()
     setLoading(false)
     setEdit(null)
     setOriginalData(null)
   }
 
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters, close, confirm) => {
+    clearFilters();
+    setSearchText(null);
+    setSearchedColumn('')
+    confirm();
+    close()
+  };
 
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={e => e.stopPropagation()} >
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <div className='inline-block' ref={searchRef}>
+            <Button
+              type="primary"
+              onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          </div>
+          {/* <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button> */}
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters, close, confirm)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          {/* <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({ closeDropdown: false });
+              setSearchText(selectedKeys[0]);
+              setSearchedColumn(dataIndex);
+            }}
+          >
+            Filter
+          </Button> */}
+          {/* <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              close();
+            }}
+          >
+            close
+          </Button> */}
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />,
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    filterDropdownProps: {
+      onOpenChange(open) {
+        if (open) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
+    },
+    render: text =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
 
 
   const defaultColumns = [
@@ -202,18 +323,18 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
         title: 'Keyword',
         dataIndex: 'titleFilter',
         key: 'titleFilter',
-          // ...getColumnSearchProps('titleFilter'),
+          ...getColumnSearchProps('titleFilter'),
         editable: true,
     },
     {
       title: <div ref={deleteSingleRecordRef}>Delete</div>,
       dataIndex: 'operation',
       key: 'x',
-      width: '20%',
+      // width: '20%',
       render: (_, record) =>
         dataSource.length >= 1 ? (
           <>
-          {edit && edit.data === record.titleFilter ?
+          {edit && edit.phrase === record.titleFilter ?
             <>
               <a onClick={()=> saveEdit()} className='mr-[20px]'>Save</a>
               <a onClick={()=> cancelEdit()}>Cancel</a>
@@ -222,8 +343,8 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
             <Popconfirm
               title="Delete the record"
               description="Are you sure to delete this record?"
-              onConfirm={() => confirm(record)}
-              onCancel={cancel}
+              onConfirm={() => confirmDeletion(record)}
+              onCancel={cancelDeletion}
               okText="Yes"
               cancelText="No"
             >
@@ -254,13 +375,9 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       ...row,
     });
 
-    // if (item.titleFilter === '[Enter new data here]'){
-    //   console.log('editing new item')
-      
-    // }else{
-      console.log(`index: ${index}`)
       if (edit && edit.key !== index){
         console.log('trying to edit another cell without saving')
+        message.error('Please save or cancel previous edit before trying to edit a new cell')
         return
       }
       if (newData[index].titleFilter === item.titleFilter){
@@ -273,20 +390,28 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
         return
       }
       if (!edit){
-        setOriginalData({"key" : dataSource[index].key,"data" : dataSource[index].titleFilter})
+        if (newData[index].titleFilter.trim().length === 0){
+          console.log('only white space')
+          return
+        }
+        setOriginalData({"key" : dataSource[index].key, "phrase" : dataSource[index].titleFilter})
+      }
+
+      if (newData[index].key > existingRecordsAmount){
+        console.log('saving a record edit that doesnt exist in the current records')
+        setEdit({'key' : newData[index].key, 
+          'phrase' : newData[index].titleFilter
+        })        
+      }else{
+        console.log('saving a record edit that already exists in the current records')
+        setEdit({'key' : newData[index].key, 
+          'phrase' : newData[index].titleFilter
+        })
       }
 
 
-      setEdit({'key' : newData[index].key, 
-        'data' : newData[index].titleFilter
-     
-      })
 
-      console.log('saving changes')
-      console.log(newData[index].titleFilter)
       setDataSource(newData);
-    // }
-    console.log('\n\n')
   };
 
 
@@ -308,6 +433,7 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       cell: EditableCell,
     },
   };
+
   const columns = defaultColumns.map(col => {
     if (!col.editable) {
       return col;
@@ -328,9 +454,19 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   return (
     <>
       <div>
-        <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-          Add a row
-        </Button>
+        <div className='inline-block' ref={addRowRef}>
+          <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+            Add a row
+          </Button>
+        </div>
+
+
+        <div className="flex -mt-[48px] mb-[30px] ml-[405px]" >
+            <Tooltip title="help">
+                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+            </Tooltip>                                    
+        </div>          
+
         <Table
           components={components}
           rowClassName={() => 'editable-row'}
@@ -340,12 +476,16 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
           loading={isLoading}
         />
       </div>    
-
-      {/* <Button onClick={()=> console.log(edit)}>edit</Button>
-      <Button onClick={()=> console.log(originalData)}>original</Button> */}
-      
+      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
     </>
-
   );
 };
 export default FileNameFilter;
+
+
+
+
+// use setCount/count to determine how many records are originally there when first get req is made to grab all records
+// if you add multiple records then try and save one at the end without editing the others it gives an index error,
+// if you try and delete a record that is not in the json file it errors out, - maybe have a second storage on front end and see if the deletion phrase is in it, if not then -
+// delete the phrase, if its in it make the del req to backend
