@@ -23,33 +23,45 @@ function Settings(){
     const [currentStep, setCurrentStep] = useState(0)
     const [current, setCurrent] = useState('mail');
 
+
     const tabItems = [
-    // {
-    //     key: '1',
-    //     label: 'Add to Filter',
-    //     children: 
-    //     <div className="text-center mt-[20px]">
-    //         <FilterForm setRefresh={setRefresh}/>
-    //     </div>
-    // },
     {
         key: '1',
-        label: 'File name filter',
-        children:
+        label: 'Add to Filter',
+        children: 
         <div className="text-center mt-[20px]">
-            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+            <FilterForm setRefresh={setRefresh}/>
         </div>
-    },    
+    },
     {
         key: '2',
         label: 'Track Database',
         children:
-        <div className="text-center mt-[20px]">
-            <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-        </div>
+            <div className="text-center mt-[20px]">
+                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+            </div>       
     },
     {
         key: '3',
+        label: 
+        <>
+            <div className="flex">
+                <div className="text-red-500 mr-[5px] visible">
+                    NEW
+                </div>
+                <div className="">
+                    Title filter
+                </div>                
+            </div>
+
+        </>,
+        children:
+        <div className="text-center mt-[20px]">
+            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+        </div>
+    },
+    {
+        key: '4',
         label: 'Reorder Tracks',
         children: 
         <div className="text-center mt-[50px]">
@@ -57,7 +69,7 @@ function Settings(){
         </div>
     },
     {
-        key: '4',
+        key: '5',
         label: 'Crop',
         children: 
         <div className="text-center mt-[0px]">
@@ -65,7 +77,7 @@ function Settings(){
         </div>
     },
     {
-        key: '5',
+        key: '6',
         label: 'Edit Meta Data',
         children: 
         <div className="text-center mt-[30px]">
@@ -73,7 +85,7 @@ function Settings(){
         </div>
     },
     {
-        key: '6',
+        key: '7',
         label: 'Edit photo album',
         children: 
         <div className="text-center mt-[30px]">
@@ -81,7 +93,7 @@ function Settings(){
         </div>
     },
     {
-        key: '7',
+        key: '8',
         label: 'Merge folders',
         children: 
         <div className="text-center mt-[50px]">
@@ -89,7 +101,7 @@ function Settings(){
         </div>
     },
     {
-        key: '8',
+        key: '9',
         label: 'Change background',
         children: 
         <div className="text-center mt-[60px]">
@@ -97,7 +109,7 @@ function Settings(){
         </div>
     },
     {
-        key: '9',
+        key: '10',
         label: 'Change Cursor',
         children: 
         <div className="text-center mt-[50px]">

@@ -1,13 +1,13 @@
 from moviepy.editor import AudioFileClip
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK, COMM, TCON
-import os, shutil, re
+import os, shutil, re, json
 # from log import log_data, log_warning, log_error
 from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=None):
+def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=None, useFilterTitles= None):
     count = 0
     
     vid = YouTube(url) # set both to true 
@@ -25,15 +25,26 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
 
     # grab download settings if they exist
     if trackTitle == None:
-        valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
-        valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
-        valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
-        valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
-        valid_title = valid_title.replace("[Lyric Video]", '').replace(' (Unreleased) ', '')
-        valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
-        valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
+    #     valid_title = vid.title.replace("(music video)", '').replace('(Music Video)', '')
+    #     valid_title = valid_title.replace("\\", '').replace('/', '').replace(':', '')
+    #     valid_title = valid_title.replace("*", '').replace('"', '').replace('<', '')
+    #     valid_title = valid_title.replace(">", '').replace('|', '').replace('?', '')
+    #     valid_title = valid_title.replace("[Lyric Video]", '').replace(' (Unreleased) ', '')
+    #     valid_title = valid_title.replace("(AUDIO)", '').replace('(Audio)', '')
+    #     valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
+    #     valid_title = re.sub(r'\[.*?\]', '', valid_title) 
+    #     valid_title = valid_title.strip()
         valid_title = re.sub(r'\[.*?\]', '', valid_title) 
         valid_title = valid_title.strip()
+        if useFilterTitles:
+            filePath = Path(Path.home() / 'Documents/TuneRip/server/appdata/TitleFilterData.json')
+            with open(filePath, 'r') as file:
+                data = json.load(file)
+
+            currentData = data['filterWords']
+            pattern =  re.compile( '|'.join(map(re.escape, currentData)) )
+            valid_title = re.sub(pattern, '', valid_title)
+
     else:
         valid_title = trackTitle
 
