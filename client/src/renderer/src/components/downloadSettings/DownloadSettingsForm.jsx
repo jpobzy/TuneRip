@@ -438,7 +438,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </Tooltip>
         </div>
             
-        <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[105px]'>
+        <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[100px]'>
             NEW
         </div>
 

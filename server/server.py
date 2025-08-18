@@ -280,17 +280,18 @@ def mergeStream():
 def getFilterWords():
     return jsonify(titleFilterObj.getFilterSettings())
 
-@app.delete('/deleteWord')
+@app.delete('/deleteTitleFilter')
 def deleteWord():
     return titleFilterObj.deleteTitleFilterFromData(json.loads(request.data))
 
-@app.post('/addWord')
+@app.post('/addTitleFilter')
 def addWord():
-    return 
+    
+    return titleFilterObj.addTitleFilterData(json.loads(request.data).get('data'))
 
 @app.put('/editTitleFilter')
 def editTitleFilter():
-    return titleFilterObj.editTitleFilter(json.loads(request.data))
+    return titleFilterObj.editTitleFilter(json.loads(request.data).get('data'))
 
 
 if __name__ == "__main__":

@@ -56,36 +56,32 @@ class titleFilterController():
         data['filterWords'].remove(str(titleFilter))
 
         with open(jsonFile, 'w') as file:
-            file.write(data['filterWords'])
+            json.dump(data, file, indent=4)   
         return 'ok'
     
 
     def addTitleFilterData(self, request):
-        newFilter = request.get('titleFilter')
+
+        print(request)
+        newPhrase = request.get('phrase')
         jsonFile = self.file
         with open(jsonFile, 'r') as file:
-            data = json.load(file)
-
-        data['filterWords'].append(str(newFilter))
-
+            oldData = json.load(file)
+        oldData['filterWords'].append(str(newPhrase))
         with open(jsonFile, 'w') as file:
-            file.write(data['filterWords'])
-        return
+            json.dump(oldData, file, indent=4)   
+        return 'ok'
     
 
     def editTitleFilter(self, request):
-        data = request.get('data')
-        index = int(data.get('key'))
-        newData = str(data.get('data'))
+        newPhrase = request.get('phrase')
+        index = int(request.get('key'))
 
         jsonFile = self.file
         with open(jsonFile, 'r') as file:
             data = json.load(file)
 
-        if index > len(data['filterWords']) - 1:
-            data['filterWords'].append('')
-        data['filterWords'][index] = newData
-
+        data['filterWords'][index] = newPhrase
 
         with open(jsonFile, 'w') as file:
             json.dump(data, file, indent=4)   

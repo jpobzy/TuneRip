@@ -320,7 +320,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>    
             <div>
             <div className='mt-[50px]'>
-              <div className='flex justify-center  -mb-[55px] mr-[130px] text-red-500'>
+              <div className='flex justify-center  -mb-[56px] mr-[135px] text-red-500'>
                 NEW
               </div>                
               <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
