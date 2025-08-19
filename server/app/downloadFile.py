@@ -34,8 +34,9 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     #     valid_title = valid_title.replace(" (Unreleased Remix) ", '').replace('(Unreleased)', '').replace('(Unreleased Remix)', '')
     #     valid_title = re.sub(r'\[.*?\]', '', valid_title) 
     #     valid_title = valid_title.strip()
-        valid_title = re.sub(r'\[.*?\]', '', valid_title) 
-        valid_title = valid_title.strip()
+
+        # valid_title = re.sub(r'\[.*?\]', '', vid.title) 
+        valid_title = vid.title.strip()
         if useFilterTitles:
             filePath = Path(Path.home() / 'Documents/TuneRip/server/appdata/TitleFilterData.json')
             with open(filePath, 'r') as file:
@@ -48,6 +49,9 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     else:
         valid_title = trackTitle
 
+    valid_title = re.sub(r'[\\/:*"?<>|]', '', valid_title)
+    valid_title = valid_title.strip()
+
     if artist == None:
         artist = 'YouTube Music'
     else:
@@ -58,10 +62,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     else:
         genre = genre
 
-    print(f'skipping1, with param {skipBeatsAndInstrumentals}, as its type: {type(skipBeatsAndInstrumentals)}')
-
     if skipBeatsAndInstrumentals:
-        print(f'skipping2, with param {skipBeatsAndInstrumentals}')
         if 'beat ' in str(vid.title).lower() or 'instrumental' in str(vid.title).lower():
             # log_warning(f'Beat video found, skipping {vid.title}')
             return f'beat/instrumental ### {vid.title}'
