@@ -651,11 +651,15 @@ class controller():
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                        yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
+                        continue
 
                     if not debugModeAddToDB:
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                     self.trackNum += 1
                     self.downloadCount += 1
+
                     yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
 
 
@@ -678,7 +682,7 @@ class controller():
                 if erorrCount > 0:
                     yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
@@ -717,11 +721,11 @@ class controller():
                     trackName = trackName.replace('beat/instrumental ### ', '')
                     status = 'filtered'
 
-                yield from self.clientMessageFormatter(f'{trackName}')      
+        
 
                 if not debugModeAddToDB:
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
-                
+                self.downloadCount += 1
                 yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
                 
 
@@ -737,7 +741,7 @@ class controller():
             if erorrCount > 0:
                 yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
             else:
-                yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
 
 
         else:
@@ -774,6 +778,11 @@ class controller():
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                        yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
+                        continue
+
+
                     if not debugModeAddToDB:
                         self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                     self.trackNum += 1
@@ -803,11 +812,11 @@ class controller():
                 if erorrCount > 0:
                     yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.trackNum} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
-        yield from self.clientMessageFormatter({"message" : f"Completed download"})   
+        yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
         return 'ok'
         
 

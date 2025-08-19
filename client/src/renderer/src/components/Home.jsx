@@ -82,7 +82,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
-    // setShowDock(false)
+    setShowDock(false)
     setAlbumCoverChosen(true)
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
@@ -364,7 +364,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
           { Object.keys(albumCoverFileNames).length > 0 &&
-            <div className='mt-[50px] mb-[10px]'> 
+            <div className='mt-[0px] mb-[10px]'> 
               <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
           }
