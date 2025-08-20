@@ -451,6 +451,14 @@ class controller():
                 
                 break
                 
+
+        # check if cover art file exists 
+        if 'coverArtFile' in res:
+            files = [dir.parts[-1] for dir in Path(self.projRoot / 'server/static/albumCovers').iterdir()]             
+            if res['coverArtFile'] not in files:
+                prevArt = res['coverArtFile']
+                res['coverArtFile'] = f'ERROR COULD NOT FIND FILE [{prevArt}]'
+
         return res
     
 

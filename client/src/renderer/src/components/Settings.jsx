@@ -46,9 +46,9 @@ function Settings(){
         label: 
         <>
             <div className="flex">
-                <div className="text-red-500 mr-[5px] visible">
+                {/* <div className="text-red-500 mr-[5px] visible">
                     NEW
-                </div>
+                </div> */}
                 <div className="">
                     Title filter
                 </div>                

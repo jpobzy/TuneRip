@@ -29,7 +29,7 @@ function DockItem({
   baseItemSize,
 }) {
   const ref = useRef(null);
-  const isHovered = useMotionValue(0);
+  const ishovered = useMotionValue(0);
 
   const mouseDistance = useTransform(mouseX, (val) => {
     const rect = ref.current?.getBoundingClientRect() ?? {
@@ -53,10 +53,10 @@ function DockItem({
         width: size,
         height: size,
       }}
-      onHoverStart={() => isHovered.set(1)}
-      onHoverEnd={() => isHovered.set(0)}
-      onFocus={() => isHovered.set(1)}
-      onBlur={() => isHovered.set(0)}
+      onHoverStart={() => ishovered.set(1)}
+      onHoverEnd={() => ishovered.set(0)}
+      onFocus={() => ishovered.set(1)}
+      onBlur={() => ishovered.set(0)}
       onClick={onClick}
       className={`dock-item ${className}`}
       tabIndex={0}
@@ -64,22 +64,22 @@ function DockItem({
       aria-haspopup="true"
     >
       {Children.map(children, (child) =>
-        cloneElement(child, { isHovered })
+        cloneElement(child, { ishovered })
       )}
     </motion.div>
   );
 }
 
 function DockLabel({ children, className = "", ...rest }) {
-  const { isHovered } = rest;
+  const { ishovered } = rest;
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = isHovered.on("change", (latest) => {
+    const unsubscribe = ishovered.on("change", (latest) => {
       setIsVisible(latest === 1);
     });
     return () => unsubscribe();
-  }, [isHovered]);
+  }, [ishovered]);
 
   return (
     <AnimatePresence>
@@ -115,13 +115,13 @@ export default function Dock({
   baseItemSize = 50,
 }) {
   const mouseX = useMotionValue(Infinity);
-  const isHovered = useMotionValue(0);
+  const ishovered = useMotionValue(0);
 
   const maxHeight = useMemo(
     () => Math.max(dockHeight, magnification + magnification / 2 + 4),
     [magnification, dockHeight]
   );
-  const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
+  const heightRow = useTransform(ishovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
 
   return (
@@ -131,11 +131,11 @@ export default function Dock({
     >
       <motion.div
         onMouseMove={({ pageX }) => {
-          isHovered.set(1);
+          ishovered.set(1);
           mouseX.set(pageX);
         }}
         onMouseLeave={() => {
-          isHovered.set(0);
+          ishovered.set(0);
           mouseX.set(Infinity);
         }}
         className={`dock-panel ${className}`}
@@ -156,9 +156,9 @@ export default function Dock({
           >
             <DockIcon>{item.icon}</DockIcon>
             <DockLabel>{item.label}</DockLabel>
-            <div>
+            {/* {<div>
               <div className="absolute text-red-500 flex mt-[5px] -ml-[23px]">{item.label === 'Settings' && 'New'}</div>
-            </div>
+            </div>} */}
           </DockItem>
         ))}
       </motion.div>
