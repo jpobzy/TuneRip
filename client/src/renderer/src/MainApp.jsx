@@ -23,8 +23,9 @@ function MainApp() {
   const [page, setPage] = useState("Home");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
+  // const [goHome, setGoHome]
 
-  const homeClicked = () => {
+  const homeButtonClicked = () => {
     setPage('Home')
     if (ref.current){
       ref.current.resetAll();
@@ -33,7 +34,7 @@ function MainApp() {
   }
 
   const items = [
-    { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeClicked() },
+    { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeButtonClicked() },
     { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') }
   ];

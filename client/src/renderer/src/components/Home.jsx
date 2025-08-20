@@ -19,7 +19,7 @@ import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
 
 
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
-  const { message, notification  } = App.useApp();
+  const { message  } = App.useApp();
   const [users, setUsers] = useState([]);
   const [cardClicked, setCardClicked] = useState(false);
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
@@ -41,6 +41,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [imgClicked, setImgClicked] = useState('')
   const [pagnationPages, setPagnationPages] = useState(10)
   const imagesPerPage = 8
+  const [showPagnation, setShowPagnation] = useState(true)
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
@@ -49,9 +50,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   const sseDownload = useRef()
-  const [currentlyDownloaded, setCurrentlyDownloaded] = useState(
-    []
-  )
+  const [currentlyDownloaded, setCurrentlyDownloaded] = useState([])
 
   useImperativeHandle(ref, () => ({
     resetAll
@@ -65,6 +64,13 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setPrevImg(users[username][1])
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
     setIsUser(true)
+
+    // if (albumCoverFileNames.includes(users[username][1])){
+    //   const prevUsedArt = albumCoverFileNames.filter(file => file === users[username][1])
+    //   const otherArt = albumCoverFileNames.filter(file => file !== users[username][1])
+    //   setShownImages(prevUsedArt.concat(otherArt).slice)
+    // }
+
   }
 
   async function getUsers(){
@@ -74,11 +80,12 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setAlbumCoverFileNames(albumCoverResponse.data.files);
   }
 
-    const chooseWhichImagesToShow = (e) =>{
-        const startAmount = (Number(e) - 1) * imagesPerPage
-        const endAmount = Number(e) * imagesPerPage
-        setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
-    }
+  const chooseWhichImagesToShow = (e) =>{
+      const startAmount = (Number(e) - 1) * imagesPerPage
+      const endAmount = Number(e) * imagesPerPage
+      setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
+
+  }
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
@@ -151,10 +158,15 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function resetAll(){
+    setEditImgCard(false)
+    setEditUsers(false)
     setCardClicked(false);
     setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
     getUsers();
+    setPrevImg(null)
+    setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
+    setShowPagnation(true)
   }
 
 
@@ -181,7 +193,12 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}/>
+    children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} 
+      setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
+      setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}
+      setShownImages={setShownImages} albumCoverFileNames={albumCoverFileNames}
+      setShowPagnation={setShowPagnation} imagesPerPage={imagesPerPage}
+    />
   }];
 
   const debugMode = () => {
@@ -200,6 +217,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCurrentlyDownloaded([])
     setShowResult(false)
     setIsLoading(false)
+    setPrevImg(null)
     setCollapseActiveKey(['0'])
     getUsers();
     setEditImgCard(false)
@@ -320,30 +338,20 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>    
             <div>
             <div className='mt-[50px]'>
-              <div className='flex justify-center  -mb-[56px] mr-[135px] text-red-500'>
+              {/* <div className='flex justify-center  -mb-[56px] mr-[135px] text-red-500'>
                 NEW
-              </div>                
+              </div>                 */}
               <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
                 <Collapse 
                   items={downloadItems} 
                   activeKey={collapseActiveKey}
-                  onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
+                  onChange={(e)=>{setCollapseActiveKey(e)}}
                   />
               </div>
             </div>
             
               
             </div>        
-
-
-
-              {/* <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
-                <Collapse 
-                  items={downloadItems} 
-                  activeKey={collapseActiveKey}
-                  onChange={(e)=>{setCollapseActiveKey(e); console.log(e)}}
-                  />
-              </div> */}
 
             <div className='album-cover-containter '>
                 {Object.entries(shownImages).map((filename, index)=>(
@@ -362,13 +370,13 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                 ))}
             </div>
 
-
+               
           { Object.keys(albumCoverFileNames).length > 0 &&
             <div className='mt-[0px] mb-[10px]'> 
               <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
           }
-
+          {showPagnation &&
             <div className="flex mx-auto justify-center">
                 <Pagination 
                 showSizeChanger={false}
@@ -377,6 +385,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
+          }
+
 
            </div>
           )

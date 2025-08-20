@@ -11,7 +11,7 @@ import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
 
-function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt}){
+function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setShownImages, albumCoverFileNames, setShowPagnation, imagesPerPage}){
     const [componentDisabled, setComponentDisabled] = useState(true);
     // const [skipComponentDisabled, setSkipComponentDisabled] = useState(false);
     const [createSubfolder, setCreateSubfolder] = useState(false)
@@ -21,8 +21,9 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [useTrackFilter, setUseTrackFilter] = useState(true)
     const newFeatureText = <span>All track titles will remove any text thats in the filter titles table in settings</span>;
+    const [usePrevData, setUsePrevData] = useState(false)
     
-    const { message } = App.useApp();	
+    const { message, notification } = App.useApp();	
     const [form] = Form.useForm();
     const [chosenPlaylistSetting, setChosenPlaylistSetting] = useState([])
     const [requestedPrevPlaylistData, setRequestedPrevPLaylistData] = useState(false)
@@ -187,6 +188,11 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         if (requestedPrevPlaylistData){
             setPrevPlaylistArt('')
         }
+        if (!e.target.checked){
+            setUsePrevData(false)
+            setShownImages(albumCoverFileNames.splice(0, imagesPerPage))
+            setShowPagnation(true)
+        }
     }
 
     const setAddToExistingPlaylistSettings = (label, value) =>{
@@ -208,10 +214,9 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             return
         }
         const getPlaylistData = await axios.get('http://localhost:8080/getplaylistdata', {params: {playlist : chosenPlaylistSetting}})
-        // console.log(Object.keys(getPlaylistData.data).length)
-        // console.log()
 
         if (Object.keys(getPlaylistData.data).length === 0){
+            message.error('Playlist folder did not include any tracks')
             form.setFieldsValue({'album': null})
             form.setFieldsValue({'genre': null})
             form.setFieldsValue({'artist': null})
@@ -220,6 +225,10 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             setArtist('')    
             setGenre('')       
             setPrevPlaylistArt(null)
+            setShownImages(albumCoverFileNames)
+            setUsePrevData(false)
+            showPagnation(true)
+            return
         }
 
         if (getPlaylistData.data.album){
@@ -241,10 +250,28 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         }
 
         if (getPlaylistData.data.coverArtFile){
-            setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
+            if (getPlaylistData.data.coverArtFile.includes('ERROR COULD NOT FIND FILE')){
+                notification.error({ message: 'File may have been deleted or renamed, please recover the file' });
+                notification.error({ message: getPlaylistData.data.coverArtFile})
+                setShownImages([])
+                setPrevPlaylistArt(null)
+            }else{
+                setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
+                setShownImages(albumCoverFileNames.filter(art => art.includes(getPlaylistData.data.coverArtFile)))
+                setShowPagnation(false)               
+            }
         }
+
+        setUsePrevData(true)
         setRequestedPrevPLaylistData(true)
     }
+
+
+
+
+
+
+
 
     const handleDebugMode = (e) => {
         setDebugMode(e.target.checked)
@@ -297,8 +324,6 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         // initialValues={{remember: true}}
         autoComplete='off'
         >
-
-            
 
         {/* ############################## SKIP DOWNLOADING PREV DOWNLOADED TRACKS ################################ */}
         {!isTrack &&
@@ -427,20 +452,22 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
 
         <div className='inline-block'>
             <Tooltip placement="right" title={newFeatureText}>
-                <Form.Item>
-                    <Checkbox
-                        checked={useTrackFilter}
-                        onChange={(e)=> handleTrackFilter(e)}
-                    >   
-                        Filter track titles via trackFilter in settings
-                    </Checkbox>                  
-                </Form.Item>
+                <div>
+                    <Form.Item>
+                        <Checkbox
+                            checked={useTrackFilter}
+                            onChange={(e)=> handleTrackFilter(e)}
+                        >   
+                            Filter track titles via trackFilter in settings
+                        </Checkbox>                  
+                    </Form.Item>                    
+                </div>
             </Tooltip>
         </div>
             
-        <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[100px]'>
+        {/* <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[100px]'>
             NEW
-        </div>
+        </div> */}
 
         {/* <div ref={downloadScreenRefs.artistInputRef}>
             <Form.Item 
@@ -460,7 +487,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 name="artist"
                 onChange={(e) => setArtist(e.target.value)}
                 >
-            <Input placeholder='Default: Youtube Music' />
+            <Input disabled={usePrevData} placeholder='Default: Youtube Music' />
             </Form.Item>            
         </div>
 
@@ -471,7 +498,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 name="genre"
                 onChange={(e) => setGenre(e.target.value)}
                 >
-            <Input placeholder='Default: None'/>
+            <Input disabled={usePrevData} placeholder='Default: None'/>
             </Form.Item>
         </div>
         <div ref={downloadScreenRefs.albumTitleRef}>
@@ -482,6 +509,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 
                 >
             <Input 
+                disabled={usePrevData}
                 placeholder='Default: YouTube Album Prod <YT channel>' 
                 onChange={(e) => setAlbum(e.target.value)}
                 />
