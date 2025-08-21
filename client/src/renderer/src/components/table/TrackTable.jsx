@@ -8,7 +8,7 @@ import './table.css'
 import { QuestionOutlined  } from '@ant-design/icons';
 
 function TrackTable({refreshRecords, setRefresh}){
-  const [users, setUsers] = useState([]) // for user filter
+  const [channels, setChannels] = useState([]) // for channel filter
   const [records, setRecords] = useState() // format: {1: [records]}
   const { message } = App.useApp();
   const [recordsToDelete, setRecordsToDelete] = useState([])
@@ -16,7 +16,7 @@ function TrackTable({refreshRecords, setRefresh}){
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [albumTitles, setAlbumTitles] = useState([])
   const [test, setTest] = useState([])
-  const [selectedUsers, setSelectedUsers] = useState([])
+  const [selectedChannels, setSelectedChannels] = useState([])
   const tableRef = useRef(null)
   const deleteSelectedButtonRef = useRef(null);
   const deleteSingleRecordRef = useRef(null);
@@ -48,7 +48,7 @@ function TrackTable({refreshRecords, setRefresh}){
     {
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
-       target: () => document.querySelector('.user-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
+       target: () => document.querySelector('.channel-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
     }
   ] 
 
@@ -68,7 +68,7 @@ function TrackTable({refreshRecords, setRefresh}){
         } else {
           message.success(`Selected record have been deleted`);
         }
-        populateUsers();
+        populateChannels();
         getCoverAlbums();
         getRecords();
       }      
@@ -95,11 +95,11 @@ function TrackTable({refreshRecords, setRefresh}){
   };
 
   const filter = () => {
-    if (selectedUsers.length > 0){
+    if (selectedChannels.length > 0){
       const res = []
-      for (var i = 0; i < selectedUsers.length; i++) {
+      for (var i = 0; i < selectedChannels.length; i++) {
         for (var j = 0; j < albumTitles.length; j++){
-          if (albumTitles[j]['user'] === selectedUsers[i]){
+          if (albumTitles[j]['channel'] === selectedChannels[i]){
             res.push(albumTitles[j])
           }
         }
@@ -111,19 +111,17 @@ function TrackTable({refreshRecords, setRefresh}){
   }
 
   const filterItems = (value, record) => {
-    return record.user.includes(value)
+    return record.channel.includes(value)
   }
 
   const cols = [
   {
-    // title: <div ref={deleteSingleRecordRef}>user</div>,
-    title: 'user',
-    dataIndex: 'user',
-    key: 'user',
+    title: 'channel',
+    dataIndex: 'channel',
+    key: 'channel',
     fixed: 'left',
-    filters: users,
-    className: 'user-filter-column',
-    // onFilter: (value, record) => record.user.includes(value),
+    filters: channels,
+    className: 'channel-filter-column',
     onFilter: filterItems
   },
   {
@@ -194,9 +192,9 @@ function TrackTable({refreshRecords, setRefresh}){
   },
   ]
 
-  async function populateUsers(){
-    const res = await axios.get('http://localhost:8080/getusers')
-    setUsers(res.data)
+  async function populateChannels(){
+    const res = await axios.get('http://localhost:8080/getchannels')
+    setChannels(res.data)
   }
 
   async function getCoverAlbums(){
@@ -213,7 +211,7 @@ function TrackTable({refreshRecords, setRefresh}){
   }
   
   useEffect(()=>{ 
-    populateUsers();
+    populateChannels();
     getCoverAlbums();
     getRecords();
     if (refreshRecords){
@@ -223,16 +221,16 @@ function TrackTable({refreshRecords, setRefresh}){
   },[refreshRecords])
 
 
-  const handleFilters = (user, albumTitle)=>{
-    if (user && !albumTitle){
-      setSelectedUsers(user)
+  const handleFilters = (channel, albumTitle)=>{
+    if (channel && !albumTitle){
+      setSelectedChannels(channel)
     }
-    if (!user){
-      setSelectedUsers([])
+    if (!channel){
+      setSelectedChannels([])
     }
 
-    if (!user && !albumTitle){
-      setSelectedUsers([])
+    if (!channel && !albumTitle){
+      setSelectedChannels([])
     }
   }
 
@@ -279,7 +277,7 @@ function TrackTable({refreshRecords, setRefresh}){
                   <div ref={tableRef} >
                     <Table 
                         onChange={(pagination, filters, sorter, extra) => {
-                          handleFilters(filters.user, filters.albumTitle)           
+                          handleFilters(filters.channel, filters.albumTitle)           
                         }}
                       selectedRowKeys={test}
                       rowSelection={rowSelection}

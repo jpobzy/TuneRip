@@ -138,7 +138,7 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('isPackaged', isPackaged);
   });
-  // mainWindow.openDevTools();
+  mainWindow.openDevTools();
   // autoUpdater.check
   // if (app.isPackaged) {
   //   // ForUpdatesAndNotify();

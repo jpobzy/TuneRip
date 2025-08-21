@@ -5,41 +5,52 @@ from datetime import datetime
 
 class database():
     def __init__(self, databaseFolderRoute):
-        self.userCache = {}
+        self.channelCache = {}
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
+        if Path(self.db_path).exists():
+            self.revamp()
+
+
         self.loadCache()
         self.checkForFileLocation()
         
 
+    def revamp():
+        "ALTER TABLE table_name RENAME COLUMN user to channel; "
+
+
+
+
+        return
 
     def loadCache(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
-            cur.execute("CREATE TABLE users(name, ytLink, previousAlbumCoverUsed)")
-            cur.execute("CREATE TABLE tracks(user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
+            cur.execute("CREATE TABLE channels(name, ytLink, previousAlbumCoverUsed)")
+            cur.execute("CREATE TABLE tracks(channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
 
-        for record in cur.execute("SELECT * FROM users"):
-            self.userCache[str(record[0])] =  (record[1], record[2])
+        for record in cur.execute("SELECT * FROM channels"):
+            self.channelCache[str(record[0])] =  (record[1], record[2])
         return 
     
 
 
     def addNewUser(self, data):
         """"
-        adds user into users db, format:
+        adds channel into channels db, format:
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        cur.execute(f"INSERT INTO users VALUES (?, ?, ?)", (data['name'], data['ytLink'], None))
+        cur.execute(f"INSERT INTO channels VALUES (?, ?, ?)", (data['name'], data['ytLink'], None))
         database.commit()
         database.close()
         return
 
-    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile, link, fileLocation):
+    def insertTrackIntoDB(self, channel, albumTitle, trackName, trackId, status, albumCoverFile, link, fileLocation):
         data = {
-            'user': user,
+            'channel': channel,
             'albumTitle': albumTitle,
             'trackName': trackName,
             'trackId': trackId,
@@ -52,8 +63,8 @@ class database():
         whenRecordAdded = datetime.now()
         
         cur.execute("""
-            INSERT INTO tracks (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation))
+            INSERT INTO tracks (channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation))
     
         database.commit()
         database.close()
@@ -70,9 +81,9 @@ class database():
     def reloadCache(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        self.userCache = {}
-        for record in cur.execute("SELECT * FROM users"):
-            self.userCache[str(record[0])] =  (record[1], record[2])
+        self.channelCacheh = {}
+        for record in cur.execute("SELECT * FROM channels"):
+            self.channelCache[str(record[0])] =  (record[1], record[2])
         database.close()
         return 
     
@@ -85,7 +96,7 @@ class database():
         query = cur.execute(f'SELECT * FROM tracks WHERE status <> ?  ORDER BY whenRecordAdded DESC LIMIT ?', ('Filter', trackAmount,))
         retval = []
         for record in query:
-            retval.append({'trackName':record[2], 'user':record[0]})
+            retval.append({'trackName':record[2], 'channel':record[0]})
         database.close()
         return retval
 
@@ -99,7 +110,7 @@ class database():
         for record in query:
             ret.append({
                 'key': keyNum,
-                'user' : record[0],
+                'channel' : record[0],
                 'albumTitle' : record[1],
                 'tracktitle' : record[2],
                 'trackId' : record[3],
@@ -116,7 +127,7 @@ class database():
     def getAllUniqueUsers(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        query = cur.execute("SELECT DISTINCT user FROM tracks")
+        query = cur.execute("SELECT DISTINCT channel FROM tracks")
         ret = []
         for record in query:
             ret.append({'text': record[0], 'value': record[0]})
@@ -125,14 +136,14 @@ class database():
        
 
 
-    def getRecordsFromUser(self, user, limit, offset):
+    def getRecordsFromUser(self, channel, limit, offset):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        query = cur.execute("SELECT * FROM tracks WHERE user=? LIMIT ? OFFSET ?", (user, limit, offset))
+        query = cur.execute("SELECT * FROM tracks WHERE channel=? LIMIT ? OFFSET ?", (channel, limit, offset))
         ret = []
         for record in query:
             ret.append({
-                'user' : record[0],
+                'channel' : record[0],
                 'albumTitle' : record[1],
                 'trackName' : record[2],
                 'trackId' : record[3],
@@ -169,28 +180,28 @@ class database():
 
     def deleteUser(self, name):
         """
-        Deletes the given user in "users" table
+        Deletes the given channel in "channel" table
         """        
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        user = cur.execute('SELECT * FROM users WHERE name = ?', (name,))
-        data = user.fetchall()
+        channel = cur.execute('SELECT * FROM channels WHERE name = ?', (name,))
+        data = channel.fetchall()
         if data == []:
             database.close()
             return 'User not found', 204
         else:
-            cur.execute('DELETE FROM users WHERE name=?', (name, ))
+            cur.execute('DELETE FROM channels WHERE name=?', (name, ))
             database.commit()
             database.close()
             return "Success", 200
             
-    def updateUsersImgUsed(self, user, file):
+    def updateUsersImgUsed(self, channel, file):
         """
-        Updates the users last image used in users table
+        Updates the channels last image used in channels table
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        cur.execute('UPDATE users SET previousAlbumCoverUsed = ? WHERE name = ?', (file, user))
+        cur.execute('UPDATE channels SET previousAlbumCoverUsed = ? WHERE name = ?', (file, channel))
         database.commit()
         database.close()
         return 
@@ -209,9 +220,7 @@ class database():
         retval = []
         for record in query:
             if len(record[1]) > 1:
-                # retval.append({'albumTitle':record[1], 'user':record[0]})
-                retval.append({'text': record[1], 'value': record[1], 'user': record[0]})
-                # retval.append({'albumTitle':record[1]})
+                retval.append({'text': record[1], 'value': record[1], 'channel': record[0]})
         database.close()
         return retval
     
@@ -227,7 +236,7 @@ class database():
         
         for track in query:
             if artist:
-                cur.execute('UPDATE tracks SET user = ? WHERE trackName = ?', (artist, trackName))
+                cur.execute('UPDATE tracks SET channel = ? WHERE trackName = ?', (artist, trackName))
             if album:
                 cur.execute('UPDATE tracks SET albumTitle = ? WHERE trackName = ?', (album, trackName))
 

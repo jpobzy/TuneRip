@@ -21,8 +21,11 @@ import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const { message  } = App.useApp();
   const {setShowDock} = useToggle()
-  const {setHomeTourEnabled, deleteUserRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
+  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
 
+  const [users, setUsers] = useState([]);
+  const [chosenUser, setChosenUser] = useState([]);
+  const [editUsers, setEditUsers] = useState(false)
 
   const [cardClicked, setCardClicked] = useState(false);
   const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
@@ -45,7 +48,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 //////////////////////////////////////////////////////////////////////////////////
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false}) //
-  // const [coverArtData, setCoverArtData] = 
+
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
   const [showResult, setShowResult] = useState(false)
@@ -91,13 +94,14 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     resetAll
   }));
 
-  const handleCardClicked = async(channelName) => {
+  const handleCardClicked = async(username) => {
     setskipDownload(true)
     setCardClicked(true);
-    setChannelData(prev => {return {...prev, chosenChannel : channelName}})
-    setPrevImg(channelData.channelsList[channelName][1])
+    // setChosenUser(username) 
+    setChannelData(prev => {return {...prev, chosenChannel : username}})
+    setPrevImg(users[username][1])
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
-    setDownloadType('channel')
+    setDownloadType('user')
 
     // if (albumCoverFileNames.includes(users[username][1])){
     //   const prevUsedArt = albumCoverFileNames.filter(file => file === users[username][1])
@@ -109,7 +113,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
   async function getChannels(){
-    const response = await axios.get('http://localhost:8080/channels');
+    const response = await axios.get('http://localhost:8080/users');
+    // setUsers(response.data);
     setChannelData(prev => {return {
       ...prev, channelsList : response.data
     }})
@@ -131,7 +136,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
         url: searchUrl,
-        channel: channelData.chosenChannel,
+        user: chosenUser,
         albumCover: file,
         // downloadsettings : JSON.stringify(downloadSettings)
         ...downloadSettings
@@ -170,7 +175,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         setShowResult(true)
         setShowDock(true)
         setSearchURL('');
-        setChannelData(prev => {return {...prev, chosenChannel : null}})
+        setChosenUser(null);
         setDownloadSettings({})
         setskipDownload(false)
       }
@@ -197,7 +202,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   async function resetAll(){
     setEditImgCard(false)
-    setChannelData(prev=> {return {...prev, editChannels : false}})
+    setEditUsers(false)
     setCardClicked(false);
     setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
@@ -221,9 +226,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
       }
-
-
-     
   }
 
   const [test, setTest] = useState(0)
@@ -232,7 +234,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
-    // children: <DownloadSettingsForm isTrack={isTrack}
+    // children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} 
     //   setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
     //   setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}
     //   setShownImages={setShownImages} albumCoverFileNames={albumCoverFileNames}
@@ -280,22 +282,29 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setResultStatusCode(null)
     setAlbumCoverChosen(false)
     setSearchURL('');
-    setChannelData(prev => {return {...prev, editChannels : false}})
+    setChosenUser(null);
     setDownloadSettings({})
     setskipDownload(false)
   }
 
-  const handleChannelAdded = () => {
+  const handleUserAdded = () => {
     getChannels();
   }
 
-  const handleChannelRemoved = () => {
+  const handleUserRemoved = () => {
     getChannels();
   }
 
   const handleTour = () => {
     setCollapseActiveKey(['1'])
-    if (downloadType === 'channel'){
+    // if (isUser) {
+    //   downloadScreenValues.setUserDownloadTourEnabled(true)
+    // }else if (isTrack) {
+    //   downloadScreenValues.setTrackDownloadTourEnabled(true)
+    // }else{
+    //   downloadScreenValues.setPlaylistDownloadTourEnabled(true)
+    // }
+    if (downloadType === 'user'){
       downloadScreenValues.setUserDownloadTourEnabled(true)
     }else if (downloadType === 'track'){
       downloadScreenValues.setTrackDownloadTourEnabled(true)
@@ -373,7 +382,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
                     </Tooltip>                      
                 </div>
-               : downloadType === 'channel' ?
+               : downloadType === 'user' ?
                 <div className='ml-[10px] mt-[30px]'>
                     <Tooltip title="help">
                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
@@ -456,7 +465,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                       <div className='inline-block mt-[30px]' ref={searchBarRef}>
                         <AddUserForm 
                         setSearchURL={downloadVideo}
-                        handleUserAdded={handleChannelAdded}
+                        handleUserAdded={handleUserAdded}
                         />                        
                       </div>
                     </div>
@@ -468,19 +477,20 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   </div>
                   <div>
                     {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>TuneRip</h1>}
-                      <div className='channel-container inline-block'
-                      ref={Object.keys(channelData.channelsList).length > 0 ? channelRef : null}
+                      {/* <div className='user-container inline-block' ref={userRef} > */}
+                      <div className='user-container inline-block'
+                      ref={Object.keys(users).length > 0 ? userRef : null}
                        >
                         { 
-                        Object.entries(channelData.channelsList).map((item, index) =>(
+                        Object.entries(users).map((item, index) =>(
                           <YoutuberCard
-                            name = {item[0]}
-                            channelPFP={item[1][1]}
-                            onClick={()=>handleCardClicked(item[0])}
-                            editChannels = {channelData.editChannels}
-                            key = {item[0]}
-                            handleChannelRemoved={handleChannelRemoved}
-                          /> 
+                          name = {item[0]}
+                          userPFP={item[0]}
+                          onClick={()=>handleCardClicked(item[0])}
+                          editUsers = {editUsers}
+                          key = {index+1}
+                          handleUserRemoved={handleUserRemoved}
+                          />
                         ))}
                       </div>
                   </div>
@@ -491,14 +501,13 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           </div>
         )}
       </div>
-      {Object.keys(channelData.channelsList).length > 0  &&  !cardClicked && 
+      {Object.keys(users).length > 0  &&  !cardClicked && 
         <div className='mt-[20px] inline-block mb-[20px]' ref={deleteUserRef}>
-          <Switch onChange={() =>  setChannelData(prev => {return {...prev, editChannels : !channelData.editChannels}})} />        
-            
+          <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
 
-      <Button onClick={()=> console.log(Object.entries(channelData.channelsList).map((item, index) => item[1][1]))}>click me</Button>
+      <Button onClick={()=> console.log(channelData.channelsList)}>click me</Button>
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
   )

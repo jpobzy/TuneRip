@@ -7,24 +7,24 @@ export const HomeProvider = ({children}) =>{
     // ############################# HOME SCREEN #######################################
     const [homeTourEnabled, setHomeTourEnabled] = useState(false);
     const searchBarRef = useRef();
-    const userRef = useRef();
-    const deleteUserRef = useRef();
+    const channelRef = useRef();
+    const deleteChannelRef = useRef();
 
     const homeSteps = [
     {
         title: 'Paste a YT URL',
-        description: 'Paste and search a youtubers account to add the user or paste a video/playlist URL.',
+        description: 'Paste and search a youtubers account to add the channel or paste a video/playlist URL.',
         target: () => searchBarRef.current,
     },
     {
-        title: 'Select a user',
+        title: 'Select a channel',
         description: "After adding a youtuber, you can select them to download all their videos",
-        target: () => userRef.current,
+        target: () => channelRef.current,
     },
     {
-        title: 'Toggle the switch to delete a user',
-        description: "Once the switch is toggled you'll see a '-' sign to delete the user, deleting users will not delete any downloads.",
-        target: () => deleteUserRef.current,
+        title: 'Toggle the switch to delete a channel',
+        description: "Once the switch is toggled you'll see a '-' sign to delete the channel, deleting channels will not delete any downloads.",
+        target: () => deleteChannelRef.current,
     },
     ]    
 
@@ -35,7 +35,7 @@ export const HomeProvider = ({children}) =>{
 
     // ############################# DOWNLOAD SCREEN #######################################
     // common objects
-    const [userDownloadTourEnabled, setUserDownloadTourEnabled] = useState(false);
+    const [channelDownloadTourEnabled, setChannelDownloadTourEnabled] = useState(false);
     const [trackDownloadTourEnabled, setTrackDownloadTourEnabled] = useState(false);
     const [playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled] = useState(false);
 
@@ -48,7 +48,7 @@ export const HomeProvider = ({children}) =>{
     const genreInputRef = useRef(null)
     const albumTitleRef = useRef(null)
 
-    //  DOWNLOAD USER SCREEN 
+    //  DOWNLOAD CHANNEL SCREEN 
     const skipDownloadingPrevDownloadToggleRef = useRef(null)
     const skipDownloadingBeatsAndInstrumentalsToggleRef = useRef(null)
     const createSubfolderToggleRef = useRef(null)
@@ -62,7 +62,7 @@ export const HomeProvider = ({children}) =>{
 
 
 
-    const userSteps = [
+    const channelSteps = [
         {
         title: 'Add custom cover art',
         description: 'Add custom cover art through here or through crop in the settings panel',
@@ -218,7 +218,7 @@ export const HomeProvider = ({children}) =>{
 
     return(
         <div>
-            <createcon.Provider value={{searchBarRef, userRef, deleteUserRef, homeTourEnabled, setHomeTourEnabled,
+            <createcon.Provider value={{searchBarRef, channelRef, deleteChannelRef, homeTourEnabled, setHomeTourEnabled,
                 downloadScreenRefs : { 
                     addCoverArtRef, selectCoverArtRef, defaultDownloadToggleRef, artistInputRef, 
                     genreInputRef, albumTitleRef, skipDownloadingPrevDownloadToggleRef, 
@@ -226,13 +226,13 @@ export const HomeProvider = ({children}) =>{
                     addToExistingPlaylistToggleRef, changeTrackTitleInputRef 
                 },
                 downloadScreenValues : {
-                    userDownloadTourEnabled, setUserDownloadTourEnabled, trackDownloadTourEnabled, 
+                    channelDownloadTourEnabled, setChannelDownloadTourEnabled, trackDownloadTourEnabled, 
                     setTrackDownloadTourEnabled, playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled
                 }
             }}>
                 {children}
                 <Tour  open={homeTourEnabled} onClose={()=> setHomeTourEnabled(false)} onChange={handleChange} steps={homeSteps}></Tour>
-                <Tour  open={userDownloadTourEnabled} onClose={()=> setUserDownloadTourEnabled(false)} onChange={handleChange} steps={userSteps}></Tour>
+                <Tour  open={channelDownloadTourEnabled} onClose={()=> setChannelDownloadTourEnabled(false)} onChange={handleChange} steps={channelSteps}></Tour>
                 <Tour  open={trackDownloadTourEnabled} onClose={()=> setTrackDownloadTourEnabled(false)} onChange={handleChange} steps={trackSteps}></Tour>
                 <Tour  open={playlistDownloadTourEnabled} onClose={()=> setPlaylistDownloadTourEnabled(false)} onChange={handleChange} steps={playlistSteps}></Tour>
             </createcon.Provider>            

@@ -3,9 +3,9 @@ import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button } from 'antd';
 import { App, Form } from 'antd';
 
-export default function AddUserForm({setSearchURL, handleUserAdded}) {
+export default function AddChannelForm({setSearchURL, handleChannelAdded}) {
   const { Search } = Input;
-  const [user, setUser] = useState('');
+  const [channel, setChannel] = useState('');
   const { message } = App.useApp();	
 
   async function onSearch(value) {
@@ -19,10 +19,10 @@ export default function AddUserForm({setSearchURL, handleUserAdded}) {
         body: JSON.stringify({ ytLink: value }),
       });
       if (res.status === 200) {
-        handleUserAdded()
-        setUser('')
+        handleChannelAdded()
+        setChannel('')
       }else{
-        message.error(`Channel ${user} could not be found`)
+        message.error(`Channel ${channel} could not be found`)
       }
     } else {
        setSearchURL(value);
@@ -33,12 +33,6 @@ export default function AddUserForm({setSearchURL, handleUserAdded}) {
 
   return (
     <div className='searchbar'> 
-      {/* <form
-        className="user-form"
-        onSubmit={(e) => {
-          e.preventDefault(); // prevent form submission reload
-        }}
-      > */}
         <label>
           <ConfigProvider
             theme={{
@@ -75,8 +69,8 @@ export default function AddUserForm({setSearchURL, handleUserAdded}) {
                 </Button>
               }
               size="large"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
+              value={channel}
+              onChange={(e) => setChannel(e.target.value)}
               onSearch={onSearch}
               prefix={<UserOutlined />}
               style={{ width: 500 }}

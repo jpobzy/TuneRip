@@ -12,7 +12,7 @@ import { App } from 'antd';
 
 export default function FilterForm({setRefresh}) {
   const { Search } = Input;
-  const [user, setUser] = useState('');
+  const [channel, setChannel] = useState('');
   const [loading, setLoading] = useState(false)
   const { Dragger } = Upload;
   const [filterSuccess, setFilterSuccess] = useState(false)
@@ -51,13 +51,13 @@ export default function FilterForm({setRefresh}) {
 
         if (response.status === 200 || response.status === 304) {
             setLoading(false);
-            setUser('');
+            setChannel('');
             setFilterSuccess(true);
             setRefresh(true);
         }else{
             setFilterError(true)
             setLoading(false);
-            setUser('');
+            setChannel('');
         }
     } else if (value.length > 0){
         message.error(`Input ${value} is not a valid link`)
@@ -106,7 +106,7 @@ export default function FilterForm({setRefresh}) {
                             className="filter-form"
                             onSubmit={(e) => {
                             e.preventDefault(); // prevent form submission reload
-                            onSearch(user);
+                            onSearch(channel);
                             }}
                         >
                             <label>
@@ -141,8 +141,8 @@ export default function FilterForm({setRefresh}) {
                                         </Button>
                                     }
                                     size="large"
-                                    value={user}
-                                    onChange={(e) => setUser(e.target.value)}
+                                    value={channel}
+                                    onChange={(e) => setChannel(e.target.value)}
                                     onSearch={onSearch}
                                     disabled={loading}
                                     prefix={<UserOutlined />}

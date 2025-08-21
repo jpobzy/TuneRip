@@ -20,7 +20,7 @@ export default function History() {
     const {data} = await axios.get('http://localhost:8080/history')
     const temp = [];
     for (const item of data) {
-      temp.push(`${item['trackName']} by ${item['user']}`)
+      temp.push(`${item['trackName']} by ${item['channel']}`)
     }
     setLoadingHistory(false)
     setTrackHistory(temp)

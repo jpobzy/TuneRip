@@ -1,4 +1,4 @@
-.user-card {
+.channel-card {
   height: 140px; 
   padding: 1rem;
   padding-top: 2rem;
@@ -37,7 +37,7 @@
 
 }
 
-.user-card-hover:hover {
+.channel-card-hover:hover {
     background-color: #d9e8f0;
     transform: scale(1.15);
     box-shadow: 0 0 20px rgb(18, 140, 211);
