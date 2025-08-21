@@ -21,7 +21,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [useTrackFilter, setUseTrackFilter] = useState(true)
     const newFeatureText = <span>All track titles will remove any text thats in the filter titles table in settings</span>;
-    const [usePrevData, setUsePrevData] = useState(false)
+    const [usePrevData, setUsePrevData] = useState(false) // disabled/enables artist/genre/album title inputs
     
     const { message, notification } = App.useApp();	
     const [form] = Form.useForm();
@@ -40,15 +40,19 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             }else{
                 setDownloadSettings({"skipDownloadingPrevDownload": true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
                 setskipDownload(true)
+                setAddToExistingPlaylist(false)
                 setCreateSubfolder(false)
                 setSkipBeatsAndInstrumentals(true)
                 setUseTrackFilter(true)
+                setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
+                setShowPagnation(true)
             }
 
             if (requestedPrevPlaylistData){
                 setPrevPlaylistArt('')
             }
             form.setFieldsValue({'album' : '', 'genre' : '', 'title' : '', 'artist' : '', 'dirname' : ''})
+
         }else{
            
             if (skipDownload && createSubfolder){
@@ -59,6 +63,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 setDownloadSettings({'subFolderName' : '', 'skipBeatsAndInstrumentals' : skipBeatsAndInstrumentals})
             }
         }
+
     }
 
     const setSkip = (e) => {
@@ -135,9 +140,18 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
     }
 
     const setSubFolderSettings = (e) => {
-        setAddToExistingPlaylist(false)
+        
         setCreateSubfolder(e.target.checked)
         setSubFolderInputValue('')
+
+
+        setPrevPlaylistArt(null)
+        if (addToExistingPlaylist){
+            setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
+        }
+        setAddToExistingPlaylist(false)
+        setUsePrevData(false)
+        setShowPagnation(true)
 
         setDownloadSettings(prev => {
             const newSettings = {
@@ -190,7 +204,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         }
         if (!e.target.checked){
             setUsePrevData(false)
-            setShownImages(albumCoverFileNames.splice(0, imagesPerPage))
+            setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
             setShowPagnation(true)
         }
     }
@@ -225,9 +239,9 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             setArtist('')    
             setGenre('')       
             setPrevPlaylistArt(null)
-            setShownImages(albumCoverFileNames)
+            setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
             setUsePrevData(false)
-            showPagnation(true)
+            setShowPagnation(true)
             return
         }
 
@@ -257,7 +271,8 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
                 setPrevPlaylistArt(null)
             }else{
                 setPrevPlaylistArt(getPlaylistData.data.coverArtFile)
-                setShownImages(albumCoverFileNames.filter(art => art.includes(getPlaylistData.data.coverArtFile)))
+                // setShownImages(albumCoverFileNames.filter(art => art.includes(getPlaylistData.data.coverArtFile)))
+                setShownImages(albumCoverFileNames.filter(art => art === getPlaylistData.data.coverArtFile))
                 setShowPagnation(false)               
             }
         }
@@ -360,7 +375,10 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
         {!isUser &&
             <>  
                 <div ref={downloadScreenRefs.addToExistingPlaylistToggleRef}>
-                    <Form.Item style={{marginBottom : "0px"}}>
+                    <Form.Item 
+                    name={"addToExisting"}
+                    style={{marginBottom : "0px"}}
+                    >
                         <Checkbox
                             checked={addToExistingPlaylist}
                             onChange={(e)=> handleAddToExistingPlaylist(e)}
@@ -516,6 +534,7 @@ function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownloa
             </Form.Item>
         </div>     
       </Form>
+      <Button onClick={()=> console.log(albumCoverFileNames)} >click me</Button>
     </div>
     );
 };

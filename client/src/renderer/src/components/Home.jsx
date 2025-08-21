@@ -148,6 +148,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function getNewAlbumCover() {
+    console.log('albumCoverFileNames')
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
     const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
@@ -379,6 +380,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           {showPagnation &&
             <div className="flex mx-auto justify-center">
                 <Pagination 
+                // current={1}
                 showSizeChanger={false}
                 defaultCurrent={1} 
                 total={pagnationPages} 
