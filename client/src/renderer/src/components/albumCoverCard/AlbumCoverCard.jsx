@@ -36,10 +36,13 @@ export default function AlbumCoverCard({filename, cardClicked, previousImg, edit
                 <div className={edit ? 'editing ' : ''}>
                     {/* <div className={previousImg == filename ? 'prev-img prev-img-wrapper': 'img-wrapper album-cover-image'} onClick={cardClicked}> */}
                     {/* <div className={previousImg === filename ? 'prev-img prev-img-wrapper' : imgClicked === filename ? 'img-to-merge' : 'img-wrapper album-cover-image'} onClick={cardClicked}> */}
-                    <div className={previousImg === filename ? 'prev-img prev-img-wrapper' 
+                    <div 
+                    className={previousImg === filename ? 'prev-img prev-img-wrapper' 
                     : imgClicked === filename && enlargenImg === true ? "mt-[200px]"
                     : imgClicked === filename ? 'img-to-merge' 
-                    : 'img-wrapper album-cover-image'} onClick={enlargenImg === true ? null : cardClicked}>
+                    : 'img-wrapper album-cover-image'} 
+                    onClick={enlargenImg === true ? null : cardClicked}
+                    >
 
                         {/* <img
                         className='image'

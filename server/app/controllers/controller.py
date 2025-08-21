@@ -64,7 +64,7 @@ class controller():
 
             if (Path(basePath / 'server/static/images').exists()):
                 oldPath = Path(self.projRoot / 'server/static/images')
-                newPath = Path(self.projRoot / 'server/static/userImages')
+                newPath = Path(self.projRoot / 'server/static/channelImages')
                 oldDebugPath = Path(Path(self.projRoot / 'debug'))
                 if oldPath.exists() and newPath.exists():
                     self.logger.logInfo('Attempting to remove old images folder')
@@ -80,7 +80,7 @@ class controller():
                     self.logger.logInfo('Removal successful')
 
             else:
-                self.pathMaker(basePath / 'server/static/userImages')
+                self.pathMaker(basePath / 'server/static/channelImages')
         except Exception as error:
                 self.logger.logInfo(f'Unable to create folders')
                 self.logger.logError(error)
@@ -105,26 +105,26 @@ class controller():
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
 
-    def addNewUser(self, data):
+    def addNewChannel(self, data):
         """
         Add a new url to the database
         """
-        self.logger.logInfo(f'Looking for user {data['ytLink']}')
+        self.logger.logInfo(f'Looking for channel {data['ytLink']}')
         if not data['ytLink'].startswith('https://www.youtube.com/@'):
             return {f'Incorrect youtube link' :400}
         try:
             channel = Channel(data['ytLink'])
-            url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/userImages/{channel.channel_name}.jpg'
+            url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/channelImages/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
-            self.db.addNewUser(dataToAdd)
+            self.db.addNewChannel(dataToAdd)
             self.db.loadCache()
 
 
-            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
-            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
-            downloadsPath = self.projRoot / f'downloads/{sanitizedUser}'
+            sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
+            sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
+            downloadsPath = self.projRoot / f'downloads/{sanitizedChannel}'
 
             if not Path(downloadsPath).exists():
                 Path.mkdir(downloadsPath, parents=True)
@@ -166,7 +166,7 @@ class controller():
     
     def reloadCache(self):
         """
-        Reloads the database userCache, useful when a new url has been added
+        Reloads the database channelCache, useful when a new url has been added
         """
         self.db.reloadCache()
         return 'Success', 200
@@ -247,18 +247,18 @@ class controller():
 
     def getData(self):
         """
-        get all unique users from DB, used for table to show all unique users when you want to filter for a specific user
+        get all unique channels from DB, used for table to show all unique channels when you want to filter for a specific channel
         """
-        return self.db.getAllUniqueUsers()
+        return self.db.getAllUniqueChannels()
 
-    def getRecordsFromUser(self, query):
+    def getRecordsFromChannels(self, query):
         """
-        gets all records for a specific user in DB, used for table filtering
+        gets all records for a specific channel in DB, used for table filtering
         """
-        page, limit, user = query.decode('utf-8').split('&')
-        page, limit, user =  int(page.split('=')[1]), int(limit.split('=')[1]), user.split('=')[1]
+        page, limit, channel = query.decode('utf-8').split('&')
+        page, limit, channel =  int(page.split('=')[1]), int(limit.split('=')[1]), channel.split('=')[1]
         offset = (page - 1) * 10
-        return self.db.getRecordsFromUser(user, limit, offset)
+        return self.db.getRecordsFromChannel(channel, limit, offset)
 
 
     def deleteRecord(self, query):
@@ -297,21 +297,21 @@ class controller():
             self.logger.logInfo(f'Deletion query: [{query}]')
             return f'Something went wrong {error}', 400
 
-    def deleteUser(self, query):
+    def deleteChannels(self, query):
         """
-        Deletes the given user from the Users table
+        Deletes the given channel from the channels table
         """
-        response, status = self.db.deleteUser(query['user'])
+        response, status = self.db.deleteChannel(query['channel'])
         self.reloadCache()
-        os.remove(self.projRoot / f'server/static/userImages/{query['user']}.jpg')
+        os.remove(self.projRoot / f'server/static/channelImages/{query['channel']}.jpg')
         return response, status 
 
 
-    def updateUserImg(self, user, filename):
+    def updateChannelImg(self, channel, filename):
         """
-        Updates users last img used in db
+        Updates channels last img used in db
         """
-        self.db.updateUsersImgUsed(user, filename)
+        self.db.updateChannelsImgUsed(channel, filename)
         return "Success", 200
     
     def deleteImg(self, query):
@@ -366,7 +366,7 @@ class controller():
     
     def getAlbumTitles(self):
         """
-        returns a list of unique album titles and the user associated with it
+        returns a list of unique album titles and the channel associated with it
         """
         return self.db.getAlbumTitles()
     
@@ -585,7 +585,7 @@ class controller():
     def downloadStream(self, request):
         """
         download function to either 
-            - download all videos from the user
+            - download all videos from the channel
             - download the video url 
             - download all videos in the playlist url 
         """
@@ -606,7 +606,7 @@ class controller():
         self.logger.logInfo('Downloading videos')
 
         url = request.get('url')
-        user = request.get('user')
+        channel = request.get('channel')
         albumCoverFile = request.get('albumCover')
         skipDownload = False if request.get('skipDownloadingPrevDownload') == None else True    
         subFolderName = request.get('subFolderName')
@@ -619,7 +619,7 @@ class controller():
         self.downloadCount = 0
         useFilterTitles = request.get('useTrackFilter')
 
-        self.logger.logInfo(f"""Download data = url: [{url}], user: [{user}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
+        self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
 
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
@@ -627,6 +627,15 @@ class controller():
             if subFolderName != None:
                 subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                 downloadPath = playlistRoute / subFolderName
+                if subFolderName.strip() == '':
+                    playlistTitle = playlist.title
+                    playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
+                    downloadPath = playlistRoute / f'{playlistTitle}'    
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = playlistRoute / addToExistingPlaylist
@@ -651,7 +660,7 @@ class controller():
                 try:
                     video = YouTube(url)
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
+                        continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
                    
                     trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                     status = 'downloaded'
@@ -694,25 +703,26 @@ class controller():
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
-            
-
+        
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
             video = YouTube(url)
-            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', url)
-            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
+            sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', url)
+            sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
 
             if subFolderName != None:
-                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
+                if subFolderName.strip() == '':
+                    downloadPath = self.projRoot / f"downloads/customTracks"
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
                 else:
                     downloadPath = self.projRoot / f"downloads/customTracks"
 
-            
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             self.trackNum = 1
@@ -749,26 +759,30 @@ class controller():
             if erorrCount > 0:
                 yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
             else:
-                yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200})
 
 
         else:
-            ytLink = self.db.userCache[user][0]
-            sanitizedUser = re.sub(r'[<>:"/\\|?*]', '', user)
-            sanitizedUser = sanitizedUser.rstrip('.').rstrip(' ')
+            ytLink = self.db.channelCache[channel][0]
+            sanitizedChannel = re.sub(r'[<>:"/\\|?*]', '', channel)
+            sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
-            albumTitle = f'YouTube Album Prod {user}' if albumTitle == None else albumTitle
+            albumTitle = f'YouTube Album Prod {channel}' if albumTitle == None else albumTitle
             self.trackNum = 1
 
             if subFolderName != None:
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
+                if subFolderName.strip() == '':
+                    downloadPath = self.projRoot / f"downloads/{sanitizedChannel}"
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
                 else:
-                    downloadPath = self.projRoot / f"downloads/{sanitizedUser}"
+                    downloadPath = self.projRoot / f"downloads/{sanitizedChannel}"
 
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -778,7 +792,7 @@ class controller():
             for video in c.videos:
                 try: 
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists in database and user requests to skip prev downloaded tracks
+                        continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
 
                     trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                     
@@ -813,7 +827,7 @@ class controller():
                     if erorrCount == 3:
                         raise Exception(f'Too many errors cause this to fail')
             
-            self.updateUserImg(user, albumCoverFile)
+            self.updateChannelImg(channel, albumCoverFile)
             self.logger.logInfo('Download complete')
             
             if self.downloadCount > 0:

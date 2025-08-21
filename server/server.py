@@ -14,7 +14,7 @@ from datetime import datetime
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
-UPLOAD_FOLDER = basePath / 'server/static/userImages'
+UPLOAD_FOLDER = basePath / 'server/static/channelImages'
 ALBUM_COVER_FOLDER = basePath / 'server/static/albumCovers'
 DATABASE_FOLDER = basePath / 'server/database'
 
@@ -36,19 +36,23 @@ def hello_world():
     return "hello world"
 
 
-@app.route("/users", methods=['GET'])
-def getUsers():
+@app.route("/channels", methods=['GET'])
+def getChannels():
     """
-    Sends users from users db 
+    Sends channels from channels db 
     """
-    return jsonify(controller_obj.db.userCache)
+    return jsonify(controller_obj.db.channelCache)
 
 
-@app.route('/getImage/<string:route>', methods=['GET'])
+@app.route('/getChannelImage/<string:route>', methods=['GET'])
 def get_image(route):
     """
     Sends the requested image file
     """
+    print(f'route: {route}')
+    x = Path(Path.home() / 'Documents/TuneRip/server/static/channelImages' / route)
+    if x.exists():
+        print('hueawswdsa')
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
@@ -80,15 +84,9 @@ def getAlbumCoverFileNames():
     return jsonify(controller_obj.returnAlbumCoverFileNames())
 
 
-@app.route('/newUser', methods=['POST'])
-def createNewUser():
-    response, status = controller_obj.addNewUser(json.loads(request.data))
-    return make_response(jsonify({ 'message': response}), status) 
-
-
-@app.route('/newVideo', methods=['POST'])
-def addNewVideo():
-    response, status = controller_obj.addNewUser(json.loads(request.data))
+@app.route('/newChannel', methods=['POST'])
+def createNewChannel():
+    response, status = controller_obj.addNewChannel(json.loads(request.data))
     return make_response(jsonify({ 'message': response}), status) 
 
 
@@ -126,7 +124,7 @@ def getInitialRecords():
     """
     return jsonify(controller_obj.getRecords(request.query_string))
 
-@app.route('/getusers')
+@app.route('/getchannels')
 def getData():
     """
     For filters
@@ -134,9 +132,9 @@ def getData():
     return jsonify(controller_obj.getData())
 
 
-@app.route('/getrecordsfromuser')
-def getUserData():
-    return jsonify(controller_obj.getRecordsFromUser(request.query_string))
+@app.route('/getrecordsfromchannel')
+def getChannelData():
+    return jsonify(controller_obj.getRecordsFromChannel(request.query_string))
 
 @app.route('/deleteRecord', methods=['DELETE'])
 def deleteRecord():
@@ -147,9 +145,9 @@ def deleteMultipleRecords():
     return controller_obj.deleteMultipleRecords(json.loads(request.data))
 
 
-@app.route('/deleteUser', methods=['DELETE'])
-def deleteUser():
-    return controller_obj.deleteUser(json.loads(request.data))
+@app.route('/deleteChannel', methods=['DELETE'])
+def deleteChannel():
+    return controller_obj.deleteChannel(json.loads(request.data))
 
 
 @app.route('/deleteimg', methods=['DELETE'])

@@ -2,7 +2,7 @@ import React, { forwardRef, use, useEffect, useReducer, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
-import AddChannelForm from './addChannelForm/AddChannelForm'
+import AddUserForm from './addUserForm/AddChannelForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
@@ -21,32 +21,33 @@ import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const { message  } = App.useApp();
   const {setShowDock} = useToggle()
-  const {setHomeTourEnabled, deleteChannelRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
+  const {setHomeTourEnabled, deleteUserRef, searchBarRef, userRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
 
+  const [users, setUsers] = useState([]);
+  const [chosenUser, setChosenUser] = useState([]);
+  const [editUsers, setEditUsers] = useState(false)
 
   const [cardClicked, setCardClicked] = useState(false);
+  const [albumCoverChosen, setAlbumCoverChosen] = useState(false);
+  const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
   const [searchUrl, setSearchURL] = useState([])
+  const [prevImg, setPrevImg] = useState(null)
+  const [editImgCard, setEditImgCard] = useState(false)
   const [downloadSettings, setDownloadSettings] = useState({});
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
 
+  const [switchToggled, setSwitchToggled] = useState(false)
+  const [shownImages, setShownImages] = useState([])
+  const [imgClicked, setImgClicked] = useState('')
+  const imagesPerPage = 8  
 
-  // const [shownImages, setShownImages] = useState([])
-  // const imagesPerPage = 8  
-  // const [pagnationPages, setPagnationPages] = useState(10)
-  // const [showPagnation, setShowPagnation] = useState(true)
+  const [pagnationPages, setPagnationPages] = useState(10)
+  const [showPagnation, setShowPagnation] = useState(true)
 
 //////////////////////////////////////////////////////////////////////////////////
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false}) //
-  const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false})
-  const [gallerySettings, setGallerySettings] = useState({shownImages : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
-
-
-
-
-
-
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
@@ -93,13 +94,14 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     resetAll
   }));
 
-  const handleCardClicked = async(channelName) => {
+  const handleCardClicked = async(username) => {
     setskipDownload(true)
     setCardClicked(true);
-    setChannelData(prev => {return {...prev, chosenChannel : channelName}})
-    setCoverArtData(prev => {return {...prev, prevCoverArtUsed: channelData.channelsList[channelName][1]}})
+    // setChosenUser(username) 
+    setChannelData(prev => {return {...prev, chosenChannel : username}})
+    setPrevImg(users[username][1])
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
-    setDownloadType('channel')
+    setDownloadType('user')
 
     // if (albumCoverFileNames.includes(users[username][1])){
     //   const prevUsedArt = albumCoverFileNames.filter(file => file === users[username][1])
@@ -111,30 +113,32 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
   async function getChannels(){
-    const response = await axios.get('http://localhost:8080/channels');
+    const response = await axios.get('http://localhost:8080/users');
+    // setUsers(response.data);
     setChannelData(prev => {return {
       ...prev, channelsList : response.data
     }})
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files}})
+    setAlbumCoverFileNames(albumCoverResponse.data.files);
   }
 
   const chooseWhichImagesToShow = (e) =>{
-    const startAmount = (Number(e) - 1) * gallerySettings.imagesPerPage
-    const endAmount = Number(e) * gallerySettings.imagesPerPage
-    setGallerySettings(prev => {return {...prev, shownImages: coverArtData.coverArtFileNames.slice(startAmount, endAmount), currentPaginationPage : e}})
+      const startAmount = (Number(e) - 1) * imagesPerPage
+      const endAmount = Number(e) * imagesPerPage
+      setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
+
   }
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
     setShowDock(false)
-    // setAlbumCoverChosen(true)
-    setCoverArtData(prev => {return {...prev, coverArtChosen : true}})
+    setAlbumCoverChosen(true)
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
         url: searchUrl,
-        channel: channelData.chosenChannel,
+        user: chosenUser,
         albumCover: file,
+        // downloadsettings : JSON.stringify(downloadSettings)
         ...downloadSettings
     });
 
@@ -171,7 +175,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         setShowResult(true)
         setShowDock(true)
         setSearchURL('');
-        setChannelData(prev => {return {...prev, chosenChannel : null}})
+        setChosenUser(null);
         setDownloadSettings({})
         setskipDownload(false)
       }
@@ -188,22 +192,24 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   async function getNewAlbumCover() {
     console.log('albumCoverFileNames')
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files}})
-    const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-    setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp}})
+    setAlbumCoverFileNames(albumCoverResponse.data.files);
+    const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
+    setPagnationPages(roundUp)
+
+    setShownImages(albumCoverResponse.data.files.slice(0, imagesPerPage))
   }
 
 
   async function resetAll(){
-    setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
-    setChannelData(prev=> {return {...prev, editChannels : false}})
+    setEditImgCard(false)
+    setEditUsers(false)
     setCardClicked(false);
-    setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
+    setAlbumCoverChosen(false);
     await axios.get(`http://localhost:8080/reload`);
     getChannels();
-
-    setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
-    setGallerySettings(prev => {return {...prev, shownImages: coverArtData.coverArtFileNames.slice(0, gallerySettings.imagesPerPage), showPagination : true}})
+    setPrevImg(null)
+    setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
+    setShowPagnation(true)
   }
 
 
@@ -220,27 +226,33 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
       }
-
-
-     
   }
+
+  const [test, setTest] = useState(0)
 
 
   const downloadItems= [{
     key: '1',
     label: 'Download Settings',
+    // children: <DownloadSettingsForm isTrack={isTrack} isUser={isUser} 
+    //   setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
+    //   setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}
+    //   setShownImages={setShownImages} albumCoverFileNames={albumCoverFileNames}
+    //   setShowPagnation={setShowPagnation} imagesPerPage={imagesPerPage}
+    //   testSetting={{setting : {test, setTest}}}
+    // />
     children: <DownloadSettingsForm  downloadType={downloadType}
       setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
-      setskipDownload={setskipDownload} setPrevPlaylistArt={setCoverArtData}
-      setGallerySettings={setGallerySettings} albumCoverFileNames={coverArtData.coverArtFileNames}
-      imagesPerPage={gallerySettings.imagesPerPage}
+      setskipDownload={setskipDownload} setPrevPlaylistArt={setPrevImg}
+      setShownImages={setShownImages} albumCoverFileNames={albumCoverFileNames}
+      setShowPagnation={setShowPagnation} imagesPerPage={imagesPerPage}
+      testSetting={{setting : {test, setTest}}}
     />
   }];
 
   const debugMode = () => {
     setCardClicked(true)
-    // setAlbumCoverChosen(true)
-    setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
+    setAlbumCoverChosen(true)
     setResultStatusCode(200)
     
     const data = {data: {message: 'All tracks downloaded successfully and can be foun…rs\\j03yp\\Documents\\TuneRip\\downloads\\Archimage999'}, statusCode : 200}
@@ -254,10 +266,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCurrentlyDownloaded([])
     setShowResult(false)
     setIsLoading(false)
-    setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
+    setPrevImg(null)
     setCollapseActiveKey(['0'])
     getChannels();
-    setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
+    setEditImgCard(false)
   }, []);
 
 
@@ -268,27 +280,32 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
     setCardClicked(false)
     setResultStatusCode(null)
-    // setAlbumCoverChosen(false)
-    setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
+    setAlbumCoverChosen(false)
     setSearchURL('');
-    setChannelData(prev => {return {...prev, editChannels : false}})
-    setGallerySettings(prev => {return {...prev, currentPaginationPage : 1}})
+    setChosenUser(null);
     setDownloadSettings({})
     setskipDownload(false)
   }
 
-  const handleChannelAdded = () => {
+  const handleUserAdded = () => {
     getChannels();
   }
 
-  const handleChannelRemoved = () => {
+  const handleUserRemoved = () => {
     getChannels();
   }
 
   const handleTour = () => {
     setCollapseActiveKey(['1'])
-    if (downloadType === 'channel'){
-      downloadScreenValues.setChannelDownloadTourEnabled(true)
+    // if (isUser) {
+    //   downloadScreenValues.setUserDownloadTourEnabled(true)
+    // }else if (isTrack) {
+    //   downloadScreenValues.setTrackDownloadTourEnabled(true)
+    // }else{
+    //   downloadScreenValues.setPlaylistDownloadTourEnabled(true)
+    // }
+    if (downloadType === 'user'){
+      downloadScreenValues.setUserDownloadTourEnabled(true)
     }else if (downloadType === 'track'){
       downloadScreenValues.setTrackDownloadTourEnabled(true)
     } else if (downloadType === 'playlist'){
@@ -299,11 +316,17 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
 
+  const resetCoverArtAndPagnation = () => {
+
+  }
+
+
+
   return (
     <div className='mb-[50px]'>
       <div >
         {cardClicked ? (
-          coverArtData.coverArtChosen ? (
+          albumCoverChosen ? (
             <div>
                 <>
                   <div className='text-white'>
@@ -324,6 +347,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         ))}
                       </div>
                     </>
+
+                      
                     }
                     {!isLoading && showResult && 
                       <> 
@@ -357,7 +382,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
                     </Tooltip>                      
                 </div>
-               : downloadType === 'channel' ?
+               : downloadType === 'user' ?
                 <div className='ml-[10px] mt-[30px]'>
                     <Tooltip title="help">
                         <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleTour()} />
@@ -393,16 +418,16 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>        
 
             <div className='album-cover-containter '>
-                {Object.entries(gallerySettings.shownImages).map((filename, index)=>(
+                {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
                         <AlbumCoverCard 
                         filename={filename[1]}
                         cardClicked={()=>handleAlbumCoverClicked(filename[1])}
-                        previousImg={coverArtData.prevCoverArtUsed}
-                        edit={coverArtData.deleteCoverArt}
+                        previousImg={prevImg}
+                        edit={editImgCard}
                         refresh={getNewAlbumCover}
                         key = {filename[1]}
-                        imgClicked={''}
+                        imgClicked={imgClicked}
                         enlargenImg={false}
                         />
                     </div>                
@@ -410,19 +435,18 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>
 
                
-          { Object.keys(coverArtData.coverArtFileNames).length > 0 && !Object.keys(downloadSettings).includes('addToExistingPlaylistSettings') &&
+          { Object.keys(albumCoverFileNames).length > 0 &&
             <div className='mt-[0px] mb-[10px]'> 
-              <Switch  onChange={() =>  setCoverArtData(prev => {return {...prev, deleteCoverArt : !coverArtData.deleteCoverArt}}) }/> 
+              <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
             </div>      
-            
           }
-          {gallerySettings.showPagination &&
+          {showPagnation &&
             <div className="flex mx-auto justify-center">
                 <Pagination 
-                current={gallerySettings.currentPaginationPage}
+                // current={1}
                 showSizeChanger={false}
                 defaultCurrent={1} 
-                total={gallerySettings.paginationTotal} 
+                total={pagnationPages} 
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
@@ -439,9 +463,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   <div className='relative'>
                     <div className='flex  justify-center '>
                       <div className='inline-block mt-[30px]' ref={searchBarRef}>
-                        <AddChannelForm 
+                        <AddUserForm 
                         setSearchURL={downloadVideo}
-                        handleChannelAdded={handleChannelAdded}
+                        handleUserAdded={handleUserAdded}
                         />                        
                       </div>
                     </div>
@@ -453,19 +477,20 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   </div>
                   <div>
                     {<h1 className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>TuneRip</h1>}
-                      <div className='channel-container inline-block'
-                      ref={Object.keys(channelData.channelsList).length > 0 ? channelRef : null}
+                      {/* <div className='user-container inline-block' ref={userRef} > */}
+                      <div className='user-container inline-block'
+                      ref={Object.keys(users).length > 0 ? userRef : null}
                        >
                         { 
-                        Object.entries(channelData.channelsList).map((item, index) =>(
+                        Object.entries(users).map((item, index) =>(
                           <YoutuberCard
-                            name = {item[0]}
-                            channelPFP={item[0]}
-                            onClick={()=>handleCardClicked(item[0])}
-                            editChannels = {channelData.editChannels}
-                            key = {item[0]}
-                            handleChannelRemoved={handleChannelRemoved}
-                          /> 
+                          name = {item[0]}
+                          userPFP={item[0]}
+                          onClick={()=>handleCardClicked(item[0])}
+                          editUsers = {editUsers}
+                          key = {index+1}
+                          handleUserRemoved={handleUserRemoved}
+                          />
                         ))}
                       </div>
                   </div>
@@ -476,14 +501,13 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           </div>
         )}
       </div>
-      {Object.keys(channelData.channelsList).length > 0  &&  !cardClicked && 
-        <div className='mt-[20px] inline-block mb-[20px]' ref={deleteChannelRef}>
-          <Switch onChange={() =>  setChannelData(prev => {return {...prev, editChannels : !channelData.editChannels}})} />        
-            
+      {Object.keys(users).length > 0  &&  !cardClicked && 
+        <div className='mt-[20px] inline-block mb-[20px]' ref={deleteUserRef}>
+          <Switch onChange={() => setEditUsers(!editUsers)} />        
         </div>      
       }
 
-      {/* <Button onClick={()=> console.log(Object.keys(downloadSettings).includes('addToExistingPlaylistSettings'))}>click me</Button> */}
+      <Button onClick={()=> console.log(channelData.channelsList)}>click me</Button>
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
   )
