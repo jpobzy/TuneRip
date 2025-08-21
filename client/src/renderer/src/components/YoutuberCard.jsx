@@ -31,7 +31,7 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
         </Popconfirm>     
       }
       <div className={editChannels ? "channel-card card-disabled": 'channel-card channel-card-hover'} onClick={onClick}>
-        <img className="avatar" src={`http://localhost:8080/getImage/${channelPFP}`} alt="channel" />
+        <img className="avatar" src={`http://localhost:8080/getChannelImage/${channelPFP}`} alt="channel" />
         <div className="info">
           <h3 className="channel-name">{name}</h3>
         </div>

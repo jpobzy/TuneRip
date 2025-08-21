@@ -44,13 +44,16 @@ def getChannels():
     return jsonify(controller_obj.db.channelCache)
 
 
-@app.route('/getImage/<string:route>', methods=['GET'])
+@app.route('/getChannelImage/<string:route>', methods=['GET'])
 def get_image(route):
     """
     Sends the requested image file
     """
     print(f'route: {route}')
-    return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}', mimetype='image/gif')
+    x = Path(Path.home() / 'Documents/TuneRip/server/static/channelImages' / route)
+    if x.exists():
+        print('hueawswdsa')
+    return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
 @app.route('/getAlbumCovers/<string:route>')

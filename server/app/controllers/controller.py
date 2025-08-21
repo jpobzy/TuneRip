@@ -627,6 +627,15 @@ class controller():
             if subFolderName != None:
                 subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                 downloadPath = playlistRoute / subFolderName
+                if subFolderName.strip() == '':
+                    playlistTitle = playlist.title
+                    playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
+                    downloadPath = playlistRoute / f'{playlistTitle}'    
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = playlistRoute / addToExistingPlaylist
@@ -694,25 +703,26 @@ class controller():
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
-            
-
+        
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
             video = YouTube(url)
             sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', url)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
 
             if subFolderName != None:
-                subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
+                if subFolderName.strip() == '':
+                    downloadPath = self.projRoot / f"downloads/customTracks"
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
                 else:
                     downloadPath = self.projRoot / f"downloads/customTracks"
 
-            
             albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             self.trackNum = 1
@@ -749,7 +759,7 @@ class controller():
             if erorrCount > 0:
                 yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
             else:
-                yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200})
 
 
         else:
@@ -761,9 +771,13 @@ class controller():
             self.trackNum = 1
 
             if subFolderName != None:
-                downloadPath = self.projRoot / f"downloads/{subFolderName}"
-                if not Path(downloadPath).exists():
-                    os.mkdir(downloadPath)
+                if subFolderName.strip() == '':
+                    downloadPath = self.projRoot / f"downloads/{sanitizedChannel}"
+                else:
+                    subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    if not Path(downloadPath).exists():
+                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
