@@ -15,12 +15,14 @@ class database():
         self.checkForFileLocation()
         
 
-    def revamp():
-        "ALTER TABLE table_name RENAME COLUMN user to channel; "
-
-
-
-
+    def revamp(self):
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        try:
+            cur.execute("ALTER TABLE tracks RENAME COLUMN user to channel")
+            cur.execute("ALTER TABLE users RENAME TO channels")
+        except:
+            return
         return
 
     def loadCache(self):
@@ -37,7 +39,7 @@ class database():
     
 
 
-    def addNewUser(self, data):
+    def addNewChannel(self, data):
         """"
         adds channel into channels db, format:
         """
@@ -124,7 +126,7 @@ class database():
         database.close()
         return ret
 
-    def getAllUniqueUsers(self):
+    def getAllUniqueChannels(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         query = cur.execute("SELECT DISTINCT channel FROM tracks")
@@ -136,7 +138,7 @@ class database():
        
 
 
-    def getRecordsFromUser(self, channel, limit, offset):
+    def getRecordsFromChannel(self, channel, limit, offset):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         query = cur.execute("SELECT * FROM tracks WHERE channel=? LIMIT ? OFFSET ?", (channel, limit, offset))
@@ -178,7 +180,7 @@ class database():
             database.close()
             return 'Data deleted', 200
 
-    def deleteUser(self, name):
+    def deleteChannel(self, name):
         """
         Deletes the given channel in "channel" table
         """        
@@ -188,14 +190,14 @@ class database():
         data = channel.fetchall()
         if data == []:
             database.close()
-            return 'User not found', 204
+            return 'Chanel not found', 204
         else:
             cur.execute('DELETE FROM channels WHERE name=?', (name, ))
             database.commit()
             database.close()
             return "Success", 200
             
-    def updateUsersImgUsed(self, channel, file):
+    def updateChannelsImgUsed(self, channel, file):
         """
         Updates the channels last image used in channels table
         """

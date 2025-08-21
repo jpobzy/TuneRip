@@ -116,7 +116,7 @@ function TrackTable({refreshRecords, setRefresh}){
 
   const cols = [
   {
-    title: 'channel',
+    title: 'Channel',
     dataIndex: 'channel',
     key: 'channel',
     fixed: 'left',

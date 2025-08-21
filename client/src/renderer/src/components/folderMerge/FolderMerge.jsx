@@ -77,7 +77,6 @@ function FolderMerge(){
     const handleMergeCleared = () =>{
         setMergeDir(null)
         setIsDisabled(true)
-        console.log('end')
     }
 
     const steps = [

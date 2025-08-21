@@ -53,7 +53,7 @@ export const TourProvider = ({children}) => {
     {
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
-       target: () => document.querySelector('.user-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
+       target: () => document.querySelector('.channel-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
     }
 
   ] 

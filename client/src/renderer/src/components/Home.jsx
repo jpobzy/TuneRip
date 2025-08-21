@@ -2,7 +2,7 @@ import React, { forwardRef, use, useEffect, useReducer, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from './YoutuberCard';
 import '../assets/youtubers.css'
-import AddUserForm from './addUserForm/AddChannelForm'
+import AddChannelForm from './addChannelForm/AddChannelForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
@@ -21,7 +21,7 @@ import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const { message  } = App.useApp();
   const {setShowDock} = useToggle()
-  const {setHomeTourEnabled, deleteUserRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
+  const {setHomeTourEnabled, deleteChannelRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
 
 
   const [cardClicked, setCardClicked] = useState(false);
@@ -185,7 +185,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function getNewAlbumCover() {
-    console.log('albumCoverFileNames')
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setAlbumCoverFileNames(albumCoverResponse.data.files);
     const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
@@ -296,7 +295,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const handleTour = () => {
     setCollapseActiveKey(['1'])
     if (downloadType === 'channel'){
-      downloadScreenValues.setUserDownloadTourEnabled(true)
+      downloadScreenValues.setChannelDownloadTourEnabled(true)
     }else if (downloadType === 'track'){
       downloadScreenValues.setTrackDownloadTourEnabled(true)
     } else if (downloadType === 'playlist'){
@@ -454,9 +453,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   <div className='relative'>
                     <div className='flex  justify-center '>
                       <div className='inline-block mt-[30px]' ref={searchBarRef}>
-                        <AddUserForm 
+                        <AddChannelForm 
                         setSearchURL={downloadVideo}
-                        handleUserAdded={handleChannelAdded}
+                        handleChannelAdded={handleChannelAdded}
                         />                        
                       </div>
                     </div>
@@ -492,7 +491,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         )}
       </div>
       {Object.keys(channelData.channelsList).length > 0  &&  !cardClicked && 
-        <div className='mt-[20px] inline-block mb-[20px]' ref={deleteUserRef}>
+        <div className='mt-[20px] inline-block mb-[20px]' ref={deleteChannelRef}>
           <Switch onChange={() =>  setChannelData(prev => {return {...prev, editChannels : !channelData.editChannels}})} />        
             
         </div>      

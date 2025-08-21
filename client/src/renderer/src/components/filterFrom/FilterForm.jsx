@@ -75,7 +75,6 @@ export default function FilterForm({setRefresh}) {
         }
 
         if (status === 'done') {
-            console.log(info)
             setResultStatusCode(200)
             setIsLoading(false)
             setShowResult(true)

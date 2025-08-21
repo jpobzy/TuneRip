@@ -13,7 +13,7 @@ export default function AddChannelForm({setSearchURL, handleChannelAdded}) {
       return
     }
     if (value.includes("@") ){
-      const res = await fetch('http://localhost:8080/newUser', {
+      const res = await fetch('http://localhost:8080/newChannel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ytLink: value }),

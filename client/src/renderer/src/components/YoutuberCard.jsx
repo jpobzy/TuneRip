@@ -9,7 +9,7 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
   const [hoverEnabled, setHoverEnabled] = useState(false);
 
   async function deleteChannel(){
-    const deleteReq = await axios.delete('http://localhost:8080/deleteUser', {data: {'user': name}})
+    const deleteReq = await axios.delete('http://localhost:8080/deleteChannel', {data: {'channel': name}})
     if (deleteReq.status === 200 || deleteReq.status === 204) {
       // window.location.reload()
       handleChannelRemoved()

@@ -11,7 +11,6 @@ import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
 
-// function DownloadSettingsForm({isTrack, isUser, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setShownImages, albumCoverFileNames, setShowPagnation, imagesPerPage, testSetting}){
 function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setShownImages, albumCoverFileNames, setShowPagnation, imagesPerPage, testSetting}){
     const [componentDisabled, setComponentDisabled] = useState(true);
     const [createSubfolder, setCreateSubfolder] = useState(false)

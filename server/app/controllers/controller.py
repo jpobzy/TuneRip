@@ -299,7 +299,7 @@ class controller():
 
     def deleteChannels(self, query):
         """
-        Deletes the given channel from the Users table
+        Deletes the given channel from the channels table
         """
         response, status = self.db.deleteChannel(query['channel'])
         self.reloadCache()
