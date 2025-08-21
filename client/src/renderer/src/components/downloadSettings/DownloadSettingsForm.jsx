@@ -221,6 +221,11 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setUsePrevData(false)
             setGallerySettings(prev => {return {...prev, shownImages: albumCoverFileNames.slice(0, imagesPerPage), showPagination : true, currentPaginationPage : 1}})
         }
+        if (!e.target.checked){
+            setUsePrevData(false)
+            setShownImages(albumCoverFileNames.slice(0, imagesPerPage))
+            setShowPagnation(true)
+        }
     }
 
     const setAddToExistingPlaylistSettings = (label, value) =>{

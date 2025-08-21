@@ -186,6 +186,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function getNewAlbumCover() {
+    console.log('albumCoverFileNames')
     const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
     setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files}})
     const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
