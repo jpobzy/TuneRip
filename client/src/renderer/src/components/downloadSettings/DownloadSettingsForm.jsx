@@ -474,14 +474,14 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
         }
 
         
-            <Form.Item>
+            {/* <Form.Item>
                 <Checkbox
                     checked={debugMode}
                     onChange={(e)=> handleDebugMode(e)}
                 >   
                     Debug mode
                 </Checkbox>  
-            </Form.Item>         
+            </Form.Item>          */}
         
 
         <div className='inline-block'>

@@ -119,7 +119,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     audio['TALB'] = TALB(encoding=3, text=albumTitle) # Album 
     audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
     audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
-    audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc}')
+    audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc.parts[-1]}')
     audio['TCON'] = TCON(encoding=3, text=f'{genre}')
     
     
@@ -151,21 +151,26 @@ def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=N
     if trackNum:
         audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
         updateData += 'track number, '
+
     if coverArtFile and Path(Path.home() / 'Documents/server/static/albumCovers' / coverArtFile).exists:
-        with open( Path(Path.home() / 'Documents/TuneRip/server/static/albumCovers' / coverArtFile), 'rb') as coverArtFile:
-            cover_data = coverArtFile.read()
-            audio = MP3(filePath, ID3=ID3)
-            if 'APIC:Cover' in audio:
-                del audio['APIC:Cover']
-            apic = APIC(
-                encoding=3,
-                mime='image/jpeg',
-                type=3,
-                desc='Cover',
-                data=cover_data
-            )
-            audio.tags.add(apic) 
-            coverArtFile.close()
+        with open( Path(Path.home() / 'Documents/TuneRip/server/static/albumCovers' / coverArtFile), 'rb') as coverArtFileBytes:
+            cover_data = coverArtFileBytes.read()
+            coverArtFileBytes.close()
+        audio = MP3(filePath, ID3=ID3)
+        if 'APIC:Cover' in audio:
+            del audio['APIC:Cover']
+        if 'COMM::XXX' in audio:
+            del audio['COMM::XXX']
+
+        apic = APIC(
+            encoding=3,
+            mime='image/jpeg',
+            type=3,
+            desc='Cover',
+            data=cover_data
+        )
+        audio['COMM'] = COMM(encoding=3, text=f'{coverArtFile}')
+        audio.tags.add(apic) 
         updateData += 'cover art'
 
     audio.save()

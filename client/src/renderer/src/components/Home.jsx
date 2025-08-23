@@ -159,7 +159,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
     )
 
-    
+  
     if (coverArtData.showPrevUsedCoverArt){
       if (mode === 'playlist'){
         console.log('show all')
@@ -169,7 +169,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
     }else{
       if (mode === 'playlist'){
+        console.log('hide prev used')
         const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
+        console.log(prevUsedCoverArtArr)
         const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
         const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
         setGallerySettings(prev => {return {...prev, shownImages: filteredItems.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  filteredItems}})

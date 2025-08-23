@@ -437,10 +437,11 @@ class controller():
         for track in playlistPath.iterdir():
             if track.suffix == '.mp3':
                 audio = MP3(track, ID3=ID3)
-                coverArtPath = str(audio['COMM::XXX'])
-                if len(coverArtPath) > 0:
-                    path = Path(coverArtPath)
-                    res['coverArtFile'] = path.parts[-1]
+                coverArtFile = str(audio['COMM::XXX'])
+                if len(coverArtFile) > 0:
+                    # path = Path(coverArtPath)
+                    # res['coverArtFile'] = path.parts[-1]
+                    res['coverArtFile'] = coverArtFile
 
                 artist = str(audio['TPE1'])
                 album = str(audio['TALB'])
@@ -467,6 +468,7 @@ class controller():
     def updateMetaData(self, request):
         playlistData = request.get('playlistData')
         newCoverArt = request.get('newCoverArt')
+        self.logger.logInfo(f'Updating metadata with request data: [{playlistData}]')
 
         playlistPath = playlistData.get('playlist')
         updateDatabase = playlistData.get('updateDatabase')
@@ -584,7 +586,7 @@ class controller():
             self.logger.logError(error)
             return f'Something went wrong {error}', 400
         
-    def downloadStream(self, request):
+    def downloadStream(self, request, prevUsedObj):
         """
         download function to either 
             - download all videos from the channel
@@ -622,7 +624,13 @@ class controller():
         useFilterTitles = request.get('useTrackFilter')
 
         self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
+        
+        subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
+        downloadPath = self.projRoot / f"downloads/{subFolderName}"
+        prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
 
+        yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
+        return 'ok'
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
@@ -658,6 +666,9 @@ class controller():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             erorrCount = 0
 
+   
+
+        
             for url in playlist.video_urls:
                 try:
                     video = YouTube(url)
@@ -840,6 +851,8 @@ class controller():
             else:
                 yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
 
+
+        prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
         yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
         return 'ok'
         

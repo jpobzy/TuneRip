@@ -220,7 +220,9 @@ def getPlaylistData():
 
 @app.put('/updatemetadata')
 def updateMetaData():
-    return controller_obj.updateMetaData(json.loads(request.data))
+    prevUsedObj.updateRecords(json.loads(request.data))
+    controller_obj.updateMetaData(json.loads(request.data))
+    return 'ok'
 
 @app.get('/getbackgroundsettings')
 def getBackgroundSettings():
@@ -268,7 +270,7 @@ def stream():
 
 @app.route('/downloadStream')
 def streamDownload(): 
-    return Response(controller_obj.downloadStream(dict(request.args)), mimetype="text/event-stream")
+    return Response(controller_obj.downloadStream(dict(request.args), prevUsedObj), mimetype="text/event-stream")
 
 
 @app.route('/refactorpfp')
