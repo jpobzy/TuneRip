@@ -541,7 +541,6 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             </Form.Item>
         </div>     
       </Form>
-      <Button onClick={()=>console.log(downloadType)}>clcik</Button>
     </div>
     );
 };

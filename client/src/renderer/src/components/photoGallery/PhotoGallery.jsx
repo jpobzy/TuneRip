@@ -1,4 +1,4 @@
-import { Button, Switch, Select, Tooltip, Result, Tour, ConfigProvider, Checkbox, Spin  } from "antd";
+import { Button, Switch, Select, Tooltip, Result, Tour, Checkbox, Spin } from "antd";
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
 import { App, Pagination, Input } from 'antd';
@@ -11,9 +11,11 @@ function PhotoGallery(){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
-
+    const { message  } = App.useApp();
     const [open, setOpen] = useState(false);
     const [pagnationPages, setPagnationPages] = useState(10)
+    const [disablePrevUsedStatus, togglePrevUsed] = useState()
+    const text = <span>Toggle to disable/enable showing previously used images being shown when selecting cover art. This setting gets ignored when adding to channeldisablePrevUsedStatus or existing playlist</span>;
 
     const addCoverArtRef = useRef(null)
     const editSwitchCoverArtRef = useRef(null)
@@ -62,7 +64,29 @@ function PhotoGallery(){
         },          
     ]
 
+
+    const handlePrevUsed = async (e) => {
+        togglePrevUsed(e)
+        const req = await axios.post('http://localhost:8080/toggleShowPrevUsedImages', {'data' : e})
+        if (req.status === 200){
+            message.success('Status changed')
+        }else{
+            message.error('Something went wrong')
+        }
+    }
+
+    const getPrevUsedStatus = async () => {
+        const req = await axios.get('http://localhost:8080/getPrevUseStatus')
+        if (req.status === 200){
+            togglePrevUsed(req.data)
+        }else{
+            message.error('Something went wrong when getting getPrevUseStatus')
+        }
+    
+    }
+
     useEffect(()=> {
+        getPrevUsedStatus()
         getNewAlbumCover();
     }, []);
 
@@ -111,11 +135,40 @@ function PhotoGallery(){
 
           { Object.keys(shownImages).length > 0 &&
             <>
-                <div className='mt-[20px] inline-block' ref={editSwitchCoverArtRef}> 
-                    <Switch onChange={() => setEditImgCard(!editImgCard)} />        
-                 </div>                
+                <div className="flex justify-center gap-[190px]">
+
+                    <div className="" >
+                        <div className="text-white absolute -ml-[15px]">
+                            Edit images
+                        </div>
+                        <div className='mt-[30px] inline-block' ref={editSwitchCoverArtRef}> 
+                            <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
+                        </div>     
+
+
+                    </div>
+
+                    <div className=" ">
+                        <div className="flex -ml-[70px]">
+                            <div className="text-red-500 absolute -ml-[35px] mt-[1px]">
+                                NEW
+                            </div>
+                            <div className="text-white absolute ">
+                                {disablePrevUsedStatus === true ? "Showing previously used cover art" : "Not showing previously used cover art"}
+                            </div>
+
+                        </div>
+                        <Tooltip placement="right" title={text} >
+                            <div className='mt-[30px]  inline-block' ref={editSwitchCoverArtRef}> 
+                                <Switch value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
+                            </div>  
+                        </Tooltip>
+                    </div>
+                </div>
             </>
           }
+
+
 
 
             <div className="flex mx-auto justify-center mt-[30px] mb-[20px]">

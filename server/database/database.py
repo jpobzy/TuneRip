@@ -4,8 +4,9 @@ from datetime import datetime
 # self.db_path = Path(__file__).parents[1] / "TuneRipDatabase.db"
 
 class database():
-    def __init__(self, databaseFolderRoute):
+    def __init__(self, databaseFolderRoute, logger):
         self.channelCache = {}
+        self.logger = logger
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
         if Path(self.db_path).exists():
             self.revamp()

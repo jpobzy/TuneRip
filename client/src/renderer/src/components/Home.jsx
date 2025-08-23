@@ -6,7 +6,7 @@ import AddChannelForm from './addChannelForm/AddChannelForm'
 import FadeContent from './fade/FadeContent';
 import AlbumCoverCard from './albumCoverCard/AlbumCoverCard';
 import UploadButton from './uploadImagesButton/UploadButton';
-import { Collapse } from 'antd';
+import { Collapse, notification } from 'antd';
 import { App } from 'antd';
 import { useImperativeHandle, useRef } from 'react';
 import DownloadSettingsForm from './downloadSettings/DownloadSettingsForm';
@@ -15,7 +15,7 @@ import { useToggle } from './context/UseContext';
 import { QuestionOutlined } from '@ant-design/icons';
 import { useHomeContext } from './context/HomeContext';
 import { resultToggle } from './context/ResultContext';
-import CoverArtChanger from './CoverArtChanger/CoverArtChanger';
+
 
 
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
@@ -31,22 +31,11 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [skipDownload, setskipDownload] = useState(false);
 
 
-  // const [shownImages, setShownImages] = useState([])
-  // const imagesPerPage = 8  
-  // const [pagnationPages, setPagnationPages] = useState(10)
-  // const [showPagnation, setShowPagnation] = useState(true)
-
 //////////////////////////////////////////////////////////////////////////////////
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false}) //
   const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false})
   const [gallerySettings, setGallerySettings] = useState({shownImages : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
-
-
-
-
-
-
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
@@ -58,33 +47,18 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [currentlyDownloaded, setCurrentlyDownloaded] = useState([])
 
 
-  const initialState = { paginationTotal : 10, showPagination : true, imagesPerPagination : 8, shownArt : [], }
-  function coverArtHandler(state, action){
-    switch (action.type){
-      case "togglePagination":
-        return {
-          showPagination : !state.showPagination
-        }
-      default:
-        return state
-      
-
-    }
-
-  }
-
-
-
-  const [state, dispatcher] = useReducer(coverArtHandler, initialState)
-
-
-
-
-
-
-
-
-
+  // const initialState = { paginationTotal : 10, showPagination : true, imagesPerPagination : 8, shownArt : [], }
+  // function coverArtHandler(state, action){
+  //   switch (action.type){
+  //     case "togglePagination":
+  //       return {
+  //         showPagination : !state.showPagination
+  //       }
+  //     default:
+  //       return state
+  //   }
+  // }
+  // const [state, dispatcher] = useReducer(coverArtHandler, initialState)
 
 
 
@@ -100,35 +74,28 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: channelData.channelsList[channelName][1]}})
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
     setDownloadType('channel')
-
-    // if (albumCoverFileNames.includes(users[username][1])){
-    //   const prevUsedArt = albumCoverFileNames.filter(file => file === users[username][1])
-    //   const otherArt = albumCoverFileNames.filter(file => file !== users[username][1])
-    //   setShownImages(prevUsedArt.concat(otherArt).slice(0, imagesPerPage))
-    // }
-
-
+    getCoverArtData('channel')
   }
 
-  async function getChannels(){
+  async function getChannelsData(){
     const response = await axios.get('http://localhost:8080/channels');
     setChannelData(prev => {return {
       ...prev, channelsList : response.data
     }})
-    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files}})
   }
 
   const chooseWhichImagesToShow = (e) =>{
+    // changing the page
     const startAmount = (Number(e) - 1) * gallerySettings.imagesPerPage
     const endAmount = Number(e) * gallerySettings.imagesPerPage
-    setGallerySettings(prev => {return {...prev, shownImages: coverArtData.coverArtFileNames.slice(startAmount, endAmount), currentPaginationPage : e}})
+    setGallerySettings(prev => {
+      return {...prev, shownImages : prev.allImages.slice(startAmount, endAmount), currentPaginationPage : e}
+    })
   }
 
   const handleAlbumCoverClicked = async(file) =>{
     setIsLoading(true)
     setShowDock(false)
-    // setAlbumCoverChosen(true)
     setCoverArtData(prev => {return {...prev, coverArtChosen : true}})
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
@@ -185,12 +152,37 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
 
-  async function getNewAlbumCover() {
-    console.log('albumCoverFileNames')
-    const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files}})
-    const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-    setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp}})
+  async function getCoverArtData(mode) {
+    const albumCoverResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
+    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files, 
+      showPrevUsedCoverArt : Boolean(albumCoverResponse.data.prevUsedCoverArtInfo.showPrevUsed), 
+      prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
+    )
+
+    
+    if (coverArtData.showPrevUsedCoverArt){
+      if (mode === 'playlist'){
+        console.log('show all')
+        const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+        setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  albumCoverResponse.data.files}})
+      }
+
+    }else{
+      if (mode === 'playlist'){
+        const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
+        const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
+        const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
+        setGallerySettings(prev => {return {...prev, shownImages: filteredItems.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  filteredItems}})
+      }
+    }
+
+    if (mode === 'channel'){
+      const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+      setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
+    } else if (mode === 'track'){
+      const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+      setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
+    }
   }
 
 
@@ -200,10 +192,11 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCardClicked(false);
     setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
     await axios.get(`http://localhost:8080/reload`);
-    getChannels();
-
+    getChannelsData();
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
-    setGallerySettings(prev => {return {...prev, shownImages: coverArtData.coverArtFileNames.slice(0, gallerySettings.imagesPerPage), showPagination : true}})
+    setGallerySettings(prev => {
+      return {...prev, currentPaginationPage : 1, showPagination : true}
+    })
   }
 
 
@@ -212,17 +205,18 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         setCardClicked(true);
         setDownloadType('track')
         setSearchURL(videosearchURL);
+        getCoverArtData('track')
       }else if (videosearchURL.includes('playlist?list=')){
         setCardClicked(true);
         setSearchURL(videosearchURL);
         setDownloadType('playlist')
+        getCoverArtData('playlist')
       }else{
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
       }
 
 
-     
   }
 
 
@@ -249,26 +243,22 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   useEffect(()=> {
-    getNewAlbumCover();
+    getChannelsData();
     setResultStatusCode(null)
     setCurrentlyDownloaded([])
     setShowResult(false)
     setIsLoading(false)
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
     setCollapseActiveKey(['0'])
-    getChannels();
     setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
   }, []);
 
 
   const goBack = () => {
-    getNewAlbumCover();
     setIsLoading(false)
     setShowResult(false)
-
     setCardClicked(false)
     setResultStatusCode(null)
-    // setAlbumCoverChosen(false)
     setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
     setSearchURL('');
     setChannelData(prev => {return {...prev, editChannels : false}})
@@ -278,11 +268,11 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
   const handleChannelAdded = () => {
-    getChannels();
+    getChannelsData();
   }
 
   const handleChannelRemoved = () => {
-    getChannels();
+    getChannelsData();
   }
 
   const handleTour = () => {
@@ -294,7 +284,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     } else if (downloadType === 'playlist'){
       downloadScreenValues.setPlaylistDownloadTourEnabled(true)
     }else{
-      console.log('SOMETHING WENT WRONG WITH THE TOUR, DOWNLOAD TYPE IS NOT VALID', downloadType)
+      notification.error('SOMETHING WENT WRONG WHEN TRYING TO ENABLE THE TOUR')
     } 
   }
 
@@ -349,7 +339,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           <div className=''>
             <div className='mb-10 justify-center flex '>
               <div className='mt-[30px] ml-[50px] inline-block' ref={downloadScreenRefs.addCoverArtRef}>
-                <UploadButton refresh={getNewAlbumCover}/>
+                <UploadButton refresh={getCoverArtData}/>
               </div>
               {downloadType === 'track' ?
                 <div className='ml-[10px] mt-[30px]'>
@@ -400,7 +390,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         cardClicked={()=>handleAlbumCoverClicked(filename[1])}
                         previousImg={coverArtData.prevCoverArtUsed}
                         edit={coverArtData.deleteCoverArt}
-                        refresh={getNewAlbumCover}
+                        refresh={getCoverArtData}
                         key = {filename[1]}
                         imgClicked={''}
                         enlargenImg={false}

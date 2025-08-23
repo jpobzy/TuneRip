@@ -13,16 +13,18 @@ from PIL import Image
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1, APIC
 # from loggingController import logController
-from app.controllers.loggingController import logController
+from app.controllers.prevUsedImagesController import prevUsedImagesController
 
 
 class controller():
-    def __init__(self, databaseFolderRoute):
+    def __init__(self, databaseFolderRoute, logger):
         self.projRoot = Path.home() / 'Documents' / 'TuneRip'
-        self.checkLogger()
+        # self.checkLogger()
         self.checkFolders()
-        self.db = database(databaseFolderRoute)
-
+        
+        self.db = database(databaseFolderRoute, logger)
+        self.logger = logger
+        self.prevUsedData = prevUsedImagesController(logger)
 
     def pathMaker(self, path):
         """
@@ -32,20 +34,20 @@ class controller():
             Path.mkdir(path)
         return
 
-    def checkLogger(self):
-        logDir =  self.projRoot / 'server/logs'
-        if not logDir.exists():
-            self.pathMaker(logDir)
+    # def checkLogger(self):
+    #     logDir =  self.projRoot / 'server/logs'
+    #     if not logDir.exists():
+    #         self.pathMaker(logDir)
 
-        if Path(self.projRoot / 'logs').exists():
-            shutil.rmtree(Path(self.projRoot / 'logs'))
+    #     if Path(self.projRoot / 'logs').exists():
+    #         shutil.rmtree(Path(self.projRoot / 'logs'))
 
-        if Path(self.projRoot / 'debug').exists():
-            shutil.rmtree(Path(self.projRoot / 'debug'))
+    #     if Path(self.projRoot / 'debug').exists():
+    #         shutil.rmtree(Path(self.projRoot / 'debug'))
 
-        self.logger = logController(logDir)
-        self.logger.logInfo('Starting app')
-        return      
+    #     self.logger = logController(logDir)
+    #     self.logger.logInfo('Starting app')
+    #     return      
 
     def checkFolders(self):
         """

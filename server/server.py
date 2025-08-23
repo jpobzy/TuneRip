@@ -11,6 +11,8 @@ from app.controllers.backgroundDataController import backgroundData
 from app.controllers.cursorDataController import cursorData
 from app.controllers.titleFilterController import titleFilterController
 from datetime import datetime
+from app.controllers.loggingController import logController
+from app.controllers.prevUsedImagesController import prevUsedImagesController
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -26,10 +28,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALBUM_COVER_FOLDER'] = ALBUM_COVER_FOLDER
 app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 
-controller_obj = controller(app.config['DATABASE_FOLDER'])
+
+logger = logController()
+controller_obj = controller(app.config['DATABASE_FOLDER'], logger)
 backgrounddata_obj = backgroundData()
 cursordata_obj = cursorData()
 titleFilterObj = titleFilterController()
+prevUsedObj = prevUsedImagesController(logger)
+
+
 
 @app.route("/")
 def hello_world():
@@ -290,6 +297,22 @@ def addWord():
 @app.put('/editTitleFilter')
 def editTitleFilter():
     return titleFilterObj.editTitleFilter(json.loads(request.data).get('data'))
+
+
+@app.post('/toggleShowPrevUsedImages')
+def toggleShowPrevUsedImages():
+    return prevUsedObj.toggleShowPrevUsed(json.loads(request.data))
+
+@app.get('/getPrevUseStatus')
+def getPrevUseStatus():
+    return jsonify(prevUsedObj.getPrevUsedStatus())
+
+@app.get('/getChannelAndArtCoverData')
+def getChannelAndArtCoverData():
+    data = controller_obj.returnAlbumCoverFileNames()
+    data['prevUsedCoverArtInfo'] = prevUsedObj.getRecords()
+    return jsonify(data)
+
 
 
 if __name__ == "__main__":

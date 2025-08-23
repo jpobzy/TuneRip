@@ -86,11 +86,28 @@ function Settings(){
     },
     {
         key: '7',
-        label: 'Edit photo album',
+        label: 
+        <>
+
+                {/* <div className="text-red-500 mr-[5px] visible">
+                    NEW
+                </div> */}       
+            <div className="flex">
+                <div className="text-red-500 mr-[5px] visible">
+                    NEW
+                </div>
+                <div className="">
+                    Edit photo album
+                </div>                
+            </div>       
+        </> ,
         children: 
-        <div className="text-center mt-[30px]">
-            <PhotoGallery />
-        </div>
+        <>
+            <div className="text-center mt-[30px]">
+                <PhotoGallery />
+            </div>        
+        </>
+
     },
     {
         key: '8',
