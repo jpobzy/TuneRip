@@ -18,19 +18,11 @@ import logging
 # if __name__ == '__main__':
 #     main()
 
+path = Path(Path.home() / 'Documents/TuneRip/downloads/playlists/test1')
 
-import logging
-
-class logController():
-    
-
-    def __init__(self):
-        logDir = Path(Path.home() / f'Documents/Github/TuneRip/server/')
-        fileNumber = sum(str(i).endswith('.log') for i in logDir.iterdir()) + 1
-        self.logFile = Path(logDir / f'logfile{fileNumber}.log')
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(filename='myapp.log', level=logging.INFO)
-                            
-
-
-logController()
+if path.exists():
+    for file in path.iterdir():
+        if file.suffix == '.mp3':
+            # print(file)
+            audio = MP3(file, ID3=ID3)
+            print(audio['COMM::XXX'])

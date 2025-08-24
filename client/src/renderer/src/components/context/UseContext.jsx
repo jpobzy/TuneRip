@@ -4,9 +4,10 @@ const toggleContext = createContext();
 
 export const ToggleProvider = ({children}) => {
     const [showDock, setShowDock] = useState(true)
-    const [httpRequestRequired, setHttpRequestRequired] = useState(true)
+    const [disableDockFunctionality, setDisableDockFunctionality] = useState(false)
+
     return (
-        <toggleContext.Provider value={{showDock, setShowDock, httpRequestRequired, setHttpRequestRequired}}>
+        <toggleContext.Provider value={{showDock, setShowDock, disableDockFunctionality, setDisableDockFunctionality}}>
             {children}
         </toggleContext.Provider>
     )

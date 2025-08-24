@@ -67,7 +67,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     resetAll
   }));
 
-  const handleCardClicked = async(channelName) => {
+  const handleChannelClicked = async(channelName) => {
     setskipDownload(true)
     setCardClicked(true);
     setChannelData(prev => {return {...prev, chosenChannel : channelName}})
@@ -158,9 +158,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       showPrevUsedCoverArt : Boolean(albumCoverResponse.data.prevUsedCoverArtInfo.showPrevUsed), 
       prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
     )
+    console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
 
-    
-    if (coverArtData.showPrevUsedCoverArt){
+  
+    if (albumCoverResponse.data.prevUsedCoverArtInfo.showPrevUsed){
       if (mode === 'playlist'){
         console.log('show all')
         const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
@@ -169,7 +170,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
     }else{
       if (mode === 'playlist'){
+        console.log('hide prev used')
         const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
+        console.log(prevUsedCoverArtArr)
         const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
         const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
         setGallerySettings(prev => {return {...prev, shownImages: filteredItems.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  filteredItems}})
@@ -177,8 +180,12 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     }
 
     if (mode === 'channel'){
+
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
       setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
+
+
+
     } else if (mode === 'track'){
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
       setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
@@ -451,7 +458,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                           <YoutuberCard
                             name = {item[0]}
                             channelPFP={item[0]}
-                            onClick={()=>handleCardClicked(item[0])}
+                            onClick={()=>handleChannelClicked(item[0])}
                             editChannels = {channelData.editChannels}
                             key = {item[0]}
                             handleChannelRemoved={handleChannelRemoved}

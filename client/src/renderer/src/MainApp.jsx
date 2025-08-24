@@ -23,9 +23,12 @@ function MainApp() {
   const [page, setPage] = useState("Home");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
-  // const [goHome, setGoHome]
+  const {showDock, disableDockFunctionality} = useToggle()
 
-  const homeButtonClicked = () => {
+  const handleHomeClicked = () => {
+    if (disableDockFunctionality){
+      return
+    }
     setPage('Home')
     if (ref.current){
       ref.current.resetAll();
@@ -33,13 +36,28 @@ function MainApp() {
     setCollapseActiveKey(['0'])
   }
 
+
+  const handleHistoryClicked = () => {
+    if (disableDockFunctionality){
+      return
+    }
+    setPage('History')
+  }
+
+  const handleSettingsClicked = () => {
+    if (disableDockFunctionality){
+      return
+    }
+    setPage('Settings')
+  }
+
   const items = [
-    { icon: <VscHome size={18} />, label: 'Home', onClick: () => homeButtonClicked() },
-    { icon: <VscArchive size={18} />, label: 'History', onClick: () => setPage('History') },
-    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setPage('Settings') }
+    { icon: <VscHome size={18} />, label: 'Home', onClick: () => handleHomeClicked() },
+    { icon: <VscArchive size={18} />, label: 'History', onClick: () =>  handleHistoryClicked()},
+    { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => handleSettingsClicked()}
   ];
 
-  const {showDock} = useToggle()
+
 
 
 
@@ -65,7 +83,7 @@ function MainApp() {
           </div>
           
         { showDock &&
-          <div className='dock-wrapper flex justify-center items-center '>
+          <div className='dock-wrapper flex justify-center items-center'>
             {/* <div className='absolute bottom-0 mx-auto text-red-900 z-999 ml-[130px] mb-[15px]'>
               new
             </div> */}

@@ -6,7 +6,7 @@ import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
 import { resultToggle } from "../context/ResultContext";
 import UploadButton from "../uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
-
+import { useToggle } from "../context/UseContext";
 function PhotoGallery(){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
@@ -16,10 +16,10 @@ function PhotoGallery(){
     const [pagnationPages, setPagnationPages] = useState(10)
     const [disablePrevUsedStatus, togglePrevUsed] = useState()
     const text = <span>Toggle to disable/enable showing previously used images being shown when selecting cover art. This setting gets ignored when adding to channeldisablePrevUsedStatus or existing playlist</span>;
-
+    const [switchLoading, setSwitchLoading] = useState(false)
     const addCoverArtRef = useRef(null)
     const editSwitchCoverArtRef = useRef(null)
-
+    const {setDisableDockFunctionality} = useToggle()
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
     
@@ -66,13 +66,19 @@ function PhotoGallery(){
 
 
     const handlePrevUsed = async (e) => {
+        setSwitchLoading(true)
         togglePrevUsed(e)
+        setDisableDockFunctionality(true)
         const req = await axios.post('http://localhost:8080/toggleShowPrevUsedImages', {'data' : e})
         if (req.status === 200){
             message.success('Status changed')
         }else{
             message.error('Something went wrong')
         }
+        setSwitchLoading(false)
+        setDisableDockFunctionality(false)
+        // const albumCoverResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
+        // console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
     }
 
     const getPrevUsedStatus = async () => {
@@ -142,7 +148,7 @@ function PhotoGallery(){
                             Edit images
                         </div>
                         <div className='mt-[30px] inline-block' ref={editSwitchCoverArtRef}> 
-                            <Switch  onChange={() => setEditImgCard(!editImgCard)} />        
+                            <Switch onChange={() => setEditImgCard(!editImgCard)} />        
                         </div>     
 
 
@@ -160,7 +166,7 @@ function PhotoGallery(){
                         </div>
                         <Tooltip placement="right" title={text} >
                             <div className='mt-[30px]  inline-block' ref={editSwitchCoverArtRef}> 
-                                <Switch value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
+                                <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
                             </div>  
                         </Tooltip>
                     </div>
