@@ -17,6 +17,7 @@ import SelectCursor from "./selectCursor/SelectCursor";
 import FolderMerge from "./folderMerge/FolderMerge";
 import PhotoGallery from "./photoGallery/PhotoGallery";
 import FileNameFilter from "./fileNameFilter/FileNameFilter";
+import About from "./about/About";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
@@ -133,6 +134,15 @@ function Settings(){
             <SelectCursor />
         </div>
     },
+    {
+        key: '11',
+        label: 'About',
+        children: 
+        <div className="text-center mt-[50px]">
+            <About />
+        </div>
+    },
+
     ];
 
 

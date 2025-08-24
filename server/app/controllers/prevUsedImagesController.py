@@ -5,6 +5,7 @@ import urllib.parse
 from app.controllers.loggingController import logController
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3
+import time
 
 class prevUsedImagesController():
     def __init__(self, logger):
@@ -78,7 +79,6 @@ class prevUsedImagesController():
     def getRecords(self):
         with open(self.file, 'r') as file:
             data = json.load(file)
-
         return data
     
 

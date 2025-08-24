@@ -14,7 +14,7 @@ export default function History() {
   const [trackHistory, setTrackHistory] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [downloadCount, setDownloadCount] = useState(0)
-  const {httpRequestRequired, setHttpRequestRequired} = useToggle();
+
 
   async function getHistory() {
     const {data} = await axios.get('http://localhost:8080/history')
@@ -38,11 +38,8 @@ export default function History() {
   };
 
     useEffect(()=> {
-      if (httpRequestRequired){
         getHistory();
-        getDownloadCount()        
-      }
-
+        getDownloadCount()    
     },[]);
 
         
