@@ -108,7 +108,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     sseDownload.current = new EventSource(`http://localhost:8080/downloadStream?${params}`);
     const skipAddingList = ['Connected']
     sseDownload.current.onmessage = (event) => {
-      const data = JSON.parse(event.data.replaceAll("'", '"'))
+      const data = JSON.parse(event.data)
       const message = data.message
 
 
@@ -124,7 +124,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       }
 
       
-      if ('message' === 'channelError'){
+      if (message === 'channelError'){
         sseDownload.current.close()
         sseDownload.current = null
 
@@ -136,7 +136,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         setDownloadSettings({})
         setskipDownload(false)
       }
-
 
 
 
@@ -171,17 +170,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
     )
 
-  
+    console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
     if (albumCoverResponse.data.prevUsedCoverArtInfo.hidePrevUsed){
-      if (mode === 'playlist'){
-        const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-        setGallerySettings(prev => {return {...prev, 
-          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
-          paginationTotal : roundUp, allImages:  albumCoverResponse.data.files
-        }})
-      }
-
-    }else{
+      console.log('hidden')
       if (mode === 'playlist'){
         const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
         const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
@@ -191,6 +182,18 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           currentImagesShown: filteredItems.slice(0, gallerySettings.imagesPerPage), 
           paginationTotal : roundUp, allImages:  filteredItems, 
           imagesToNotShow : filteredItems
+        }})
+      }
+
+      
+
+
+    }else{
+      if (mode === 'playlist'){
+        const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, allImages:  albumCoverResponse.data.files
         }})
       }
     }
@@ -241,6 +244,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
   async function resetAll(){
+    setResponseData({})
     setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
     setChannelData(prev=> {return {...prev, editChannels : false}})
     setCardClicked(false);
@@ -528,9 +532,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         </div>      
       }
 
-      
-      {/* <Button onClick={()=> console.log(downloadSettings)}>click me</Button> 
-      {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button>  */}
+      {/* <Button onClick={()=> console.log(downloadSettings)}>sadsa me</Button>  */}
+      {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button> 
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
   )

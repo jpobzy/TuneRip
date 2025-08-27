@@ -160,11 +160,15 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
 
             setDownloadSettings(prev => {return {...prev}})
             setGallerySettings(prev => {
-            return {
-                ...prev, 
-                currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
-                showPagination : true, currentPaginationPage : 1
-            }})
+                if (prev.showPagination){
+                    return prev
+                }
+                return {
+                    ...prev, 
+                    currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
+                    showPagination : true, currentPaginationPage : 1
+                }
+            })
         }
 
         setAddToExistingPlaylist(false)
@@ -180,7 +184,6 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             if (e.target.checked === false){
                 delete newSettings['subFolderName'];
                 form.setFieldsValue({'dirname': ''})
-                
             }
             return newSettings;
         })
@@ -242,9 +245,9 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
 
         if (!e.target.checked){
             setDownloadSettings(prev => {
-                const one = {...prev}
-                delete one['addToExistingPlaylistSettings']
-                return one
+                const copy = {...prev}
+                delete copy['addToExistingPlaylistSettings']
+                return copy
             })
 
             setUsePrevData(false)

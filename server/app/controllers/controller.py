@@ -498,7 +498,7 @@ class controller():
 
 
     def clientMessageFormatter(self, message):
-        yield f'data: {str(message)}\n\n'
+        yield f"data: {json.dumps(message)}\n\n"
         return        
 
     def checkDownloadCount(self, downloadCount):
@@ -857,7 +857,7 @@ class controller():
                 self.logger.logError(error)
                 yield from self.clientMessageFormatter({"message" :  f'Channel [{ytLink}] could not be found, possible it was taken down', "statusCode" : 400})
                 yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
-                return 'Error', 400
+                return 'ok'
 
         prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
         yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
