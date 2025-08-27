@@ -42,9 +42,22 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
             with open(filePath, 'r') as file:
                 data = json.load(file)
 
-            currentData = data['filterWords']
-            pattern =  re.compile( '|'.join(map(re.escape, currentData)) )
-            valid_title = re.sub(pattern, '', valid_title)
+            for phrase in data['filterWords']:
+                toSkip = str(phrase).lower()
+                lowerCaseString = valid_title.lower()
+                filteredLowerCase = lowerCaseString.find(toSkip)
+                if filteredLowerCase == -1:
+                    continue
+                firstPart = valid_title[: filteredLowerCase]
+                secondPart = valid_title[filteredLowerCase + len(toSkip):]
+                combinedString = firstPart + secondPart
+                valid_title = " ".join((combinedString).split())
+
+
+            # currentData = data['filterWords']
+            # pattern =  re.compile( '|'.join(map(re.escape, currentData)) )
+            # valid_title = re.sub(pattern, '', valid_title)
+
 
     else:
         valid_title = trackTitle

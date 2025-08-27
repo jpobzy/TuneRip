@@ -6,8 +6,6 @@ import { Popconfirm } from 'antd';
 import axios from 'axios';
 
 export default function YoutuberCard({name, channelPFP, onClick, editChannels, handleChannelRemoved}) {
-  const [hoverEnabled, setHoverEnabled] = useState(false);
-
   async function deleteChannel(){
     const deleteReq = await axios.delete('http://localhost:8080/deleteChannel', {data: {'channel': name}})
     if (deleteReq.status === 200 || deleteReq.status === 204) {

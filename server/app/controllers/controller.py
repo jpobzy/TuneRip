@@ -11,20 +11,27 @@ from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TRCK, TALB, TCON, TPE1, APIC
-# from loggingController import logController
-from app.controllers.prevUsedImagesController import prevUsedImagesController
+from mutagen.id3 import ID3, TRCK
+from app.controllers.imageSettingsController import imageSettingsController
 
 
 class controller():
     def __init__(self, databaseFolderRoute, logger):
-        self.projRoot = Path.home() / 'Documents' / 'TuneRip'
-        # self.checkLogger()
-        self.checkFolders()
+        try:
+            self.projRoot = Path.home() / 'Documents' / 'TuneRip'
+
+            self.logger = logger
+            self.checkFolders()
+            self.db = database(databaseFolderRoute, logger)
+            
+            self.prevUsedData = imageSettingsController(logger)
+            return
+        except Exception as error:
+            logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
+            logger.logError(error)
+            raise Exception('Something went wrong on app startup please check logs')
         
-        self.db = database(databaseFolderRoute, logger)
-        self.logger = logger
-        self.prevUsedData = prevUsedImagesController(logger)
+
 
     def pathMaker(self, path):
         """
@@ -59,6 +66,7 @@ class controller():
             self.pathMaker(basePath / 'server')
             self.pathMaker(basePath / 'server/static')
             self.pathMaker(basePath / 'server/static/albumCovers')
+            self.pathMaker(basePath / 'server/static/albumCovers/used')
             self.pathMaker(basePath / 'server/database')
             self.pathMaker(basePath / 'downloads')
             self.pathMaker(basePath / 'downloads/playlists')
@@ -93,7 +101,6 @@ class controller():
         """
         Returns a dict containing a list of all album cover files for the front end to request 
         """
-        # files = [file.name if '.png'in file.name or '.jpeg' in file.name else '' for file in Path(self.projRoot / f'server/static/albumCovers/').iterdir()]
         files = [file.name for file in Path(Path.home() / 'Documents/TuneRip' / f'server/static/albumCovers/').iterdir() if file.suffix in ('.png', '.jpeg', '.jpg')]
         return {'files' : files}
 
@@ -491,7 +498,7 @@ class controller():
 
 
     def clientMessageFormatter(self, message):
-        yield f'data: {str(message)}\n\n'
+        yield f"data: {json.dumps(message)}\n\n"
         return        
 
     def checkDownloadCount(self, downloadCount):
@@ -624,13 +631,6 @@ class controller():
         useFilterTitles = request.get('useTrackFilter')
 
         self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
-        
-        subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-        downloadPath = self.projRoot / f"downloads/{subFolderName}"
-        prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
-
-        yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
-        return 'ok'
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
             playlistRoute = self.projRoot / 'downloads/playlists'
@@ -690,7 +690,7 @@ class controller():
                     self.trackNum += 1
                     self.downloadCount += 1
 
-                    yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
+                    yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
 
 
                     
@@ -757,7 +757,7 @@ class controller():
                 if not debugModeAddToDB:
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                 self.downloadCount += 1
-                yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
+                yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
                 
 
                 
@@ -800,57 +800,64 @@ class controller():
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
             
-            c = Channel(ytLink)
-            erorrCount = 0
-            for video in c.videos:
-                try: 
-                    if skipDownload and self.db.checkIfTrackExists(video.video_id):
-                        continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
+            try:
+                c = Channel(ytLink)
+                erorrCount = 0
+                for video in c.videos:
+                    try: 
+                        if skipDownload and self.db.checkIfTrackExists(video.video_id):
+                            continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
 
-                    trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
+                        trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
+                        
+                        status = 'downloaded'
+                        if f'beat/instrumental ### ' in trackName:
+                            trackName = trackName.replace('beat/instrumental ### ', '')
+                            status = 'filtered'
+                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                            yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
+                            continue
+
+
+                        if not debugModeAddToDB:
+                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                        self.trackNum += 1
+                        self.downloadCount += 1
                     
-                    status = 'downloaded'
-                    if f'beat/instrumental ### ' in trackName:
-                        trackName = trackName.replace('beat/instrumental ### ', '')
-                        status = 'filtered'
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
-                        yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
-                        continue
+                        yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
 
+                        
+                    except Exception as error:
+                        if 'Premieres in' in str(error):
+                            self.logger.logInfo(f'Skipping video [{video.watch_url}] as it is a premier video')
+                            self.logger.logInfo('Logging error regardless')
+                            self.logger.logError(error)
+                            yield from self.clientMessageFormatter({'message' : f'Skipped url [{video.watch_url}] as it will premier in {str(error).split('Premieres in ')[1]} \n\n'})
+                            continue
 
-                    if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
-                    self.trackNum += 1
-                    self.downloadCount += 1
-                
-                    yield from self.clientMessageFormatter({'message' : f'{video.title} by {artist}\n\n'})
-
-                    
-                except Exception as error:
-                    if 'Premieres in' in str(error):
-                        self.logger.logInfo(f'Skipping video [{video.watch_url}] as it is a premier video')
-                        self.logger.logInfo('Logging error regardless')
+                        self.logger.logInfo(video.watch_url)
                         self.logger.logError(error)
-                        yield from self.clientMessageFormatter({'message' : f'Skipped url [{video.watch_url}] as it will premier in {str(error).split('Premieres in ')[1]} \n\n'})
-                        continue
-
-                    self.logger.logInfo(video.watch_url)
-                    self.logger.logError(error)
-                    erorrCount += 1
-                    if erorrCount == 3:
-                        raise Exception(f'Too many errors cause this to fail')
-            
-            self.updateChannelImg(channel, albumCoverFile)
-            self.logger.logInfo('Download complete')
-            
-            if self.downloadCount > 0:
-                if erorrCount > 0:
-                    yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
+                        erorrCount += 1
+                        if erorrCount == 3:
+                            raise Exception(f'Too many errors cause this to fail')
+                
+                self.updateChannelImg(channel, albumCoverFile)
+                self.logger.logInfo('Download complete')
+                
+                if self.downloadCount > 0:
+                    if erorrCount > 0:
+                        yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
+                    else:
+                        yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
-            else:
-                yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
-
+                    yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
+            
+            except Exception as error:
+                self.logger.logInfo(f'Channel [{ytLink}] could not be found, possible it was taken down')
+                self.logger.logError(error)
+                yield from self.clientMessageFormatter({"message" :  f'Channel [{ytLink}] could not be found, possible it was taken down', "statusCode" : 400})
+                yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
+                return 'ok'
 
         prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
         yield from self.clientMessageFormatter({"message" : f"Completed download"}) 

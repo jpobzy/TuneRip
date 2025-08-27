@@ -7,21 +7,29 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3
 import time
 
-class prevUsedImagesController():
+class imageSettingsController():
     def __init__(self, logger):
-        self.logger = logger
-        directory = Path(Path.home() / 'Documents/TuneRip/server/appdata')
-        self.file = Path(directory / 'prevUsedCoverArtData.json')
-        self.initData()
-        if not self.file.exists():
-            Path.touch(self.file)
-            data = self.initData()
+        try:
+            self.logger = logger
+            directory = Path(Path.home() / 'Documents/TuneRip/server/appdata')
+            self.file = Path(directory / 'imagesSettings.json')
+            if not self.file.exists():
+                Path.touch(self.file)
+                data = self.initData()
 
-            currData = {'showPrevUsed' : True, 'prevUsedCoverArtData' : data}
-            with open(self.file, 'w') as file:
-                json.dump(currData, file, indent=4)   
-        return
-    
+                currData = {'hidePrevUsed' : False, 'moveImagetoSubfolderPostDownload' : False, "deleteImagePostDownload" : False, 'prevUsedCoverArtData' : data}
+                with open(self.file, 'w') as file:
+                    json.dump(currData, file, indent=4)   
+            return
+        
+        except Exception as error:
+            logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
+            logger.logError(error)
+            raise Exception('Something went wrong on app startup please check logs')
+       
+
+
+
     def initData(self):
         path = Path(Path.home() / 'Documents/TuneRip/downloads')
         res = {}
@@ -48,21 +56,12 @@ class prevUsedImagesController():
                                 directoryPath= '/'.join(Path(str(directory)).parts[5:])
                                 res[directoryPath] = coverArtFile
                                 break
-            
-
-        print(f'res is: ')
-        print(res)
-
-
-
-
         return res
     
     def addRecord(self, dir, coverArtFile):
         with open(self.file, 'r') as file:
             currData = json.load(file)
         currData['prevUsedCoverArtData'][dir] = coverArtFile
-        print(f'dir is: {dir}, file is: {coverArtFile}')
         with open(self.file, 'w') as file:
             json.dump(currData, file, indent=4)   
         return 
@@ -82,21 +81,21 @@ class prevUsedImagesController():
         return data
     
 
-    def toggleShowPrevUsed(self, req):
+    def toggleHidePrevUsed(self, req):
         with open(self.file, 'r') as file:
             currData = json.load(file)
 
-        currData['showPrevUsed'] = req['data']
+        currData['hidePrevUsed'] = req['data']
 
         with open(self.file, 'w') as file:
             json.dump(currData, file, indent=4)   
         return 'ok'
     
-    def getPrevUsedStatus(self):
+    def getArtDownloadStatus(self):
         with open(self.file, 'r') as file:
             currData = json.load(file)
 
-        return currData['showPrevUsed']
+        return {"hidePrevUsed" : currData['hidePrevUsed'],"moveImagetoSubfolderPostDownload" : currData['moveImagetoSubfolderPostDownload'], "deleteImagePostDownload" : currData['deleteImagePostDownload']}
     
 
     def updateRecords(self, req):
@@ -117,3 +116,27 @@ class prevUsedImagesController():
         except Exception as error:
             self.logger.logError(f'SOMETHING WENT WRONG: [{error}]')
             raise Exception(error)
+
+
+    def toggleMoveImages(self, req):
+        with open(self.file, 'r') as file:
+            currData = json.load(file)
+
+        currData['moveImagetoSubfolderPostDownload'] = req['data']
+
+        with open(self.file, 'w') as file:
+            json.dump(currData, file, indent=4)  
+        return 'Selected cover art will now be moved to "Documents/TuneRip/server/static/albumCovers/used" after download' if req['data'] else 'Selected cover art will NOT be moved to the subfolder after download'
+
+
+
+
+    def toggleDeleteImages(self, req):
+        with open(self.file, 'r') as file:
+            currData = json.load(file)
+
+        currData['deleteImagePostDownload'] = req['data']
+
+        with open(self.file, 'w') as file:
+            json.dump(currData, file, indent=4)   
+        return 'Selected cover art will now be DELETED after download' if req['data'] else 'Selected cover art will NOT be deleted after download'

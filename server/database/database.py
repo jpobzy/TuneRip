@@ -84,7 +84,7 @@ class database():
     def reloadCache(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        self.channelCacheh = {}
+        self.channelCache = {}
         for record in cur.execute("SELECT * FROM channels"):
             self.channelCache[str(record[0])] =  (record[1], record[2])
         database.close()

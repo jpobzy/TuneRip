@@ -12,7 +12,7 @@ from app.controllers.cursorDataController import cursorData
 from app.controllers.titleFilterController import titleFilterController
 from datetime import datetime
 from app.controllers.loggingController import logController
-from app.controllers.prevUsedImagesController import prevUsedImagesController
+from app.controllers.imageSettingsController import imageSettingsController
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -31,10 +31,10 @@ app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
 
 logger = logController()
 controller_obj = controller(app.config['DATABASE_FOLDER'], logger)
-backgrounddata_obj = backgroundData()
-cursordata_obj = cursorData()
-titleFilterObj = titleFilterController()
-prevUsedObj = prevUsedImagesController(logger)
+backgrounddata_obj = backgroundData(logger)
+cursordata_obj = cursorData(logger)
+titleFilter_obj = titleFilterController(logger)
+imageSettings_obj = imageSettingsController(logger)
 
 
 
@@ -56,10 +56,6 @@ def get_image(route):
     """
     Sends the requested image file
     """
-    print(f'route: {route}')
-    x = Path(Path.home() / 'Documents/TuneRip/server/static/channelImages' / route)
-    if x.exists():
-        print('hueawswdsa')
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
@@ -154,7 +150,7 @@ def deleteMultipleRecords():
 
 @app.route('/deleteChannel', methods=['DELETE'])
 def deleteChannel():
-    return controller_obj.deleteChannel(json.loads(request.data))
+    return controller_obj.deleteChannels(json.loads(request.data))
 
 
 @app.route('/deleteimg', methods=['DELETE'])
@@ -220,7 +216,7 @@ def getPlaylistData():
 
 @app.put('/updatemetadata')
 def updateMetaData():
-    prevUsedObj.updateRecords(json.loads(request.data))
+    imageSettings_obj.updateRecords(json.loads(request.data))
     controller_obj.updateMetaData(json.loads(request.data))
     return 'ok'
 
@@ -270,7 +266,7 @@ def stream():
 
 @app.route('/downloadStream')
 def streamDownload(): 
-    return Response(controller_obj.downloadStream(dict(request.args), prevUsedObj), mimetype="text/event-stream")
+    return Response(controller_obj.downloadStream(dict(request.args), imageSettings_obj), mimetype="text/event-stream")
 
 
 @app.route('/refactorpfp')
@@ -285,35 +281,45 @@ def mergeStream():
 
 @app.get('/filterWords')
 def getFilterWords():
-    return jsonify(titleFilterObj.getFilterSettings())
+    return jsonify(titleFilter_obj.getFilterSettings())
 
 @app.delete('/deleteTitleFilter')
 def deleteWord():
-    return titleFilterObj.deleteTitleFilterFromData(json.loads(request.data))
+    return titleFilter_obj.deleteTitleFilterFromData(json.loads(request.data))
 
 @app.post('/addTitleFilter')
 def addWord():
     
-    return titleFilterObj.addTitleFilterData(json.loads(request.data).get('data'))
+    return titleFilter_obj.addTitleFilterData(json.loads(request.data).get('data'))
 
 @app.put('/editTitleFilter')
 def editTitleFilter():
-    return titleFilterObj.editTitleFilter(json.loads(request.data).get('data'))
+    return titleFilter_obj.editTitleFilter(json.loads(request.data).get('data'))
 
 
-@app.post('/toggleShowPrevUsedImages')
-def toggleShowPrevUsedImages():
-    return prevUsedObj.toggleShowPrevUsed(json.loads(request.data))
+@app.post('/toggleHidePrevUsedImages')
+def toggleHidePrevUsedImages():
+    return imageSettings_obj.toggleHidePrevUsed(json.loads(request.data))
 
-@app.get('/getPrevUseStatus')
-def getPrevUseStatus():
-    return jsonify(prevUsedObj.getPrevUsedStatus())
+@app.get('/getArtDownloadStatus')
+def getArtDownloadStatus():
+    return jsonify(imageSettings_obj.getArtDownloadStatus())
 
 @app.get('/getChannelAndArtCoverData')
 def getChannelAndArtCoverData():
     data = controller_obj.returnAlbumCoverFileNames()
-    data['prevUsedCoverArtInfo'] = prevUsedObj.getRecords()
+    data['prevUsedCoverArtInfo'] = imageSettings_obj.getRecords()
     return jsonify(data)
+
+@app.post('/toggleMoveImages')
+def toggleMoveImages():
+    return imageSettings_obj.toggleMoveImages(json.loads(request.data))
+
+
+@app.post('/toggleDeleteImages')
+def toggleDeleteImages():
+    return imageSettings_obj.toggleDeleteImages(json.loads(request.data))
+
 
 
 

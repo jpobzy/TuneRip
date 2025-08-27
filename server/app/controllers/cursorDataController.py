@@ -24,24 +24,29 @@ class cursorData():
             }
     }
     """
-    def __init__(self):
-        appdataFolder = Path(Path.home() / 'Documents/TuneRip/server/appdata')
-        if not appdataFolder.exists():
-            Path.mkdir(appdataFolder)
-        self.file =  appdataFolder / 'CursorData.json' 
-        if not Path(self.file).exists():
-            Path.touch(self.file)
-            with open(self.file, 'w') as file:
-                file.write(self.data)
+    def __init__(self, logger):
+        try:
+            appdataFolder = Path(Path.home() / 'Documents/TuneRip/server/appdata')
+            if not appdataFolder.exists():
+                Path.mkdir(appdataFolder)
+            self.file =  appdataFolder / 'CursorData.json' 
+            if not Path(self.file).exists():
+                Path.touch(self.file)
+                with open(self.file, 'w') as file:
+                    file.write(self.data)
 
-        self.defaultDataFile = appdataFolder / 'DefaultCursorData.json' 
-        if not Path(self.defaultDataFile).exists():
-            Path.touch(self.defaultDataFile)
-            with open(self.defaultDataFile, 'w') as file:
-                file.write(self.data)
+            self.defaultDataFile = appdataFolder / 'DefaultCursorData.json' 
+            if not Path(self.defaultDataFile).exists():
+                Path.touch(self.defaultDataFile)
+                with open(self.defaultDataFile, 'w') as file:
+                    file.write(self.data)
+            return
+        except Exception as error:
+            logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
+            logger.logError(error)
+            raise Exception('Something went wrong on app startup please check logs')
+       
 
-        return
-    
 
 
 
