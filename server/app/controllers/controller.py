@@ -41,20 +41,7 @@ class controller():
             Path.mkdir(path)
         return
 
-    # def checkLogger(self):
-    #     logDir =  self.projRoot / 'server/logs'
-    #     if not logDir.exists():
-    #         self.pathMaker(logDir)
-
-    #     if Path(self.projRoot / 'logs').exists():
-    #         shutil.rmtree(Path(self.projRoot / 'logs'))
-
-    #     if Path(self.projRoot / 'debug').exists():
-    #         shutil.rmtree(Path(self.projRoot / 'debug'))
-
-    #     self.logger = logController(logDir)
-    #     self.logger.logInfo('Starting app')
-    #     return      
+     
 
     def checkFolders(self):
         """
@@ -65,8 +52,6 @@ class controller():
             self.pathMaker(basePath)
             self.pathMaker(basePath / 'server')
             self.pathMaker(basePath / 'server/static')
-            self.pathMaker(basePath / 'server/static/albumCovers')
-            self.pathMaker(basePath / 'server/static/albumCovers/used')
             self.pathMaker(basePath / 'server/database')
             self.pathMaker(basePath / 'downloads')
             self.pathMaker(basePath / 'downloads/playlists')
@@ -91,6 +76,26 @@ class controller():
 
             else:
                 self.pathMaker(basePath / 'server/static/channelImages')
+
+            if (basePath / 'server/static/albumCovers').exists():
+                self.logger.logInfo('Attempting to rename albumcovers folder to coverArt')
+                try:
+                    os.rename(basePath / 'server/static/albumCovers', basePath / 'server/static/coverArt')
+                except Exception as error:
+                    self.logger.logError('Something went wrong with renaming, check if there are any subfolders within albumCovers as this is not allowed ')
+                    self.logger.logError(error)
+            else:
+                self.pathMaker(basePath / 'server/static/coverArt')
+                self.pathMaker(basePath / 'server/static/coverArt/used')
+
+
+
+            self.coverArtDir = Path(basePath / 'server/static/coverArt')
+            self.customTracksDir = Path(basePath / 'downloads/customTracks')
+            self.playlistsDir = Path(basePath / 'downloads/playlists')
+            self.downloadsDir = Path(basePath / 'downloads')
+
+
         except Exception as error:
                 self.logger.logInfo(f'Unable to create folders')
                 self.logger.logError(error)
@@ -101,7 +106,7 @@ class controller():
         """
         Returns a dict containing a list of all album cover files for the front end to request 
         """
-        files = [file.name for file in Path(Path.home() / 'Documents/TuneRip' / f'server/static/albumCovers/').iterdir() if file.suffix in ('.png', '.jpeg', '.jpg')]
+        files = [file.name for file in Path(self.coverArtDir).iterdir() if file.suffix in ('.png', '.jpeg', '.jpg')]
         return {'files' : files}
 
 
@@ -110,7 +115,7 @@ class controller():
         """
         Takes an image file the url upload it and saves it locally on the backend
         """
-        file.save(self.projRoot / f'server/static/albumCovers/{file.filename}')
+        file.save(Path(self.coverArtDir / f'{file.filename}'))
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
 
@@ -133,7 +138,8 @@ class controller():
 
             sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
-            downloadsPath = self.projRoot / f'downloads/{sanitizedChannel}'
+            downloadsPath = self.downloadsDir  / f'{sanitizedChannel}'
+            
 
             if not Path(downloadsPath).exists():
                 Path.mkdir(downloadsPath, parents=True)
@@ -328,7 +334,7 @@ class controller():
         Deletes the given file from the possible cover album folder
         """
         file = query['filename']
-        filepath =  Path.home() / f'Documents/TuneRip/server/static/albumCovers/{file}'
+        filepath = self.coverArtDir / f'{file}'
         if Path(filepath).exists():
             os.remove(filepath)
         return 'Success', 200 
@@ -360,14 +366,14 @@ class controller():
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
 
-        folderPath = Path(self.projRoot / f'server/static/albumCovers/')
+        folderPath = self.coverArtDir
         fileNum = 1
         for i in Path(folderPath).iterdir():
             if 'croppedImg' in str(i):
                 fileNum+=1
             
         fileSuffix = Path(file.filename).suffix
-        path = Path(self.projRoot / f'server/static/albumCovers/croppedImg{fileNum}{fileSuffix}')
+        path = Path(self.coverArtDir / f'croppedImg{fileNum}{fileSuffix}')
         
         # Shows the image in image viewer
         croppedImg.save(path)
@@ -384,7 +390,7 @@ class controller():
         returns a list of dict for playlists, this is for the download settings on the front end
         format: { value: 'jack', label: 'Jack' },
         """
-        path = Path(self.projRoot / 'downloads/playlists')
+        path = self.playlistsDir
         res = []
         for playlistPaths in path.iterdir():
             if playlistPaths.is_dir():
@@ -396,9 +402,9 @@ class controller():
     
     def getAllFolderNamesInDownloads(self):
         res = []
-        for i in Path(self.projRoot / 'downloads').rglob("**/*"): 
+        for i in Path(self.downloadsDir).rglob("**/*"): 
             if Path(i).is_dir():
-                if Path(i) == self.projRoot / 'downloads/playlists':
+                if Path(i) == self.playlistsDir:
                     continue #skip playlist folder but not the contents within
                 path = str(Path('/'.join(i.parts[5:])))
                 res.append({'value': path, 'label': path})
@@ -439,7 +445,7 @@ class controller():
 
     def getPlaylistData(self, request):
         playlist = request.args.get('playlist')
-        playlistPath =  Path(self.projRoot / 'downloads/playlists' / playlist)
+        playlistPath =  Path(self.playlistsDir / playlist)
         res = {}
         for track in playlistPath.iterdir():
             if track.suffix == '.mp3':
@@ -464,7 +470,7 @@ class controller():
 
         # check if cover art file exists 
         if 'coverArtFile' in res:
-            files = [dir.parts[-1] for dir in Path(self.projRoot / 'server/static/albumCovers').iterdir()]             
+            files = [dir.parts[-1] for dir in self.coverArtDir.iterdir()]             
             if res['coverArtFile'] not in files:
                 prevArt = res['coverArtFile']
                 res['coverArtFile'] = f'ERROR COULD NOT FIND FILE [{prevArt}]'
@@ -633,31 +639,30 @@ class controller():
         self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
-            playlistRoute = self.projRoot / 'downloads/playlists'
             if subFolderName != None:
                 subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                downloadPath = playlistRoute / subFolderName
+                downloadPath = self.playlistsDir / subFolderName
                 if subFolderName.strip() == '':
                     playlistTitle = playlist.title
                     playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
-                    downloadPath = playlistRoute / f'{playlistTitle}'    
+                    downloadPath = self.playlistsDir / f'{playlistTitle}'    
                 else:
                     subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    downloadPath = self.downloadsDir / f"{subFolderName}"
                     if not Path(downloadPath).exists():
                         os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
-                    downloadPath = playlistRoute / addToExistingPlaylist
+                    downloadPath = self.playlistsDir / addToExistingPlaylist
                 else:
                     playlistTitle = playlist.title
                     playlistTitle = re.sub(r'[^\w_. -]', '', playlistTitle)
-                    downloadPath = playlistRoute / f'{playlistTitle}'    
+                    downloadPath = self.playlistsDir / f'{playlistTitle}'    
 
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
 
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
             albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
             self.trackNum = 1
 
@@ -724,19 +729,19 @@ class controller():
 
             if subFolderName != None:
                 if subFolderName.strip() == '':
-                    downloadPath = self.projRoot / f"downloads/customTracks"
+                    downloadPath = self.customTracksDir
                 else:
                     subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    downloadPath = self.downloadsDir / f"{subFolderName}"
                     if not Path(downloadPath).exists():
                         os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
-                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                    downloadPath = self.playlistsDir / addToExistingPlaylist
                 else:
-                    downloadPath = self.projRoot / f"downloads/customTracks"
+                    downloadPath = self.customTracksDir
 
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             self.trackNum = 1
             erorrCount = 0
@@ -779,23 +784,24 @@ class controller():
             ytLink = self.db.channelCache[channel][0]
             sanitizedChannel = re.sub(r'[<>:"/\\|?*]', '', channel)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
-            albumCoverPath = self.projRoot / f'server/static/albumCovers/{albumCoverFile}'
+            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
+
             albumTitle = f'YouTube Album Prod {channel}' if albumTitle == None else albumTitle
             self.trackNum = 1
 
             if subFolderName != None:
                 if subFolderName.strip() == '':
-                    downloadPath = self.projRoot / f"downloads/{sanitizedChannel}"
+                    downloadPath = self.downloadsDir / f"{sanitizedChannel}"
                 else:
                     subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
-                    downloadPath = self.projRoot / f"downloads/{subFolderName}"
+                    downloadPath = self.downloadsDir / f"{subFolderName}"
                     if not Path(downloadPath).exists():
                         os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
-                    downloadPath = self.projRoot / 'downloads/playlists' / addToExistingPlaylist
+                    downloadPath = self.playlistsDir / addToExistingPlaylist
                 else:
-                    downloadPath = self.projRoot / f"downloads/{sanitizedChannel}"
+                    downloadPath = self.downloadsDir / f"{sanitizedChannel}"
 
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
@@ -848,7 +854,10 @@ class controller():
                     if erorrCount > 0:
                         yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
                     else:
-                        yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                        if self.downloadCount == 1:
+                            yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200})
+                        else:
+                            yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
                 else:
                     yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
             
@@ -858,6 +867,29 @@ class controller():
                 yield from self.clientMessageFormatter({"message" :  f'Channel [{ytLink}] could not be found, possible it was taken down', "statusCode" : 400})
                 yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
                 return 'ok'
+
+
+        imageFile = Path(self.projRoot / 'server/appdata/imagesSettings.json')
+        with open(imageFile, 'r') as file:
+           data = json.load(file)
+
+
+        moveImage = data['moveImagetoSubfolderPostDownload']
+        deleteImage = data['deleteImagePostDownload']
+
+        if moveImage:
+            imageDst = Path(self.coverArtDir / 'used')
+            coverArtFilePath = Path(self.coverArtDir / f'{albumCoverFile}')
+            shutil.move(coverArtFilePath, imageDst)
+            self.logger.logInfo(f'Request to move cover art into subfolder completed')        
+
+
+        if deleteImage:
+            coverArtFilePath = Path(self.coverArtDir / f'{albumCoverFile}')
+            Path.unlink(coverArtFilePath, missing_ok=False)
+            self.logger.logInfo(f'Request to delete cover art into subfolder completed')    
+
+
 
         prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
         yield from self.clientMessageFormatter({"message" : f"Completed download"}) 

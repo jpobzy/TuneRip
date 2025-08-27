@@ -28,7 +28,7 @@ function Settings(){
     const tabItems = [
     {
         key: '1',
-        label: 'Add to Filter',
+        label: 'Video Filter',
         children: 
         <div className="text-center mt-[20px]">
             <FilterForm setRefresh={setRefresh}/>
@@ -44,49 +44,6 @@ function Settings(){
     },
     {
         key: '3',
-        label: 
-        <>
-            <div className="flex">
-                {/* <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div> */}
-                <div className="">
-                    Title filter
-                </div>                
-            </div>
-
-        </>,
-        children:
-        <div className="text-center mt-[20px]">
-            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
-        </div>
-    },
-    {
-        key: '4',
-        label: 'Reorder Tracks',
-        children: 
-        <div className="text-center mt-[50px]">
-            <ReorderTracks />
-        </div>
-    },
-    {
-        key: '5',
-        label: 'Crop',
-        children: 
-        <div className="text-center mt-[0px]">
-            <Crop />
-        </div>
-    },
-    {
-        key: '6',
-        label: 'Edit Meta Data',
-        children: 
-        <div className="text-center mt-[30px]">
-            <EditMetaData />
-        </div>
-    },
-    {
-        key: '7',
         label: 
         <> 
             <div className="flex">
@@ -106,6 +63,50 @@ function Settings(){
         </>
 
     },
+    {
+        key: '4',
+        label: 
+        <>
+            <div className="flex">
+                {/* <div className="text-red-500 mr-[5px] visible">
+                    NEW
+                </div> */}
+                <div className="">
+                    Title filter
+                </div>                
+            </div>
+
+        </>,
+        children:
+        <div className="text-center mt-[20px]">
+            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+        </div>
+    },
+    {
+        key: '5',
+        label: 'Reorder Tracks',
+        children: 
+        <div className="text-center mt-[50px]">
+            <ReorderTracks />
+        </div>
+    },
+    {
+        key: '6',
+        label: 'Crop',
+        children: 
+        <div className="text-center mt-[0px]">
+            <Crop />
+        </div>
+    },
+    {
+        key: '7',
+        label: 'Edit Meta Data',
+        children: 
+        <div className="text-center mt-[30px]">
+            <EditMetaData />
+        </div>
+    },
+
     {
         key: '8',
         label: 'Merge folders',

@@ -126,7 +126,7 @@ class imageSettingsController():
 
         with open(self.file, 'w') as file:
             json.dump(currData, file, indent=4)  
-        return 'Selected cover art will now be moved to "Documents/TuneRip/server/static/albumCovers/used" after download' if req['data'] else 'Selected cover art will NOT be moved to the subfolder after download'
+        return 'Selected cover art will now be moved to "Documents/TuneRip/server/static/coverArt/used" after download' if req['data'] else 'Selected cover art will NOT be moved to the subfolder after download'
 
 
 

@@ -157,12 +157,19 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                     ...oldData
                 }
             })
+            setChosenPlaylistSetting('')
 
             setDownloadSettings(prev => {return {...prev}})
             setGallerySettings(prev => {
                 if (prev.showPagination){
                     return prev
+                }   
+                if (prev.allImages.length === 0){
+                    return {
+                        ...prev, showPagination : false
+                    }
                 }
+                console.log(2)
                 return {
                     ...prev, 
                     currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
@@ -188,14 +195,26 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             return newSettings;
         })
         
-        // if (downloadType === 'channel' && gallerySettings.prevUsedChannelArr){
+
         if (downloadType === 'channel'){
                 setGallerySettings(prev => {
-                console.log(`prev: ${JSON.stringify(prev)}`)
-                return {...prev}
+                if (prev.allImages.length === 0){
+                   
+                    return {
+                        ...prev, showPagination : false
+                    }
+                }
+                return prev
             })  
         }else{
-            setGallerySettings(prev => {return {...prev, showPagination : true}})
+            setGallerySettings(prev => {
+                if (prev.allImages.length === 0){
+                   
+                    return {
+                        ...prev, showPagination : false
+                    }
+                }
+                return {...prev, showPagination : true}})
         }
     }
 
@@ -249,6 +268,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 delete copy['addToExistingPlaylistSettings']
                 return copy
             })
+            setChosenPlaylistSetting('')
 
             setUsePrevData(false)
             setGallerySettings(prev => {
@@ -327,7 +347,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             if (getPlaylistData.data.coverArtFile.includes('ERROR COULD NOT FIND FILE')){
                 notification.error({ message: 'File may have been deleted or renamed, please recover the file' });
                 notification.error({ message: getPlaylistData.data.coverArtFile})
-                setGallerySettings(prev => {return {...prev, currentImagesShown: []}})
+                setGallerySettings(prev => {return {...prev, currentImagesShown: [], showPagination : false}})
                 setPrevPlaylistArt(prev => {return {...prev, prevCoverArtUsed: null}})
             }else{
                 setPrevPlaylistArt(prev => {return {...prev, prevCoverArtUsed: getPlaylistData.data.coverArtFile}})

@@ -165,8 +165,8 @@ def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=N
         audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
         updateData += 'track number, '
 
-    if coverArtFile and Path(Path.home() / 'Documents/server/static/albumCovers' / coverArtFile).exists:
-        with open( Path(Path.home() / 'Documents/TuneRip/server/static/albumCovers' / coverArtFile), 'rb') as coverArtFileBytes:
+    if coverArtFile and Path(Path.home() / 'Documents/server/static/coverArt' / coverArtFile).exists:
+        with open( Path(Path.home() / 'Documents/TuneRip/server/static/coverArt' / coverArtFile), 'rb') as coverArtFileBytes:
             cover_data = coverArtFileBytes.read()
             coverArtFileBytes.close()
         audio = MP3(filePath, ID3=ID3)
