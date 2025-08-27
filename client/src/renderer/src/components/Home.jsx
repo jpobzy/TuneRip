@@ -165,71 +165,55 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   async function getCoverArtData(mode, prevUsedChannelImage) {
     const albumCoverResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files, 
-      // hidePrevUsedCoverArt : Boolean(albumCoverResponse.data.prevUsedCoverArtInfo.hidePrevUsed), 
-      prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
-    )
-
-    console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
-    if (albumCoverResponse.data.prevUsedCoverArtInfo.hidePrevUsed){
-      console.log('hidden')
-      if (mode === 'playlist'){
-        const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
-        const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
-        const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
-
-        setGallerySettings(prev => {return {...prev, 
-          currentImagesShown: filteredItems.slice(0, gallerySettings.imagesPerPage), 
-          paginationTotal : roundUp, allImages:  filteredItems, 
-          imagesToNotShow : filteredItems
-        }})
-      }
-
-      
-
-
-    }else{
-      if (mode === 'playlist'){
-        const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-        setGallerySettings(prev => {return {...prev, 
-          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
-          paginationTotal : roundUp, allImages:  albumCoverResponse.data.files
-        }})
-      }
+    if (albumCoverResponse.data.files.length === 0){
+        notification.info({
+          message : 'No cover art detected',
+          description : 'Please upload cover art png/jpeg files in order to proceed with the download',
+          placement : 'topLeft'
+        })    
+        setCoverArtData(prev => {return {...prev, deleteCoverArt : false}}) 
+        setGallerySettings(prev => {return {...prev,
+            showPagination : false
+          }})     
     }
 
+    setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files, 
+      prevUsedCoverArtFileNames : albumCoverResponse.data.coverArtSettings.prevUsedCoverArtData}}
+    )
+
+    if (!mode){ //for refresh
+      mode = downloadType
+      prevUsedChannelImage = coverArtData.prevCoverArtUsed
+    }
     if (mode === 'channel'){
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-
       if (prevUsedChannelImage){
-        const arrWithoutChannelImage = albumCoverResponse.data.files.filter(item => item !== prevUsedChannelImage)
-        const channelImagesArr = [prevUsedChannelImage].concat(arrWithoutChannelImage)
-        setGallerySettings(prev => {return {...prev, 
-          currentImagesShown: channelImagesArr.slice(0, gallerySettings.imagesPerPage), 
-          paginationTotal : roundUp, 
-          allImages: albumCoverResponse.data.files,
-          prevUsedChannelArr : channelImagesArr
-        }})
+        if (albumCoverResponse.data.files.includes(prevUsedChannelImage)){
+          const arrWithoutChannelImage = albumCoverResponse.data.files.filter(item => item !== prevUsedChannelImage)
+          const channelImagesArr = [prevUsedChannelImage].concat(arrWithoutChannelImage)
+          
+          setGallerySettings(prev => {return {...prev, 
+            currentImagesShown: channelImagesArr.slice(0, gallerySettings.imagesPerPage), 
+            paginationTotal : roundUp, 
+            allImages: albumCoverResponse.data.files,
+            prevUsedChannelArr : channelImagesArr
+          }})
 
+        }else{
+          console.log('doesnt include')
+          setGallerySettings(prev => {return {...prev, 
+            currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+            paginationTotal : roundUp, 
+            allImages: albumCoverResponse.data.files
+          }})
+        }
       }else{
-        console.log(2)
         setGallerySettings(prev => {return {...prev, 
           currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
           paginationTotal : roundUp, 
           allImages: albumCoverResponse.data.files
         }})
       }
-
-
-
-
-
-
-
-
-
-
-
 
     } else if (mode === 'track'){
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
@@ -239,6 +223,67 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         paginationTotal : roundUp, 
         allImages: albumCoverResponse.data.files
       }})
+    } else if (mode === 'playlist'){
+      // notifications
+      if (albumCoverResponse.data.coverArtSettings.deleteImagePostDownload){
+        notification.info({
+          message : 'Post download setting detected',
+          description : 'Cover art will be deleted post download, change this setting in cover art settings',
+          placement : 'topLeft'
+        })
+      }else if (albumCoverResponse.data.coverArtSettings.moveImagetoSubfolderPostDownload){
+        notification.info({
+          message : 'Post download setting detected',
+          description : 'Cover art will be moved to the subfolder post download, change this setting in cover art settings',
+          placement : 'topLeft'
+        })        
+      }
+
+      if (albumCoverResponse.data.coverArtSettings.hidePrevUsed){
+        console.log('hidden')
+
+        const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.coverArtSettings.prevUsedCoverArtData)
+        const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
+        const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
+
+        if (filteredItems.length > 0){
+          setGallerySettings(prev => {return {...prev, 
+            currentImagesShown: filteredItems.slice(0, gallerySettings.imagesPerPage), 
+            paginationTotal : roundUp, allImages:  filteredItems, 
+            imagesToNotShow : filteredItems
+          }})
+        }else{
+          notification.error({
+            message : 'No unused images available',
+            description : 'All current cover art files have already been used. Since the hide setting is enabled they are hidden. You can change this in the Cover Art settings',
+            placement : 'topLeft'
+          })     
+
+          setGallerySettings(prev => {return {...prev, 
+            currentImagesShown: [],
+            showPagination : false
+          }})
+
+          setCoverArtData(prev => {return {...prev, coverArtFileNames : [], 
+            prevUsedCoverArtFileNames : albumCoverResponse.data.coverArtSettings.prevUsedCoverArtData}}
+          )
+        }
+
+
+        
+
+      }else{
+
+        const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, allImages:  albumCoverResponse.data.files
+        }})
+        
+      }
+
+    }else{
+
     }
   }
 
@@ -415,9 +460,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>    
             <div>
             <div className='mt-[50px]'>
-              {/* <div className='flex justify-center  -mb-[56px] mr-[135px] text-red-500'>
-                NEW
-              </div>                 */}
               <div className=' downloadSettingsForm mt-5 mx-auto mb-10 w-150'> 
                 <Collapse 
                   items={downloadItems} 
@@ -532,7 +574,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         </div>      
       }
 
-      {/* <Button onClick={()=> console.log(downloadSettings)}>sadsa me</Button>  */}
+      {/* <Button onClick={()=> console.log(gallerySettings.currentImagesShown)}>sadsa me</Button>  */}
       {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button> 
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>

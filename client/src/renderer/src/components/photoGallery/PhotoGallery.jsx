@@ -21,7 +21,7 @@ function PhotoGallery(){
     const [pagnationPages, setPagnationPages] = useState(10)
     const [disablePrevUsedStatus, togglePrevUsed] = useState()
 
-    const hideText = <span>Hide previously used cover art in the cover art selection page when downloading</span>;
+    const hideText = <span>Hide previously used cover art in the cover art selection page when downloading playlists</span>;
     const moveText = <span>After download process finishes move the selected art into the subfolder in 'Documents/TuneRip/server/static/coverAlbums/used</span>;
     const deleteText = <span>After download finishes delete the selected cover art</span>;
 
@@ -90,7 +90,7 @@ function PhotoGallery(){
         },
         {
         title: 'Move cover art to the cover art subfolder',
-        description: 'After downloading the playlist move the cover art file to the subfolder located at "Documents/TuneRip/server/static/albumCovers/used',
+        description: 'After downloading the playlist move the cover art file to the subfolder located at "Documents/TuneRip/server/static/coverArt/used',
         target: () => moveCoverArtRef.current,
         },       
 
@@ -276,8 +276,12 @@ function PhotoGallery(){
 
 
 
-                    {/* <div className=" ">
+                    <div className=" ">
                         <div className="flex -ml-[10px]">
+
+                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
+                                NEW
+                            </div>
                             <div className="text-white absolute ">
                                 Delete art
                             </div>
@@ -289,14 +293,14 @@ function PhotoGallery(){
                             </Tooltip>           
                         </div>  
                         
-                    </div> */}
+                    </div>
 
 
-
-
-
-                    {/* <div className=" ">
+                    <div className=" ">
                         <div className="flex -ml-[5px]">
+                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
+                                NEW
+                            </div>
                             <div className="text-white absolute ">
                                Move art
                             </div>
@@ -307,7 +311,7 @@ function PhotoGallery(){
                                     <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} />  
                                 </Tooltip>         
                             </div>
-                    </div> */}
+                    </div>
                 </div>
             </>
           }

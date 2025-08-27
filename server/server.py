@@ -17,7 +17,7 @@ from app.controllers.imageSettingsController import imageSettingsController
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
 UPLOAD_FOLDER = basePath / 'server/static/channelImages'
-ALBUM_COVER_FOLDER = basePath / 'server/static/albumCovers'
+ALBUM_COVER_FOLDER = basePath / 'server/static/coverArt'
 DATABASE_FOLDER = basePath / 'server/database'
 
 
@@ -308,7 +308,7 @@ def getArtDownloadStatus():
 @app.get('/getChannelAndArtCoverData')
 def getChannelAndArtCoverData():
     data = controller_obj.returnAlbumCoverFileNames()
-    data['prevUsedCoverArtInfo'] = imageSettings_obj.getRecords()
+    data['coverArtSettings'] = imageSettings_obj.getRecords()
     return jsonify(data)
 
 @app.post('/toggleMoveImages')
