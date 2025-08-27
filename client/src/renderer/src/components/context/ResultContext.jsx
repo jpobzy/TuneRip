@@ -42,7 +42,7 @@ export const ResultProvider = ({children}) =>{
     }
 
 
-    const ResultFailed = (titleInput, subTitleInput, goBack) => {
+    const ResultError = (titleInput, subTitleInput, goBack) => {
         return (
             <>
                 <Result
@@ -75,7 +75,7 @@ export const ResultProvider = ({children}) =>{
     }
 
     return (
-        <toggleResultContext.Provider value={{ResultSuccess, ResultFailed, ResultWarning, Loading}}>
+        <toggleResultContext.Provider value={{ResultSuccess, ResultError, ResultWarning, Loading}}>
             {children}
         </toggleResultContext.Provider>
     )

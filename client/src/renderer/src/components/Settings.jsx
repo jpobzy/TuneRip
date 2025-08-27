@@ -88,20 +88,16 @@ function Settings(){
     {
         key: '7',
         label: 
-        <>
-
-                {/* <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div> */}       
+        <> 
             <div className="flex">
                 <div className="text-red-500 mr-[5px] visible">
                     NEW
                 </div>
                 <div className="">
-                    Edit photo album
+                    Cover Art Settings
                 </div>                
             </div>       
-        </> ,
+        </> ,        
         children: 
         <>
             <div className="text-center mt-[30px]">

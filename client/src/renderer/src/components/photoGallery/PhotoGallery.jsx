@@ -7,21 +7,37 @@ import { resultToggle } from "../context/ResultContext";
 import UploadButton from "../uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from "../context/UseContext";
+
+import { FcFullTrash } from "react-icons/fc";
+import { FcEmptyTrash } from "react-icons/fc";
+
+
 function PhotoGallery(){
     const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
-    const { message  } = App.useApp();
+    const { message, notification  } = App.useApp();
     const [open, setOpen] = useState(false);
     const [pagnationPages, setPagnationPages] = useState(10)
     const [disablePrevUsedStatus, togglePrevUsed] = useState()
-    const text = <span>Toggle to disable/enable showing previously used images being shown when selecting cover art. This setting gets ignored when adding to channeldisablePrevUsedStatus or existing playlist</span>;
+
+    const hideText = <span>Hide previously used cover art in the cover art selection page when downloading</span>;
+    const moveText = <span>After download process finishes move the selected art into the subfolder in 'Documents/TuneRip/server/static/coverAlbums/used</span>;
+    const deleteText = <span>After download finishes delete the selected cover art</span>;
+
     const [switchLoading, setSwitchLoading] = useState(false)
-    const addCoverArtRef = useRef(null)
-    const editSwitchCoverArtRef = useRef(null)
     const {setDisableDockFunctionality} = useToggle()
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
+
+    const [postDownloadSetting, setPostDownloadSetting] = useState({moveSwitchChecked : false, moveSwitchLoading : false, deleteSwitchChecked : false, deleteSwitchLoading : false})
+
+    // tour const's
+    const addCoverArtRef = useRef(null)
+    const editSwitchCoverArtRef = useRef(null)
+    const hideCoverArtRef = useRef(null)
+    const moveCoverArtRef = useRef(null)
+    const deleteCoverArtRef = useRef(null)
     
     const handleAlbumCoverClicked = async(file) =>{
         if (imgClicked === file){
@@ -62,6 +78,22 @@ function PhotoGallery(){
         description: 'Toggle to remove current available cover art',
         target: () => editSwitchCoverArtRef.current,
         },          
+        {
+        title: 'Hide previously used cover art',
+        description: 'Hide previously used cover art in the playlist cover art selection screen',
+        target: () => hideCoverArtRef.current,
+        }, 
+        {
+        title: 'Delete the cover art file',
+        description: 'After downloading the playlist delete the cover art file',
+        target: () => deleteCoverArtRef.current,
+        },
+        {
+        title: 'Move cover art to the cover art subfolder',
+        description: 'After downloading the playlist move the cover art file to the subfolder located at "Documents/TuneRip/server/static/albumCovers/used',
+        target: () => moveCoverArtRef.current,
+        },       
+
     ]
 
 
@@ -69,7 +101,7 @@ function PhotoGallery(){
         setSwitchLoading(true)
         togglePrevUsed(e)
         setDisableDockFunctionality(true)
-        const req = await axios.post('http://localhost:8080/toggleShowPrevUsedImages', {'data' : e})
+        const req = await axios.post('http://localhost:8080/toggleHidePrevUsedImages', {'data' : e})
         if (req.status === 200){
             message.success('Status changed')
         }else{
@@ -81,10 +113,12 @@ function PhotoGallery(){
         // console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
     }
 
-    const getPrevUsedStatus = async () => {
-        const req = await axios.get('http://localhost:8080/getPrevUseStatus')
+    const getArtDownloadStatus = async () => {
+        const req = await axios.get('http://localhost:8080/getArtDownloadStatus')
         if (req.status === 200){
-            togglePrevUsed(req.data)
+            togglePrevUsed(req.data['hidePrevUsed'])
+            setPostDownloadSetting(prev => {return {...prev, deleteSwitchChecked :  req.data.deleteImagePostDownload, moveSwitchChecked :  req.data.moveImagetoSubfolderPostDownload}})
+            console.log(req.data)
         }else{
             message.error('Something went wrong when getting getPrevUseStatus')
         }
@@ -92,7 +126,7 @@ function PhotoGallery(){
     }
 
     useEffect(()=> {
-        getPrevUsedStatus()
+        getArtDownloadStatus()
         getNewAlbumCover();
     }, []);
 
@@ -104,6 +138,74 @@ function PhotoGallery(){
         const endAmount = Number(e) * 6
         setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
     }
+
+    const handleMovetoSubfolder = async (e) => {
+        if (postDownloadSetting.deleteSwitchChecked ){
+            notification.error({
+            message: 'Cannot enable move when delete is enabled',
+            description: 'Please disable delete art if you want to enable move',
+            placement: 'topLeft',
+            });
+            return
+        }
+
+        setPostDownloadSetting(prev => {
+            return {...prev, moveSwitchLoading : !prev.moveSwitchLoading, moveSwitchChecked : !prev.moveSwitchChecked,}
+        })
+
+
+        const req = await axios.post('http://localhost:8080/toggleMoveImages', {'data' : e})
+        console.log(req)
+        if (req.status === 200){
+            notification.success({
+            message: 'Status changed',
+            description: req.data,
+            placement: 'topLeft',
+            });
+        }else{
+            message.error('Something went wrong')
+        }
+
+
+        setPostDownloadSetting(prev => {
+            return {...prev,  moveSwitchLoading : !prev.moveSwitchLoading}
+        })
+
+    }
+    
+
+
+
+    const handleDeleteImage = async (e) => {
+        if (postDownloadSetting.moveSwitchChecked ){
+            notification.error({
+            message: 'Cannot enable delete when move is enabled',
+            description: 'Please disable move art if you want to enable move',
+            placement: 'topLeft',
+            });
+            return
+        }
+
+        setPostDownloadSetting(prev => {
+            return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading, deleteSwitchChecked : !prev.deleteSwitchChecked}
+        })
+
+        const req = await axios.post('http://localhost:8080/toggleDeleteImages', {'data' : e})
+        if (req.status === 200){
+            notification.success({
+            message: 'Status changed',
+            description: req.data,
+            placement: 'topLeft',
+            });
+        }else{
+            message.error('Something went wrong')
+        }
+
+        setPostDownloadSetting(prev => {
+            return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading}
+        })
+    }
+    
     
     return (
         <>
@@ -138,38 +240,74 @@ function PhotoGallery(){
             </div>
 
 
+            
 
           { Object.keys(shownImages).length > 0 &&
             <>
-                <div className="flex justify-center gap-[190px]">
-
+                <div className="flex justify-center gap-[90px] -mt-[5px]">
                     <div className="" >
-                        <div className="text-white absolute -ml-[15px]">
-                            Edit images
+                        <div className="text-white absolute -ml-[0px]">
+                            Edit art
                         </div>
                         <div className='mt-[30px] inline-block' ref={editSwitchCoverArtRef}> 
                             <Switch onChange={() => setEditImgCard(!editImgCard)} />        
                         </div>     
-
-
                     </div>
 
                     <div className=" ">
-                        <div className="flex -ml-[70px]">
-                            <div className="text-red-500 absolute -ml-[35px] mt-[1px]">
+                        <div className="flex -ml-[05px]">
+                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
                                 NEW
                             </div>
                             <div className="text-white absolute ">
-                                {disablePrevUsedStatus === true ? "Showing previously used cover art" : "Not showing previously used cover art"}
+                               Hide art
                             </div>
 
                         </div>
-                        <Tooltip placement="right" title={text} >
-                            <div className='mt-[30px]  inline-block' ref={editSwitchCoverArtRef}> 
-                                <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
+                        
+                            <div className='mt-[30px] inline-block' ref={hideCoverArtRef}> 
+                                <Tooltip placement="right" title={hideText} >
+                                    <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
+                                </Tooltip>
                             </div>  
-                        </Tooltip>
+                        
                     </div>
+
+
+
+
+                    {/* <div className=" ">
+                        <div className="flex -ml-[10px]">
+                            <div className="text-white absolute ">
+                                Delete art
+                            </div>
+
+                        </div>
+                        <div className='mt-[30px]  inline-block' ref={deleteCoverArtRef}> 
+                            <Tooltip placement="right" title={deleteText} >
+                                <Switch  loading={postDownloadSetting.deleteSwitchLoading} value={postDownloadSetting.deleteSwitchChecked} onChange={(e) => handleDeleteImage(e)} /> 
+                            </Tooltip>           
+                        </div>  
+                        
+                    </div> */}
+
+
+
+
+
+                    {/* <div className=" ">
+                        <div className="flex -ml-[5px]">
+                            <div className="text-white absolute ">
+                               Move art
+                            </div>
+
+                        </div>
+                            <div className='mt-[30px]  inline-block' ref={moveCoverArtRef}> 
+                                <Tooltip placement="right" title={moveText} >
+                                    <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} />  
+                                </Tooltip>         
+                            </div>
+                    </div> */}
                 </div>
             </>
           }
@@ -177,7 +315,7 @@ function PhotoGallery(){
 
 
 
-            <div className="flex mx-auto justify-center mt-[30px] mb-[20px]">
+            <div className="flex mx-auto justify-center mt-[20px] mb-[20px]">
                 <Pagination 
                 showSizeChanger={false}
                 defaultCurrent={1} 
@@ -185,8 +323,21 @@ function PhotoGallery(){
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
-
+            
             <Tour open={open} onClose={() => endTour()} steps={steps} />
+
+
+
+
+
+
+
+
+
+
+
+
+            <div className="mb-[80px]"></div>
         </>
     )
 }

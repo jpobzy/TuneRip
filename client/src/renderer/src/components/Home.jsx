@@ -19,7 +19,7 @@ import { resultToggle } from './context/ResultContext';
 
 
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
-  const { message  } = App.useApp();
+  const { message, notification  } = App.useApp();
   const {setShowDock} = useToggle()
   const {setHomeTourEnabled, deleteChannelRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
 
@@ -35,7 +35,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false}) //
   const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false})
-  const [gallerySettings, setGallerySettings] = useState({shownImages : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
+  const [gallerySettings, setGallerySettings] = useState({currentImagesShown : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
   const [isLoading, setIsLoading] = useState(false)
@@ -45,22 +45,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   const sseDownload = useRef()
   const [currentlyDownloaded, setCurrentlyDownloaded] = useState([])
-
-
-  // const initialState = { paginationTotal : 10, showPagination : true, imagesPerPagination : 8, shownArt : [], }
-  // function coverArtHandler(state, action){
-  //   switch (action.type){
-  //     case "togglePagination":
-  //       return {
-  //         showPagination : !state.showPagination
-  //       }
-  //     default:
-  //       return state
-  //   }
-  // }
-  // const [state, dispatcher] = useReducer(coverArtHandler, initialState)
-
-
 
 
   useImperativeHandle(ref, () => ({
@@ -74,23 +58,34 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: channelData.channelsList[channelName][1]}})
     setDownloadSettings({'skipDownloadingPrevDownload': true, "skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
     setDownloadType('channel')
-    getCoverArtData('channel')
+    getCoverArtData('channel', channelData.channelsList[channelName][1])
   }
 
   async function getChannelsData(){
     const response = await axios.get('http://localhost:8080/channels');
-    setChannelData(prev => {return {
+    setChannelData(prev => {
+      return {
       ...prev, channelsList : response.data
     }})
+    
   }
 
   const chooseWhichImagesToShow = (e) =>{
     // changing the page
     const startAmount = (Number(e) - 1) * gallerySettings.imagesPerPage
     const endAmount = Number(e) * gallerySettings.imagesPerPage
-    setGallerySettings(prev => {
-      return {...prev, shownImages : prev.allImages.slice(startAmount, endAmount), currentPaginationPage : e}
-    })
+
+    if (downloadType === 'channel' && gallerySettings.prevUsedChannelArr){
+        setGallerySettings(prev => {
+        return {...prev, currentImagesShown : prev.prevUsedChannelArr.slice(startAmount, endAmount), currentPaginationPage : e}
+      })  
+    }else{
+      setGallerySettings(prev => {
+        return {...prev, currentImagesShown : prev.allImages.slice(startAmount, endAmount), currentPaginationPage : e}
+      })      
+    }
+
+
   }
 
   const handleAlbumCoverClicked = async(file) =>{
@@ -128,6 +123,23 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         })        
       }
 
+      
+      if ('message' === 'channelError'){
+        sseDownload.current.close()
+        sseDownload.current = null
+
+        setIsLoading(false)
+        setShowResult(true)
+        setShowDock(true)
+        setSearchURL('');
+        setChannelData(prev => {return {...prev, chosenChannel : null}})
+        setDownloadSettings({})
+        setskipDownload(false)
+      }
+
+
+
+
       if (message === 'Completed download'){
         setShowResult(true)
         console.log('closing session')
@@ -152,43 +164,78 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
 
-  async function getCoverArtData(mode) {
+  async function getCoverArtData(mode, prevUsedChannelImage) {
     const albumCoverResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
     setCoverArtData(prev => {return {...prev, coverArtFileNames : albumCoverResponse.data.files, 
-      showPrevUsedCoverArt : Boolean(albumCoverResponse.data.prevUsedCoverArtInfo.showPrevUsed), 
+      // hidePrevUsedCoverArt : Boolean(albumCoverResponse.data.prevUsedCoverArtInfo.hidePrevUsed), 
       prevUsedCoverArtFileNames : albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData}}
     )
-    console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
 
   
-    if (albumCoverResponse.data.prevUsedCoverArtInfo.showPrevUsed){
+    if (albumCoverResponse.data.prevUsedCoverArtInfo.hidePrevUsed){
       if (mode === 'playlist'){
-        console.log('show all')
         const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-        setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  albumCoverResponse.data.files}})
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, allImages:  albumCoverResponse.data.files
+        }})
       }
 
     }else{
       if (mode === 'playlist'){
-        console.log('hide prev used')
         const prevUsedCoverArtArr = Object.values(albumCoverResponse.data.prevUsedCoverArtInfo.prevUsedCoverArtData)
-        console.log(prevUsedCoverArtArr)
         const filteredItems = albumCoverResponse.data.files.filter(item => !prevUsedCoverArtArr.includes(item))
         const roundUp = Math.ceil(filteredItems.length / gallerySettings.imagesPerPage) * 10;
-        setGallerySettings(prev => {return {...prev, shownImages: filteredItems.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages:  filteredItems}})
+
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: filteredItems.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, allImages:  filteredItems, 
+          imagesToNotShow : filteredItems
+        }})
       }
     }
 
     if (mode === 'channel'){
-
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-      setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
+
+      if (prevUsedChannelImage){
+        const arrWithoutChannelImage = albumCoverResponse.data.files.filter(item => item !== prevUsedChannelImage)
+        const channelImagesArr = [prevUsedChannelImage].concat(arrWithoutChannelImage)
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: channelImagesArr.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, 
+          allImages: albumCoverResponse.data.files,
+          prevUsedChannelArr : channelImagesArr
+        }})
+
+      }else{
+        console.log(2)
+        setGallerySettings(prev => {return {...prev, 
+          currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+          paginationTotal : roundUp, 
+          allImages: albumCoverResponse.data.files
+        }})
+      }
+
+
+
+
+
+
+
+
+
 
 
 
     } else if (mode === 'track'){
       const roundUp = Math.ceil(albumCoverResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-      setGallerySettings(prev => {return {...prev, shownImages: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), paginationTotal : roundUp, allImages: albumCoverResponse.data.files}})
+
+      setGallerySettings(prev => {return {...prev, 
+        currentImagesShown: albumCoverResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+        paginationTotal : roundUp, 
+        allImages: albumCoverResponse.data.files
+      }})
     }
   }
 
@@ -200,24 +247,28 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
     await axios.get(`http://localhost:8080/reload`);
     getChannelsData();
+    setDownloadSettings({})
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
     setGallerySettings(prev => {
-      return {...prev, currentPaginationPage : 1, showPagination : true}
+      return {...prev, currentPaginationPage : 1, showPagination : true, currentImagesShown : [], prevUsedChannelArr : []}
     })
   }
 
 
   async function downloadVideo(videosearchURL){
-      if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') ){
+      if (videosearchURL.includes('https://youtu.be/') || videosearchURL.includes('https://www.youtube.com/watch?v=') || videosearchURL.includes('www.youtube.com/watch?v=') ){
         setCardClicked(true);
         setDownloadType('track')
         setSearchURL(videosearchURL);
         getCoverArtData('track')
+        setDownloadSettings({'useTrackFilter' : true})
       }else if (videosearchURL.includes('playlist?list=')){
         setCardClicked(true);
         setSearchURL(videosearchURL);
         setDownloadType('playlist')
         getCoverArtData('playlist')
+        setDownloadSettings({"skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
+
       }else{
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
@@ -229,7 +280,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   const downloadItems= [{
     key: '1',
-    label: 'Download Settings',
+    label: downloadType === 'channel' ? 'Channel Download Settings' : downloadType === 'track' ? 'Track Download Settings ' : 'Playlist Download Settings' ,
     children: <DownloadSettingsForm  downloadType={downloadType}
       setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
       setskipDownload={setskipDownload} setPrevPlaylistArt={setCoverArtData}
@@ -237,16 +288,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       imagesPerPage={gallerySettings.imagesPerPage}
     />
   }];
-
-  const debugMode = () => {
-    setCardClicked(true)
-    // setAlbumCoverChosen(true)
-    setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
-    setResultStatusCode(200)
-    
-    const data = {data: {message: 'All tracks downloaded successfully and can be foun…rs\\j03yp\\Documents\\TuneRip\\downloads\\Archimage999'}, statusCode : 200}
-    setResponseData(data)
-  }
 
 
   useEffect(()=> {
@@ -326,11 +367,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                       <> 
                         <FadeContent  blur={true} duration={750} easing="ease-out" initialOpacity={0}>
                           <div className='bg-white mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results'>
-                            
-                            {resultStatusCode === 200  && String(responseData.message) === 'No new tracks to download were found' 
-                              ? ResultSuccess('No New Downloads', responseData.message, goBack)
-                              : ResultSuccess('Successfully downloaded all tracks!', responseData.message, goBack)
-                            }
+                              {resultStatusCode === 200  && ResultSuccess( String(responseData.message) === 'No new tracks to download were found'  ? 'No New Downloads' : 'Successfully downloaded all tracks!', responseData.message, goBack)}
                               {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
                               {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)} 
                               
@@ -390,7 +427,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             </div>        
 
             <div className='album-cover-containter '>
-                {Object.entries(gallerySettings.shownImages).map((filename, index)=>(
+                {Object.entries(gallerySettings.currentImagesShown).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
                         <AlbumCoverCard 
                         filename={filename[1]}
@@ -408,11 +445,22 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
                
           { Object.keys(coverArtData.coverArtFileNames).length > 0 && !Object.keys(downloadSettings).includes('addToExistingPlaylistSettings') &&
-            <div className='mt-[0px] mb-[10px]'> 
-              <Switch  onChange={() =>  setCoverArtData(prev => {return {...prev, deleteCoverArt : !coverArtData.deleteCoverArt}}) }/> 
-            </div>      
-            
+            <>
+
+
+              <div className={`mt-[0px] mb-[15px]`}> 
+                <div className='text-white text-[15px] mb-[5px]'>
+                  {coverArtData.deleteCoverArt ? 'Currently editing images' :'Edit images'}
+                </div>
+                <Switch  onChange={() =>  setCoverArtData(prev => {return {...prev, deleteCoverArt : !coverArtData.deleteCoverArt}}) }/> 
+              </div>   
+            </>            
           }
+
+
+
+
+
           {gallerySettings.showPagination &&
             <div className="flex mx-auto justify-center">
                 <Pagination 
@@ -480,7 +528,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         </div>      
       }
 
-      {/* <Button onClick={()=> console.log(Object.keys(downloadSettings).includes('addToExistingPlaylistSettings'))}>click me</Button> */}
+      
+      {/* <Button onClick={()=> console.log(downloadSettings)}>click me</Button> 
+      {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button>  */}
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
   )

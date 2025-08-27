@@ -165,7 +165,7 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
   async function getRecords(){
     const res = await axios.get('http://localhost:8080/filterWords');
-    setDataSource(res.data);
+    setDataSource(res.data.reverse());
     setCount(res.data.length)
     setExistingRecordsAmount(res.data.length - 1)
   }
@@ -180,23 +180,27 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
 
   const cancelEdit = () =>{
-    setDataSource(prev => {
-      const newData = [...prev]
-      newData[originalData.key].titleFilter = originalData.data
-      return newData
-    })
+    // setDataSource(prev => {
+    //   const newData = [...prev]
+    //   newData[originalData.key].titleFilter = originalData.data
+    //   return newData
+    // })
     setEdit(null)
     setOriginalData(null)
   }
 
   const saveEdit = async () =>{
     // #####################################################################################
+
     if (String(edit.data).includes('[Enter new data here]')){
       message.error('Please change the default input for adding a new record before saving')
       return
     }
+    if (Object.values(dataSource).map(x => x.titleFilter).includes(edit.phrase)){
+      message.error('Phrase already exists')
+      return
+    }    
     setLoading(true)
-    console.log(`edit: ${JSON.stringify(edit)} \n with records amount = ${existingRecordsAmount}`)
     if (edit.key <= existingRecordsAmount){
       const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit}) 
       if (req.status === 200){
@@ -330,12 +334,13 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       title: <div ref={deleteSingleRecordRef}>Delete</div>,
       dataIndex: 'operation',
       key: 'x',
-      // width: '20%',
+      width: '20%',
       render: (_, record) =>
         dataSource.length >= 1 ? (
           <>
-          {edit && edit.phrase === record.titleFilter ?
+          {edit && edit.phrase === record.titleFilter && edit.key === record.key ?
             <>
+           
               <a onClick={()=> saveEdit()} className='mr-[20px]'>Save</a>
               <a onClick={()=> cancelEdit()}>Cancel</a>
             </>
@@ -362,7 +367,7 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       key: count,
       titleFilter: `[Enter new data here]`,
     };
-    setDataSource([...dataSource, newData]);
+    setDataSource([newData, ...dataSource]);
     setCount(count + 1);
   };
 
@@ -413,18 +418,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
       setDataSource(newData);
   };
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   const components = {
@@ -485,7 +478,3 @@ export default FileNameFilter;
 
 
 
-// use setCount/count to determine how many records are originally there when first get req is made to grab all records
-// if you add multiple records then try and save one at the end without editing the others it gives an index error,
-// if you try and delete a record that is not in the json file it errors out, - maybe have a second storage on front end and see if the deletion phrase is in it, if not then -
-// delete the phrase, if its in it make the del req to backend

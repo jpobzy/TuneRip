@@ -66,7 +66,6 @@ let flaskProcess;
 function startServer(){
   try{
     const exePath = path.join(process.resourcesPath, 'server.exe');
-    // console.log('Starting Flask server at:', exePath);
     flaskProcess = spawn(exePath);
     flaskProcess.stdout.on('data', data => {
       console.log(`Flask stdout: ${data.toString()}`);
@@ -139,7 +138,8 @@ function createWindow() {
     mainWindow.webContents.send('isPackaged', isPackaged);
   });
 
-  mainWindow.openDevTools();
+  // developer tools
+  // mainWindow.openDevTools();
   
 
   // autoUpdater.check

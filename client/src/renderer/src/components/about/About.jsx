@@ -21,6 +21,11 @@ function About(){
         const req = await axios.get('https://api.github.com/repos/jpobzy/TuneRip/releases/latest')
         if (req.status === 200){
             console.log(req.data.assets[1].name)
+            if (req.data.assets[1].name.replace('TuneRip.Setup.', '').replace('.exe', '') === packageJson.version){
+                message.success('Current version is up to date')
+            }else{
+                message.error('Current version is NOT up to date, please restart the app')
+            }
         }
     }
     return (
@@ -34,7 +39,7 @@ function About(){
                     <a href="https://github.com/jpobzy/TuneRip" target="_blank" >GitHub link</a>
                 </div>
                 <div className="mt-[10px]">
-                    <Button onClick={()=>check()} >Check for Updates</Button>
+                    <Button type="primary" onClick={()=>check()} >Check for Updates</Button>
                 </div>
                 
 
