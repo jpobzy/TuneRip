@@ -8,6 +8,7 @@ class database():
         self.channelCache = {}
         self.logger = logger
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
+        print(self.db_path)
         if Path(self.db_path).exists():
             self.revamp()
 
@@ -20,6 +21,11 @@ class database():
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         try:
+            cur.execute("ALTER TABLE channels RENAME COLUMN previousAlbumCoverUsed to previousCoverArtUsed")
+
+        except:
+            pass
+        try:
             cur.execute("ALTER TABLE tracks RENAME COLUMN user to channel")
             cur.execute("ALTER TABLE users RENAME TO channels")
         except:
@@ -31,8 +37,8 @@ class database():
         cur = database.cursor()
         res = cur.execute("SELECT name FROM sqlite_master")
         if res.fetchone() == None:
-            cur.execute("CREATE TABLE channels(name, ytLink, previousAlbumCoverUsed)")
-            cur.execute("CREATE TABLE tracks(channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded)")
+            cur.execute("CREATE TABLE channels(name, ytLink, previousCoverArtUsed)")
+            cur.execute("CREATE TABLE tracks(channel, albumTitle, trackName, trackId, status, coverArtFile, link, whenRecordAdded)")
 
         for record in cur.execute("SELECT * FROM channels"):
             self.channelCache[str(record[0])] =  (record[1], record[2])
@@ -51,23 +57,14 @@ class database():
         database.close()
         return
 
-    def insertTrackIntoDB(self, channel, albumTitle, trackName, trackId, status, albumCoverFile, link, fileLocation):
-        data = {
-            'channel': channel,
-            'albumTitle': albumTitle,
-            'trackName': trackName,
-            'trackId': trackId,
-            'status': status, # downloaded or filtered
-            'albumCoverImageFile': albumCoverFile,
-            # 'whenRecordAdded': datetime.datetime.now()
-        }
+    def insertTrackIntoDB(self, channel, albumTitle, trackName, trackId, status, coverArtFile, link, fileLocation):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         whenRecordAdded = datetime.now()
         
         cur.execute("""
-            INSERT INTO tracks (channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (channel, albumTitle, trackName, trackId, status, albumCoverFile, link, whenRecordAdded, fileLocation))
+            INSERT INTO tracks (channel, albumTitle, trackName, trackId, status, coverArtFile, link, whenRecordAdded, fileLocation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (channel, albumTitle, trackName, trackId, status, coverArtFile, link, whenRecordAdded, fileLocation))
     
         database.commit()
         database.close()
@@ -118,7 +115,7 @@ class database():
                 'tracktitle' : record[2],
                 'trackId' : record[3],
                 'status' : record[4],
-                'albumCoverFile' : record[5],
+                'coverArtFile' : record[5],
                 'link' : record[6],
                 'whenRecordAdded' : record[7],
                 'fileLocation' : record[8],
@@ -151,7 +148,7 @@ class database():
                 'trackName' : record[2],
                 'trackId' : record[3],
                 'status' : record[4],
-                'albumCoverFile' : record[5],
+                'coverArtFile' : record[5],
                 'link' : record[6],
                 'whenRecordAdded' : record[7],
             })
@@ -204,7 +201,7 @@ class database():
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        cur.execute('UPDATE channels SET previousAlbumCoverUsed = ? WHERE name = ?', (file, channel))
+        cur.execute('UPDATE channels SET previousCoverArtUsed = ? WHERE name = ?', (file, channel))
         database.commit()
         database.close()
         return 
@@ -259,3 +256,22 @@ class database():
 
         database.commit()
         database.close()
+
+    def updateChannelData(self, channel, newCoverArtFile):
+        """
+        Updates the channel data if parameters 
+        """
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+        
+        self.logger.logInfo(f'Updating channel [{channel}] with new cover art [{newCoverArtFile}])')
+
+        try:
+            cur.execute('UPDATE channels SET previousCoverArtUsed = ? WHERE name = ?', (newCoverArtFile, channel))
+            database.commit()
+            database.close()
+        except Exception as error:
+            self.logger.logError(f'Was not able to update channel [{channel}] with new cover art [{newCoverArtFile}]')
+            self.logger.logError(error)
+            raise Exception(f'Failed to update channel data in database')
+        

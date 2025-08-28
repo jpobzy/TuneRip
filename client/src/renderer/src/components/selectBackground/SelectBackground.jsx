@@ -17,6 +17,7 @@ import LetterGlitchBackground from "../background/letterGlitch/LetterGlitchBackg
 import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackground";
 import BalatroBackground from "../background/balatro/BalatroBackground";
 import axios from 'axios';
+import { useToggle } from "../context/UseContext";
 
 
 function SelectBackground(){
@@ -36,6 +37,7 @@ function SelectBackground(){
     const [formData, setFormData] = useState({});
     const [selectedPreset, setSelectedPreset] = useState('')
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
+    const {setShowSwitch} = useToggle()
 
 
     const backgroundOptions = [
@@ -372,7 +374,15 @@ function SelectBackground(){
         await axios.post('http://localhost:8080/savebackgroundsettings', {params : {'background' : selectChosen}})
         setSelectedHasPrevData(false)
     }   
-    
+
+    useEffect(()=> {
+        setShowSwitch(true)
+
+        return () =>{
+            setShowSwitch(false)
+        }
+    }, [])
+
     return (
         <>
             <div className="-mt-[30px]">

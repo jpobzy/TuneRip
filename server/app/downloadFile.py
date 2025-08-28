@@ -7,7 +7,7 @@ from pytubefix import YouTube, Channel
 from pathlib import Path
 # from ansi_colors import print_colored_text
 
-def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=None, useFilterTitles= None):
+def download_video(url='', trackNum=None, trackDst=None, coverArtSrc=None, albumTitle=None, trackTitle=None, artist=None, genre=None, debugModeSkipDownload=False, skipBeatsAndInstrumentals=None, useFilterTitles= None):
     count = 0
     
     vid = YouTube(url) # set both to true 
@@ -114,7 +114,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
         audio.add_tags()
     
     # open album cover photo
-    with open( albumCoverSrc, 'rb') as file:
+    with open( coverArtSrc, 'rb') as file:
         cover_data = file.read()
         file.close()
     
@@ -132,7 +132,7 @@ def download_video(url='', trackNum=None, trackDst=None, albumCoverSrc=None, alb
     audio['TALB'] = TALB(encoding=3, text=albumTitle) # Album 
     audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
     audio['TPE1'] = TPE1(encoding=3, text=artist) # Lead Artist/Performer/Soloist/Group
-    audio['COMM'] = COMM(encoding=3, text=f'{albumCoverSrc.parts[-1]}')
+    audio['COMM'] = COMM(encoding=3, text=f'{coverArtSrc.parts[-1]}')
     audio['TCON'] = TCON(encoding=3, text=f'{genre}')
     
     

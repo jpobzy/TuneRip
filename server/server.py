@@ -59,11 +59,11 @@ def get_image(route):
     return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
 
 
-@app.route('/getAlbumCovers/<string:route>')
-def getAlbumCover(route):
+@app.route('/getCoverArt/<string:route>')
+def getCoverArt(route):
     """
-    get request for album cover photos
-    example: http://localhost:8080/getAlbumCovers/1
+    get request for cover art photos
+    example: http://localhost:8080/getCoverArt/1
     """
     return send_from_directory(app.config["ALBUM_COVER_FOLDER"], f'{route}', mimetype='image/gif')
 
@@ -82,9 +82,9 @@ def downloadTxt():
         return make_response(jsonify(data), 201)
     
 
-@app.route('/getAlbumCoverFileNames')
-def getAlbumCoverFileNames():
-    return jsonify(controller_obj.returnAlbumCoverFileNames())
+@app.route('/getCoverArtFileNames')
+def getCoverArtFileNames():
+    return jsonify(controller_obj.returnCoverArtFileNames())
 
 
 @app.route('/newChannel', methods=['POST'])
@@ -307,7 +307,7 @@ def getArtDownloadStatus():
 
 @app.get('/getChannelAndArtCoverData')
 def getChannelAndArtCoverData():
-    data = controller_obj.returnAlbumCoverFileNames()
+    data = controller_obj.returnCoverArtFileNames()
     data['coverArtSettings'] = imageSettings_obj.getRecords()
     return jsonify(data)
 

@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { App, Pagination, Button } from 'antd';
 
 import { resultToggle } from "../context/ResultContext";
-import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
+import CoverArtCard from "../coverArtCard/CoverArtCard";
 
 function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
-    const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
+    const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     
     const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
     const [isLoading, setIsLoading] = useState(false)
@@ -20,7 +20,7 @@ function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
     const [editImgCard, setEditImgCard] = useState(false)
     
 
-    const handleAlbumCoverClicked = async(file) =>{
+    const handleCoverArtClicked = async(file) =>{
         if (imgClicked === file){
             setImgClicked('')
         }else{
@@ -28,40 +28,40 @@ function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
         }
     }
 
-    async function getNewAlbumCover() {
-        const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-        setAlbumCoverFileNames(albumCoverResponse.data.files);
+    async function getNewCoverArt() {
+        const coverArtResponse = await axios.get('http://localhost:8080/getCoverArtFileNames');
+        setCoverArtFileNames(coverArtResponse.data.files);
 
-        const roundUp = Math.ceil(albumCoverResponse.data.files.length / imagesPerPage) * 10;
+        const roundUp = Math.ceil(coverArtResponse.data.files.length / imagesPerPage) * 10;
         setPagnationPages(roundUp)
 
-        setShownImages(albumCoverResponse.data.files.slice(0, imagesPerPage))
+        setShownImages(coverArtResponse.data.files.slice(0, imagesPerPage))
 
     }
 
 
     useEffect(()=> {
-        getNewAlbumCover();
+        getNewCoverArt();
     }, []);
 
     const chooseWhichImagesToShow = (e) =>{
         const startAmount = (Number(e) - 1) * imagesPerPage
         const endAmount = Number(e) * imagesPerPage
-        setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
+        setShownImages(coverArtFileNames.slice(startAmount, endAmount))
     }
     
 
     return (
         <>
-            <div className='album-cover-containter image-wrapper '>
+            <div className='cover-art-containter image-wrapper '>
                 {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
-                        <AlbumCoverCard 
+                        <CoverArtCard 
                         filename={filename[1]}
-                        cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+                        cardClicked={()=>handleCoverArtClicked(filename[1])}
                         previousImg={prevImg}
                         edit={editImgCard}
-                        refresh={getNewAlbumCover}
+                        refresh={getNewCoverArt}
                         key = {filename[1]}
                         imgClicked={imgClicked}
                         enlargenImg={false}

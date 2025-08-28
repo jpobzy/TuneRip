@@ -3,7 +3,6 @@ import { Button, Switch, Select, Tooltip, Result, Tour, Checkbox, Spin } from "a
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
 import { App, Pagination, Input } from 'antd';
-import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
 
 import UploadButton from "../uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
