@@ -16,7 +16,7 @@ import WavesBackground from "../background/waves/WavesBackground";
 import LetterGlitchBackground from "../background/letterGlitch/LetterGlitchBackground";
 import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackground";
 import BalatroBackground from "../background/balatro/BalatroBackground";
-import PrismaticBurst from "../background/prismaticBurst/PrismaticBurstBackground";
+import PrismaticBurstBackground from "../background/prismaticBurst/PrismaticBurstBackground";
 
 import axios from 'axios';
 import { useToggle } from "../context/UseContext";
@@ -57,10 +57,27 @@ function SelectBackground(){
         { value: 'squares', label: 'Squares' }, 
         { value: 'liquidChrome', label: 'Liquid Chrome' }, 
         { value: 'balatro', label: 'Balatro' }, 
-        { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
+        // { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
+        { value: 'prismaticBurst', label:  <>
+        <div className="flex">
+            <div className="text-red-500 mr-[5px]">
+                NEW
+            </div>
+            <div>
+                Prismatic Burst
+            </div>
+
+        </div>
+
+        </>
+
+
+        }, 
     ]
 
-
+//                             <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
+                            //     NEW
+                            // </div>
     const changeBackground = (e) => {
         setSelectChosen(e)
         setFormData({})
@@ -410,6 +427,12 @@ function SelectBackground(){
     return (
         <>
             <div className="-mt-[30px]">
+                {!selectChosen && 
+                    <div className="flex absolute mt-[6px] ml-[200px] text-red-500">
+                        NEW
+                    </div>                
+                }
+
                 <Select
                     defaultValue=""
                     style={{ width: 220 }}
@@ -477,7 +500,7 @@ function SelectBackground(){
                                 <BalatroBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen === 'prismaticBurst' &&
-                                <PrismaticBurst handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <PrismaticBurstBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
                             {selectChosen &&
                                 <Form.Item>
@@ -503,7 +526,7 @@ function SelectBackground(){
                     </div>    
                 </ConfigProvider>
 
-                <Button onClick={()=> console.log(formData)}>clcik em</Button>
+                {/* <Button onClick={()=> console.log(formData)}>clcik em</Button> */}
             </div>
         </>
     )

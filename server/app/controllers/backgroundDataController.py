@@ -132,6 +132,7 @@ class backgroundData():
                 Path.touch(self.defaultDataFile)
                 with open(self.defaultDataFile, 'w') as file:
                     file.write(backgroundData.data)
+            self.addNewBackground()
             return
 
         except Exception as error:
@@ -395,3 +396,42 @@ class backgroundData():
         return currentBackground, res, keyList
     
 
+    def addNewBackground(self):
+        """
+        Adds background to default background file + regular background file
+        """
+        with open(self.defaultDataFile, 'r') as file:
+            data = json.load(file)
+
+        if 'prismaticBurst' not in data['Backgrounds']:
+            data['Backgrounds']['prismaticBurst'] = {}
+            data['Backgrounds']['prismaticBurst'][ "colors"] = "#ff007a", "#4d3dff", "#ffffff"
+            data['Backgrounds']['prismaticBurst']['animationType'] = 'rotate3d'
+            data['Backgrounds']['prismaticBurst']['intensity'] = 2
+            data['Backgrounds']['prismaticBurst']['speed'] = 0.5
+            data['Backgrounds']['prismaticBurst']['distort'] = 0
+            data['Backgrounds']['prismaticBurst']['rayCount'] = 0
+
+            with open(self.defaultDataFile, 'w') as file:
+                json.dump(data, file, indent=4)  
+
+
+
+        with open(self.file, 'r') as file:
+            data = json.load(file)
+
+        if 'prismaticBurst' not in data['Backgrounds']:
+            data['Backgrounds']['prismaticBurst'] = {}
+            data['Backgrounds']['prismaticBurst'][ "colors"] = "#ff007a", "#4d3dff", "#ffffff",
+            data['Backgrounds']['prismaticBurst']['animationType'] = 'rotate3d'
+            data['Backgrounds']['prismaticBurst']['intensity'] = 2
+            data['Backgrounds']['prismaticBurst']['speed'] = 0.5
+            data['Backgrounds']['prismaticBurst']['distort'] = 0
+            data['Backgrounds']['prismaticBurst']['rayCount'] = 0
+
+            with open(self.file, 'w') as file:
+                json.dump(data, file, indent=4)  
+
+
+            
+             

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function PrismaticBurst({setFormData, handleFormChange, formData, backgroundForm}){
+function PrismaticBurstBackground({setFormData, handleFormChange, formData, backgroundForm}){
     const {reset, prismaticBurstSettings} = toggleBackgroundSettings();
 
     return (
@@ -72,9 +72,9 @@ function PrismaticBurst({setFormData, handleFormChange, formData, backgroundForm
                     initialValue={prismaticBurstSettings.prismaticBurstBackgroundSettings.intensity} 
                     label={'Intensity'}>
                     <Slider 
-                    min={prismaticBurstSettings.prismaticBurstBackgroundSettings.intensity.min}
-                    max={prismaticBurstSettings.prismaticBurstBackgroundSettings.intensity.max}
-                    step={prismaticBurstSettings.prismaticBurstBackgroundSettings.intensity.step} 
+                    min={prismaticBurstSettings.prismaticBurstFormSettings.intensity.min}
+                    max={prismaticBurstSettings.prismaticBurstFormSettings.intensity.max}
+                    step={prismaticBurstSettings.prismaticBurstFormSettings.intensity.step} 
                     />
                 </Form.Item> 
 
@@ -85,9 +85,9 @@ function PrismaticBurst({setFormData, handleFormChange, formData, backgroundForm
                     initialValue={prismaticBurstSettings.prismaticBurstBackgroundSettings.speed} 
                     label={'Speed'}>
                     <Slider 
-                    min={prismaticBurstSettings.prismaticBurstBackgroundSettings.speed.min}
-                    max={prismaticBurstSettings.prismaticBurstBackgroundSettings.speed.max}
-                    step={prismaticBurstSettings.prismaticBurstBackgroundSettings.speed.step} 
+                    min={prismaticBurstSettings.prismaticBurstFormSettings.speed.min}
+                    max={prismaticBurstSettings.prismaticBurstFormSettings.speed.max}
+                    step={prismaticBurstSettings.prismaticBurstFormSettings.speed.step} 
                     />
                 </Form.Item> 
 
@@ -97,9 +97,9 @@ function PrismaticBurst({setFormData, handleFormChange, formData, backgroundForm
                     initialValue={prismaticBurstSettings.prismaticBurstBackgroundSettings.distort} 
                     label={'Distort'}>
                     <Slider 
-                    min={prismaticBurstSettings.prismaticBurstBackgroundSettings.distort.min}
-                    max={prismaticBurstSettings.prismaticBurstBackgroundSettings.distort.max}
-                    step={prismaticBurstSettings.prismaticBurstBackgroundSettings.distort.step} 
+                    min={prismaticBurstSettings.prismaticBurstFormSettings.distort.min}
+                    max={prismaticBurstSettings.prismaticBurstFormSettings.distort.max}
+                    step={prismaticBurstSettings.prismaticBurstFormSettings.distort.step} 
                     />
                 </Form.Item> 
 
@@ -110,22 +110,15 @@ function PrismaticBurst({setFormData, handleFormChange, formData, backgroundForm
                     initialValue={prismaticBurstSettings.prismaticBurstBackgroundSettings.rayCount} 
                     label={'Ray count'}>
                     <Slider 
-                    min={prismaticBurstSettings.prismaticBurstBackgroundSettings.rayCount.min}
-                    max={prismaticBurstSettings.prismaticBurstBackgroundSettings.rayCount.max}
-                    step={prismaticBurstSettings.prismaticBurstBackgroundSettings.rayCount.step} 
+                    min={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.min}
+                    max={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.max}
+                    step={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.step} 
                     />
                 </Form.Item> 
-
-
-
-
-
-
-
 
             </div>      
         </>
     )
 }
 
-export default PrismaticBurst;
+export default PrismaticBurstBackground;

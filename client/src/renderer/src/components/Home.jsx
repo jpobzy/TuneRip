@@ -583,7 +583,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         </div>      
       }
 
-      <Button onClick={()=> console.log(gallerySettings)}>sadsa me</Button> 
+      {/* <Button onClick={()=> console.log(gallerySettings)}>sadsa me</Button>  */}
       {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button> 
        {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
