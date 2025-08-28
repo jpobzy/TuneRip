@@ -16,6 +16,8 @@ import WavesBackground from "../background/waves/WavesBackground";
 import LetterGlitchBackground from "../background/letterGlitch/LetterGlitchBackground";
 import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackground";
 import BalatroBackground from "../background/balatro/BalatroBackground";
+import PrismaticBurst from "../background/prismaticBurst/PrismaticBurstBackground";
+
 import axios from 'axios';
 import { useToggle } from "../context/UseContext";
 
@@ -28,7 +30,8 @@ function SelectBackground(){
         dotGridSettings, hyperspeedSettings,
         iridescenceSettings, wavesSettings,
         letterGlitchSettings, squaresSettings,
-        liquidChromeSettings, balatroSettings
+        liquidChromeSettings, balatroSettings,
+        prismaticBurstSettings,
     } = toggleBackgroundSettings();
 
     const [selectChosen, setSelectChosen] = useState('')
@@ -54,6 +57,7 @@ function SelectBackground(){
         { value: 'squares', label: 'Squares' }, 
         { value: 'liquidChrome', label: 'Liquid Chrome' }, 
         { value: 'balatro', label: 'Balatro' }, 
+        { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
     ]
 
 
@@ -357,6 +361,26 @@ function SelectBackground(){
                     if (formData.color3) updates.color3 = formData.color3
                     return {...prev, ...updates}
                 })     
+            } else if (selectChosen === 'prismaticBurst'){
+                prismaticBurstSettings.setPrismaticBurstBackgroundSettings(prev => {
+                    const updates = {}
+                    if (formData.intensity) updates.intensity = formData.intensity
+                    if (formData.speed) updates.speed = formData.speed
+                    if (formData.distort) updates.distort = formData.distort
+                    if (formData.rayCount) updates.rayCount = formData.rayCount
+                    return {...prev, ...updates}
+                })     
+
+                if (formData.color1){
+                    prismaticBurstSettings.updatePrismaticBurstColorIndex(0, formData.color1)
+                }
+                if (formData.color2){
+                    prismaticBurstSettings.updatePrismaticBurstColorIndex(1, formData.color2)
+                }
+                if (formData.color3){
+                    prismaticBurstSettings.updatePrismaticBurstColorIndex(2, formData.color3)
+                }
+
             }
         }
         setChosenBackground(selectChosen)
@@ -452,6 +476,9 @@ function SelectBackground(){
                             {selectChosen === 'balatro' &&
                                 <BalatroBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
+                            {selectChosen === 'prismaticBurst' &&
+                                <PrismaticBurst handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                            }
                             {selectChosen &&
                                 <Form.Item>
                                     {/* {!selectedHasPrevData &&
@@ -475,6 +502,8 @@ function SelectBackground(){
                         </Form>
                     </div>    
                 </ConfigProvider>
+
+                <Button onClick={()=> console.log(formData)}>clcik em</Button>
             </div>
         </>
     )

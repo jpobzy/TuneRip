@@ -500,15 +500,8 @@ class controller():
         album = playlistData.get('album')
         artist = playlistData.get('artist')
         genre = playlistData.get('genre')
-        print(playlistPath)
-
-        channel = Path(playlistPath).parts[1]
-        if channel != 'playlists':
-            self.db.updateChannelData(channel, newCoverArt)
-            
-        return f'Success', 200
-  
         fullPath = Path(self.projRoot) / playlistPath
+        
         for file in fullPath.iterdir():
             try:
                 if file.suffix == '.mp3':
@@ -517,6 +510,11 @@ class controller():
                         self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
                         if len(Path(playlistPath).parts) == 2:
                             self.updateChannelImg()
+
+                channel = Path(playlistPath).parts[1]
+                if channel != 'playlists':
+                    self.db.updateChannelData(channel, newCoverArt)
+
 
             except Exception as error:
                 self.logger.logError(f'Error when trying to update files in folder metadata')

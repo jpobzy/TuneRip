@@ -26,95 +26,95 @@ function Settings(){
 
 
     const tabItems = [
-    {
-        key: '1',
-        label: 'Video Filter',
-        children: 
-        <div className="text-center mt-[20px]">
-            <FilterForm setRefresh={setRefresh}/>
-        </div>
-    },
-    {
-        key: '2',
-        label: 'Track Database',
-        children:
-            <div className="text-center mt-[20px]">
-                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-            </div>       
-    },
-    {
-        key: '3',
-        label: 
-        <> 
-            <div className="flex">
-                <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div>
-                <div className="">
-                    Cover Art Settings
-                </div>                
-            </div>       
-        </> ,        
-        children: 
-        <>
-            <div className="text-center mt-[30px]">
-                <PhotoGallery />
-            </div>        
-        </>
+    // {
+    //     key: '1',
+    //     label: 'Video Filter',
+    //     children: 
+    //     <div className="text-center mt-[20px]">
+    //         <FilterForm setRefresh={setRefresh}/>
+    //     </div>
+    // },
+    // {
+    //     key: '2',
+    //     label: 'Track Database',
+    //     children:
+    //         <div className="text-center mt-[20px]">
+    //             <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+    //         </div>       
+    // },
+    // {
+    //     key: '3',
+    //     label: 
+    //     <> 
+    //         <div className="flex">
+    //             <div className="text-red-500 mr-[5px] visible">
+    //                 NEW
+    //             </div>
+    //             <div className="">
+    //                 Cover Art Settings
+    //             </div>                
+    //         </div>       
+    //     </> ,        
+    //     children: 
+    //     <>
+    //         <div className="text-center mt-[30px]">
+    //             <PhotoGallery />
+    //         </div>        
+    //     </>
 
-    },
-    {
-        key: '4',
-        label: 
-        <>
-            <div className="flex">
-                {/* <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div> */}
-                <div className="">
-                    Title filter
-                </div>                
-            </div>
+    // },
+    // {
+    //     key: '4',
+    //     label: 
+    //     <>
+    //         <div className="flex">
+    //             {/* <div className="text-red-500 mr-[5px] visible">
+    //                 NEW
+    //             </div> */}
+    //             <div className="">
+    //                 Title filter
+    //             </div>                
+    //         </div>
 
-        </>,
-        children:
-        <div className="text-center mt-[20px]">
-            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
-        </div>
-    },
-    {
-        key: '5',
-        label: 'Reorder Tracks',
-        children: 
-        <div className="text-center mt-[50px]">
-            <ReorderTracks />
-        </div>
-    },
-    {
-        key: '6',
-        label: 'Crop',
-        children: 
-        <div className="text-center mt-[0px]">
-            <Crop />
-        </div>
-    },
-    {
-        key: '7',
-        label: 'Edit Meta Data',
-        children: 
-        <div className="text-center mt-[30px]">
-            <EditMetaData />
-        </div>
-    },
+    //     </>,
+    //     children:
+    //     <div className="text-center mt-[20px]">
+    //         <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+    //     </div>
+    // },
+    // {
+    //     key: '5',
+    //     label: 'Reorder Tracks',
+    //     children: 
+    //     <div className="text-center mt-[50px]">
+    //         <ReorderTracks />
+    //     </div>
+    // },
+    // {
+    //     key: '6',
+    //     label: 'Crop',
+    //     children: 
+    //     <div className="text-center mt-[0px]">
+    //         <Crop />
+    //     </div>
+    // },
+    // {
+    //     key: '7',
+    //     label: 'Edit Meta Data',
+    //     children: 
+    //     <div className="text-center mt-[30px]">
+    //         <EditMetaData />
+    //     </div>
+    // },
 
-    {
-        key: '8',
-        label: 'Merge folders',
-        children: 
-        <div className="text-center mt-[50px]">
-            <FolderMerge />
-        </div>
-    },
+    // {
+    //     key: '8',
+    //     label: 'Merge folders',
+    //     children: 
+    //     <div className="text-center mt-[50px]">
+    //         <FolderMerge />
+    //     </div>
+    // },
     {
         key: '9',
         label: 'Change background',

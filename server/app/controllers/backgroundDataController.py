@@ -102,7 +102,15 @@ class backgroundData():
                 "color2" : "#006BB4",
                 "color3" : "#162325",
                 "pixelFilter" : 745
-            }
+            },
+            "prismaticBurst" : {
+                "colors" : ["#ff007a", "#4d3dff", "#ffffff"],
+                "animationType" : "rotate3d",
+                "intensity" : 2,
+                "speed" : 0.5,
+                "distort" : 0,
+                "rayCount" : 0
+            }           
         }
     }
     """
@@ -319,8 +327,30 @@ class backgroundData():
                     if property == 'color3':
                         data['Backgrounds'][background][property] = value
                     if property == 'pixelFilter':
-                        data['Backgrounds'][background][property] = value                
+                        data['Backgrounds'][background][property] = value  
 
+                elif background == 'prismaticBurst':
+                    if property == 'color1':
+                        data['Backgrounds'][background]['colors'][0] = value
+
+                    if property == 'color2':
+                        data['Backgrounds'][background]['colors'][1] = value
+
+                    if property == 'color3':
+                        data['Backgrounds'][background]['colors'][2] = value
+
+                    if property == 'animationType':
+                        data['Backgrounds'][background]['animationType'] = value
+
+                    if property == 'intensity':
+                        data['Backgrounds'][background]['intensity'] = value
+
+                    if property == 'distort':
+                        data['Backgrounds'][background]['distort'] = value
+
+                    if property == 'rayCount':
+                        data['Backgrounds'][background]['rayCount'] = value
+                        
             data['selectedBackground'] = background
  
 
