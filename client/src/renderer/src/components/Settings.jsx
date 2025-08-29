@@ -21,8 +21,21 @@ import About from "./about/About";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
-    const [currentStep, setCurrentStep] = useState(0)
-    const [current, setCurrent] = useState('mail');
+
+    const newLabel = (title) =>{
+        return (
+            <>
+                <div className="flex">
+                    <div className="text-red-500 mr-[5px]">
+                        NEW
+                    </div>
+                    <div className="">
+                        {title}
+                    </div>                
+                </div>           
+            </>
+        )
+    }
 
 
     const tabItems = [
@@ -44,17 +57,7 @@ function Settings(){
     },
     {
         key: '3',
-        label: 
-        <> 
-            <div className="flex">
-                <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div>
-                <div className="">
-                    Cover Art Settings
-                </div>                
-            </div>       
-        </> ,        
+        label: newLabel('Cover Art Settings'),        
         children: 
         <>
             <div className="text-center mt-[30px]">
@@ -65,18 +68,7 @@ function Settings(){
     },
     {
         key: '4',
-        label: 
-        <>
-            <div className="flex">
-                {/* <div className="text-red-500 mr-[5px] visible">
-                    NEW
-                </div> */}
-                <div className="">
-                    Title filter
-                </div>                
-            </div>
-
-        </>,
+        label: 'Title filter',
         children:
         <div className="text-center mt-[20px]">
             <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
@@ -117,7 +109,7 @@ function Settings(){
     },
     {
         key: '9',
-        label: 'Change background',
+        label: newLabel('Change background'),
         children: 
         <div className="text-center mt-[60px]">
             <SelectBackground />

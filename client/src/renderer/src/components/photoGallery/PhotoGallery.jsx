@@ -2,7 +2,7 @@ import { Button, Switch, Select, Tooltip, Result, Tour, Checkbox, Spin } from "a
 import axios from "axios";
 import { use, useEffect, useRef, useState } from "react";
 import { App, Pagination, Input } from 'antd';
-import AlbumCoverCard from "../albumCoverCard/AlbumCoverCard";
+import CoverArtCard from "../coverArtCard/CoverArtCard";
 import { resultToggle } from "../context/ResultContext";
 import UploadButton from "../uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
@@ -13,7 +13,7 @@ import { FcEmptyTrash } from "react-icons/fc";
 
 
 function PhotoGallery(){
-    const [albumCoverFileNames, setAlbumCoverFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
+    const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
     const { message, notification  } = App.useApp();
@@ -29,6 +29,7 @@ function PhotoGallery(){
     const {setDisableDockFunctionality} = useToggle()
     const [prevImg, setPrevImg] = useState(null)
     const [editImgCard, setEditImgCard] = useState(false)
+    const [currPaginationPage, setCurrentPaginationPage] = useState(1)
 
     const [postDownloadSetting, setPostDownloadSetting] = useState({moveSwitchChecked : false, moveSwitchLoading : false, deleteSwitchChecked : false, deleteSwitchLoading : false})
 
@@ -39,7 +40,7 @@ function PhotoGallery(){
     const moveCoverArtRef = useRef(null)
     const deleteCoverArtRef = useRef(null)
     
-    const handleAlbumCoverClicked = async(file) =>{
+    const handleCoverArtClicked = async(file) =>{
         if (imgClicked === file){
             setImgClicked('')
         }else{
@@ -47,14 +48,15 @@ function PhotoGallery(){
         }
     }
 
-    async function getNewAlbumCover() {
-        const albumCoverResponse = await axios.get('http://localhost:8080/getAlbumCoverFileNames');
-        setAlbumCoverFileNames(albumCoverResponse.data.files);
+    async function getNewCoverArt() {
+        const coverArtResponse = await axios.get('http://localhost:8080/getCoverArtFileNames');
+        setCoverArtFileNames(coverArtResponse.data.files);
 
-        const roundUp = Math.ceil(albumCoverResponse.data.files.length / 6) * 10;
+        const roundUp = Math.ceil(coverArtResponse.data.files.length / 6) * 10;
         setPagnationPages(roundUp)
 
-        setShownImages(albumCoverResponse.data.files.slice(0, 6))
+        setShownImages(coverArtResponse.data.files.slice(0, 6))
+        setCurrentPaginationPage(1)
     }
 
 
@@ -109,8 +111,6 @@ function PhotoGallery(){
         }
         setSwitchLoading(false)
         setDisableDockFunctionality(false)
-        // const albumCoverResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
-        // console.log(albumCoverResponse.data.prevUsedCoverArtInfo)
     }
 
     const getArtDownloadStatus = async () => {
@@ -127,7 +127,7 @@ function PhotoGallery(){
 
     useEffect(()=> {
         getArtDownloadStatus()
-        getNewAlbumCover();
+        getNewCoverArt();
     }, []);
 
     const arr = Array.from(Array(10).keys())
@@ -136,7 +136,8 @@ function PhotoGallery(){
     const chooseWhichImagesToShow = (e) =>{
         const startAmount = (Number(e) - 1) * 6
         const endAmount = Number(e) * 6
-        setShownImages(albumCoverFileNames.slice(startAmount, endAmount))
+        setShownImages(coverArtFileNames.slice(startAmount, endAmount))
+        setCurrentPaginationPage(e)
     }
 
     const handleMovetoSubfolder = async (e) => {
@@ -211,7 +212,7 @@ function PhotoGallery(){
         <>
             <div>
                 <div className="inline-block" ref={addCoverArtRef}>
-                    <UploadButton refresh={getNewAlbumCover}/>  
+                    <UploadButton refresh={getNewCoverArt}/>  
                 </div>
                  
                 <div className="ml-[20px] flex -mt-[32px] ml-[505px]">
@@ -222,15 +223,15 @@ function PhotoGallery(){
             </div>
             
 
-            <div className='album-cover-containter image-wrapper '>
+            <div className='cover-art-containter image-wrapper '>
                 {Object.entries(shownImages).map((filename, index)=>(
                     <div key={filename} className={'mt-[20px] mb-[20px]'}>
-                        <AlbumCoverCard 
+                        <CoverArtCard 
                         filename={filename[1]}
-                        cardClicked={()=>handleAlbumCoverClicked(filename[1])}
+                        cardClicked={()=>handleCoverArtClicked(filename[1])}
                         previousImg={prevImg}
                         edit={editImgCard}
-                        refresh={getNewAlbumCover}
+                        refresh={getNewCoverArt}
                         key = {filename[1]}
                         imgClicked={imgClicked}
                         enlargenImg={true}
@@ -321,6 +322,7 @@ function PhotoGallery(){
 
             <div className="flex mx-auto justify-center mt-[20px] mb-[20px]">
                 <Pagination 
+                current={currPaginationPage}
                 showSizeChanger={false}
                 defaultCurrent={1} 
                 total={pagnationPages} 
@@ -329,17 +331,6 @@ function PhotoGallery(){
             </div>
             
             <Tour open={open} onClose={() => endTour()} steps={steps} />
-
-
-
-
-
-
-
-
-
-
-
 
             <div className="mb-[80px]"></div>
         </>

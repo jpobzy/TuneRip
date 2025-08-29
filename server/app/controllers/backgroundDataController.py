@@ -102,7 +102,15 @@ class backgroundData():
                 "color2" : "#006BB4",
                 "color3" : "#162325",
                 "pixelFilter" : 745
-            }
+            },
+            "prismaticBurst" : {
+                "colors" : ["#ff007a", "#4d3dff", "#ffffff"],
+                "animationType" : "rotate3d",
+                "intensity" : 2,
+                "speed" : 0.5,
+                "distort" : 0,
+                "rayCount" : 0
+            }           
         }
     }
     """
@@ -124,6 +132,7 @@ class backgroundData():
                 Path.touch(self.defaultDataFile)
                 with open(self.defaultDataFile, 'w') as file:
                     file.write(backgroundData.data)
+            self.addNewBackground()
             return
 
         except Exception as error:
@@ -319,8 +328,30 @@ class backgroundData():
                     if property == 'color3':
                         data['Backgrounds'][background][property] = value
                     if property == 'pixelFilter':
-                        data['Backgrounds'][background][property] = value                
+                        data['Backgrounds'][background][property] = value  
 
+                elif background == 'prismaticBurst':
+                    if property == 'color1':
+                        data['Backgrounds'][background]['colors'][0] = value
+
+                    if property == 'color2':
+                        data['Backgrounds'][background]['colors'][1] = value
+
+                    if property == 'color3':
+                        data['Backgrounds'][background]['colors'][2] = value
+
+                    if property == 'animationType':
+                        data['Backgrounds'][background]['animationType'] = value
+
+                    if property == 'intensity':
+                        data['Backgrounds'][background]['intensity'] = value
+
+                    if property == 'distort':
+                        data['Backgrounds'][background]['distort'] = value
+
+                    if property == 'rayCount':
+                        data['Backgrounds'][background]['rayCount'] = value
+                        
             data['selectedBackground'] = background
  
 
@@ -365,3 +396,42 @@ class backgroundData():
         return currentBackground, res, keyList
     
 
+    def addNewBackground(self):
+        """
+        Adds background to default background file + regular background file
+        """
+        with open(self.defaultDataFile, 'r') as file:
+            data = json.load(file)
+
+        if 'prismaticBurst' not in data['Backgrounds']:
+            data['Backgrounds']['prismaticBurst'] = {}
+            data['Backgrounds']['prismaticBurst'][ "colors"] = "#ff007a", "#4d3dff", "#ffffff"
+            data['Backgrounds']['prismaticBurst']['animationType'] = 'rotate3d'
+            data['Backgrounds']['prismaticBurst']['intensity'] = 2
+            data['Backgrounds']['prismaticBurst']['speed'] = 0.5
+            data['Backgrounds']['prismaticBurst']['distort'] = 0
+            data['Backgrounds']['prismaticBurst']['rayCount'] = 0
+
+            with open(self.defaultDataFile, 'w') as file:
+                json.dump(data, file, indent=4)  
+
+
+
+        with open(self.file, 'r') as file:
+            data = json.load(file)
+
+        if 'prismaticBurst' not in data['Backgrounds']:
+            data['Backgrounds']['prismaticBurst'] = {}
+            data['Backgrounds']['prismaticBurst'][ "colors"] = "#ff007a", "#4d3dff", "#ffffff",
+            data['Backgrounds']['prismaticBurst']['animationType'] = 'rotate3d'
+            data['Backgrounds']['prismaticBurst']['intensity'] = 2
+            data['Backgrounds']['prismaticBurst']['speed'] = 0.5
+            data['Backgrounds']['prismaticBurst']['distort'] = 0
+            data['Backgrounds']['prismaticBurst']['rayCount'] = 0
+
+            with open(self.file, 'w') as file:
+                json.dump(data, file, indent=4)  
+
+
+            
+             

@@ -16,6 +16,7 @@ import LetterGlitch from "../background/letterGlitch/LetterGlitch";
 import LiquidChrome from "../background/liquidChrome/LiquidChrome";
 import Squares from "../background/squares/Squares";
 import Balatro from "../background/balatro/Balatro";
+import PrismaticBurst from "../background/prismaticBurst/PrismaticBurst";
 
 const toggleSettingsContext = createContext();
 
@@ -398,6 +399,48 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }
 
 
+// ############################### PRISMATIC BURST SETTINGS ################################
+
+    const defaultPrismaticBurstSettings = {
+        colors: ['#ff007a', '#4d3dff', '#ffffff'],
+        animationType: 'rotate3d',
+        intensity: 2,
+        speed: 0.5,
+        distort: 0,
+        rayCount: 0
+    }
+
+    const [prismaticBurstBackgroundSettings, setPrismaticBurstBackgroundSettings] = useState(defaultPrismaticBurstSettings)
+
+
+    const prismaticBurstFormSettings = {
+        intensity: { min: 0.1, max: 5, step: 0.1 },
+        speed: { min: 0, max: 2, step: 0.1 },
+        distort: { min: 0, max: 10, step: 0.1 },
+        rayCount: { min: 0, max: 64, step: 1 }
+    }
+
+    const updatePrismaticBurstColorIndex = (index, newColor) => {
+        console.log(`new: ${newColor}`)
+        const updatedStops = prismaticBurstBackgroundSettings.colors; 
+        updatedStops[index] = newColor;              
+        setPrismaticBurstBackgroundSettings(prev => {
+            return { ...prev, colors: updatedStops,}; 
+        })
+        delete prismaticBurstBackgroundSettings['updatedStops']
+    }
+
+
+    const resetPrismaticBurstColorIndex = (index) => {
+        setPrismaticBurstBackgroundSettings(prev => {
+            const updatedStops = prismaticBurstBackgroundSettings.colors; 
+            const defaultColor = defaultPrismaticBurstSettings.colors[index]
+            updatedStops[index] = defaultColor;          
+            return { ...prev, updatedStops}; 
+        })
+    }
+
+
 // ###############################################################################
 // ############################### RESET SETTINGS ################################
 // ###############################################################################
@@ -510,7 +553,20 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 color3 : defaultBalatroSettings.color3,
                 pixelFilter : defaultBalatroSettings.pixelFilter
             })                
+        }else if (background === 'prismaticBurst'){
+            setPrismaticBurstBackgroundSettings(defaultPrismaticBurstSettings)
+            backgroundForm.setFieldsValue({
+                color1 : new Color("ff007a"),
+                color2 : new Color("4d3dff"),
+                color3 : new Color("ffffff"),
+                animationType : defaultPrismaticBurstSettings.animationType,
+                intensity : defaultPrismaticBurstSettings.intensity,
+                speed : defaultPrismaticBurstSettings.speed,
+                distort : defaultPrismaticBurstSettings.distort,
+                rayCount : defaultPrismaticBurstSettings.rayCount,
+            })                
         }
+
 
         const req = await axios.post('http://localhost:8080/resetbackgroundsettings', {params : {'background' : background}})
     }
@@ -601,6 +657,9 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
 
             } else if (currentBackground === 'balatro'){
                 setBalatroBackgroundSettings(prevSettings)
+            }else if (currentBackground === 'prismaticBurst'){
+                setPrismaticBurstBackgroundSettings(prevSettings)
+                // console.log(prevSettings)
             }
         } 
 
@@ -671,7 +730,8 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             letterGlitchSettings : {letterGlitchBackgroundSettings, setLetterGlitchBackgroundSettings, updateLetterGlitchIndex, letterGlitchFormSettings},
             squaresSettings : {squareBackgroundSettings, setSquareBackgroundSettings, squaresFormSettings},
             liquidChromeSettings : {liquidChromeBackgroundSettings, liquidChromeFormSettings, setLiquidChromeBackgroundSettings},
-            balatroSettings : {balatroBackgroundSettings, setBalatroBackgroundSettings, balatroFormSettings}
+            balatroSettings : {balatroBackgroundSettings, setBalatroBackgroundSettings, balatroFormSettings},
+            prismaticBurstSettings : {prismaticBurstBackgroundSettings, setPrismaticBurstBackgroundSettings, prismaticBurstFormSettings, updatePrismaticBurstColorIndex, resetPrismaticBurstColorIndex},
         }}>
             <div className="fixed inset-0 -z-10 relative">
                 { background === 'aurora' &&
@@ -942,6 +1002,30 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
 
                     </div>
                 }
+                {background === 'prismaticBurst' && 
+                    <div className="z-0"
+                    style={{
+                    position: 'fixed', 
+                    width: '100%',
+                    height: '100%'  
+                    }}>
+                        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                            <PrismaticBurst
+                                animationType={prismaticBurstBackgroundSettings.animationType}
+                                intensity={prismaticBurstBackgroundSettings.intensity}
+                                speed={prismaticBurstBackgroundSettings.speed}
+                                distort={prismaticBurstBackgroundSettings.distort}
+                                paused={false}
+                                offset={{ x: 0, y: 0 }}
+                                hoverDampness={0.25}
+                                rayCount={prismaticBurstBackgroundSettings.rayCount}
+                                mixBlendMode="lighten"
+                                colors={prismaticBurstBackgroundSettings.colors}
+                            />
+                        </div>
+                    </div>
+                }
+                
                 
             </div>
             <div>

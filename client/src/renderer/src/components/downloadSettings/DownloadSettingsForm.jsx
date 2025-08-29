@@ -11,7 +11,7 @@ import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
 
-function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setGallerySettings, albumCoverFileNames, setShowPagnation, imagesPerPage}){
+function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setGallerySettings, coverArtFileNames, setShowPagnation, imagesPerPage}){
     const [componentDisabled, setComponentDisabled] = useState(true);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
@@ -52,7 +52,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setGallerySettings(prev => {
             return {
                 ...prev, 
-                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
+                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
                 showPagination : true, currentPaginationPage : 1
             }})
 
@@ -172,7 +172,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 console.log(2)
                 return {
                     ...prev, 
-                    currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
+                    currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
                     showPagination : true, currentPaginationPage : 1
                 }
             })
@@ -277,7 +277,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 }else{
                     return {
                             ...prev, 
-                            currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
+                            currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
                             showPagination : true, currentPaginationPage : 1,
                         }                    
                 }
@@ -318,7 +318,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setGallerySettings(prev => {
             return {
                 ...prev, 
-                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : albumCoverFileNames.slice(0, imagesPerPage), 
+                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
                 showPagination : true, currentPaginationPage : 1
             }})
             setUsePrevData(false)
@@ -351,7 +351,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 setPrevPlaylistArt(prev => {return {...prev, prevCoverArtUsed: null}})
             }else{
                 setPrevPlaylistArt(prev => {return {...prev, prevCoverArtUsed: getPlaylistData.data.coverArtFile}})
-                setGallerySettings(prev => {return {...prev, currentImagesShown: albumCoverFileNames.filter(art => art === getPlaylistData.data.coverArtFile), showPagination : false}})
+                setGallerySettings(prev => {return {...prev, currentImagesShown: coverArtFileNames.filter(art => art === getPlaylistData.data.coverArtFile), showPagination : false}})
             }
         }
 

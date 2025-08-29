@@ -1,4 +1,4 @@
-.album-cover-containter {
+.cover-art-containter {
     display: grid;
     justify-content: center;
     
@@ -12,7 +12,7 @@
 }
 
 
-.album-cover-image {
+.cover-art-image {
     height: 150px;
     width: 150px;
     border: 1px solid #ddd;
@@ -24,7 +24,7 @@
     transition: all 0.2s ease-in-out;
   }
 
-.album-cover-image:hover {
+.cover-art-image:hover {
     box-shadow: 0 0 20px rgb(18, 140, 211); 
 
 }

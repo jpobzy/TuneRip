@@ -33,7 +33,7 @@ function Crop(){
     const steps = [
         {
           title: 'Add an image to crop',
-          description: 'Add an image to the crop editor which can be used for any album cover.',
+          description: 'Add an image to the crop editor which can be used for any cover art.',
           target: () => refAdd.current,
         },
         {
@@ -48,7 +48,7 @@ function Crop(){
         },
         {
           title: 'Save the cropped image',
-          description: "Save your cropped image to the album covers folder. You'll be able to select it as a cover for future tracks.",
+          description: "Save your cropped image to the cover art folder. You'll be able to select it as a cover for future tracks.",
           target: () => refSave.current,
         },
         {

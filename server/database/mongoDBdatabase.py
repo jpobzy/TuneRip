@@ -52,14 +52,14 @@ class database():
         return
 
 
-    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, albumCoverFile):
+    def insertTrackIntoDB(self, user, albumTitle, trackName, trackId, status, coverArtFile):
         data = {
             'user': user,
             'albumTitle': albumTitle,
             'trackName': trackName,
             'trackId': trackId,
             'status': status, # downloaded or filtered
-            'albumCoverImageFile': albumCoverFile,
+            'coverArtFile': coverArtFile,
             'whenRecordAdded': datetime.datetime.now()
         }
         self.tracks.insert_one(data)

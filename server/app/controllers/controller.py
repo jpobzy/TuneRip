@@ -13,7 +13,7 @@ from PIL import Image
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TRCK
 from app.controllers.imageSettingsController import imageSettingsController
-
+import random, string
 
 class controller():
     def __init__(self, databaseFolderRoute, logger):
@@ -102,7 +102,7 @@ class controller():
         return
 
 
-    def returnAlbumCoverFileNames(self):
+    def returnCoverArtFileNames(self):
         """
         Returns a dict containing a list of all album cover files for the front end to request 
         """
@@ -114,8 +114,14 @@ class controller():
     def downloadImg(self, file):
         """
         Takes an image file the url upload it and saves it locally on the backend
+        old: file.save(Path(self.coverArtDir / f'{file.filename}'))
         """
-        file.save(Path(self.coverArtDir / f'{file.filename}'))
+        fileSuffix = Path(file.filename).suffix
+        newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+
+        path = Path(self.coverArtDir / f'{newFileName}{fileSuffix}')
+        file.save(path)
+
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
 
@@ -169,8 +175,8 @@ class controller():
                 trackId = video.video_id
                 trackName = video.title
                 albumTitle = None
-                albumCoverFile = None
-                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, albumCoverFile, video.watch_url, '')
+                coverArtFile = None
+                self.db.insertTrackIntoDB(url, albumTitle, trackName, trackId, status, coverArtFile, video.watch_url, '')
             except Exception as error:
                 self.logger.logInfo(f'Searching for track url: {url}')
                 self.logger.logError(error)
@@ -356,6 +362,10 @@ class controller():
 
 
     def crop(self, file, data):
+        """
+        Saves the cropped image in cover art folder
+        old: path = Path(self.coverArtDir / f'{newFileName}{fileSuffix}')
+        """
 
         im = Image.open(file)
        
@@ -366,15 +376,17 @@ class controller():
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
 
-        folderPath = self.coverArtDir
-        fileNum = 1
-        for i in Path(folderPath).iterdir():
-            if 'croppedImg' in str(i):
-                fileNum+=1
+        # folderPath = self.coverArtDir
+        # fileNum = 1
+        # for i in Path(folderPath).iterdir():
+        #     if 'croppedImg' in str(i):
+        #         fileNum+=1
             
         fileSuffix = Path(file.filename).suffix
-        path = Path(self.coverArtDir / f'croppedImg{fileNum}{fileSuffix}')
+        newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+        path = Path(self.coverArtDir / f'croppedImg{newFileName}{fileSuffix}')
         
+        file.save(path)
         # Shows the image in image viewer
         croppedImg.save(path)
         return 'ok', 200
@@ -488,14 +500,22 @@ class controller():
         album = playlistData.get('album')
         artist = playlistData.get('artist')
         genre = playlistData.get('genre')
-  
         fullPath = Path(self.projRoot) / playlistPath
+        
         for file in fullPath.iterdir():
             try:
                 if file.suffix == '.mp3':
                     editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre)
                     if updateDatabase:
                         self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
+                        if len(Path(playlistPath).parts) == 2:
+                            self.updateChannelImg()
+
+                channel = Path(playlistPath).parts[1]
+                if channel != 'playlists':
+                    self.db.updateChannelData(channel, newCoverArt)
+
+
             except Exception as error:
                 self.logger.logError(f'Error when trying to update files in folder metadata')
                 self.logger.logInfo(f'last data before error is: \nfilePath : {file}\nartist : {artist}\nalbum : {album}\ngenre : {genre}\n newCoverArtfile : {newCoverArt}')
@@ -624,7 +644,7 @@ class controller():
 
         url = request.get('url')
         channel = request.get('channel')
-        albumCoverFile = request.get('albumCover')
+        coverArtFile = request.get('coverArt')
         skipDownload = False if request.get('skipDownloadingPrevDownload') == None else True    
         subFolderName = request.get('subFolderName')
         trackTitle = request.get('trackTitle')
@@ -636,7 +656,7 @@ class controller():
         self.downloadCount = 0
         useFilterTitles = request.get('useTrackFilter')
 
-        self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], albumCoverFile: [{albumCoverFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
+        self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], coverArtFile: [{coverArtFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
             if subFolderName != None:
@@ -662,7 +682,7 @@ class controller():
             if not Path(downloadPath).exists():
                 os.mkdir(downloadPath)
 
-            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
+            coverArtPath = self.coverArtDir / f'{coverArtFile}'
             albumTitle = f'YouTube Playlist {playlist.title}' if albumTitle == None else albumTitle
             self.trackNum = 1
 
@@ -680,18 +700,18 @@ class controller():
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
                    
-                    trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
+                    trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                     status = 'downloaded'
 
                     if f'beat/instrumental ### ' in trackName:
                         trackName = trackName.replace('beat/instrumental ### ', '')
                         status = 'filtered'
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                         yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
                         continue
 
                     if not debugModeAddToDB:
-                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                        self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                     self.trackNum += 1
                     self.downloadCount += 1
 
@@ -741,7 +761,7 @@ class controller():
                 else:
                     downloadPath = self.customTracksDir
 
-            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
+            coverArtPath = self.coverArtDir / f'{coverArtFile}'
             albumTitle = f'YouTube Album Prod {video.author}' if albumTitle == None else albumTitle
             self.trackNum = 1
             erorrCount = 0
@@ -750,7 +770,7 @@ class controller():
 
             
             try:
-                trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
+                trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                 status = 'downloaded'
 
                 if f'beat/instrumental ### ' in trackName:
@@ -760,7 +780,7 @@ class controller():
         
 
                 if not debugModeAddToDB:
-                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                    self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                 self.downloadCount += 1
                 yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
                 
@@ -784,7 +804,7 @@ class controller():
             ytLink = self.db.channelCache[channel][0]
             sanitizedChannel = re.sub(r'[<>:"/\\|?*]', '', channel)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
-            albumCoverPath = self.coverArtDir / f'{albumCoverFile}'
+            coverArtPath = self.coverArtDir / f'{coverArtFile}'
 
             albumTitle = f'YouTube Album Prod {channel}' if albumTitle == None else albumTitle
             self.trackNum = 1
@@ -814,19 +834,19 @@ class controller():
                         if skipDownload and self.db.checkIfTrackExists(video.video_id):
                             continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
 
-                        trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, albumCoverSrc=albumCoverPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
+                        trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                         
                         status = 'downloaded'
                         if f'beat/instrumental ### ' in trackName:
                             trackName = trackName.replace('beat/instrumental ### ', '')
                             status = 'filtered'
-                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                             yield from self.clientMessageFormatter({'message' : f'Skipping track download {video.title} as it is recognized as a beat/instrumental\n\n'})
                             continue
 
 
                         if not debugModeAddToDB:
-                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, albumCoverFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+                            self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
                         self.trackNum += 1
                         self.downloadCount += 1
                     
@@ -847,7 +867,7 @@ class controller():
                         if erorrCount == 3:
                             raise Exception(f'Too many errors cause this to fail')
                 
-                self.updateChannelImg(channel, albumCoverFile)
+                self.updateChannelImg(channel, coverArtFile)
                 self.logger.logInfo('Download complete')
                 
                 if self.downloadCount > 0:
@@ -879,19 +899,19 @@ class controller():
 
         if moveImage:
             imageDst = Path(self.coverArtDir / 'used')
-            coverArtFilePath = Path(self.coverArtDir / f'{albumCoverFile}')
+            coverArtFilePath = Path(self.coverArtDir / f'{coverArtFile}')
             shutil.move(coverArtFilePath, imageDst)
             self.logger.logInfo(f'Request to move cover art into subfolder completed')        
 
 
         if deleteImage:
-            coverArtFilePath = Path(self.coverArtDir / f'{albumCoverFile}')
+            coverArtFilePath = Path(self.coverArtDir / f'{coverArtFile}')
             Path.unlink(coverArtFilePath, missing_ok=False)
             self.logger.logInfo(f'Request to delete cover art into subfolder completed')    
 
 
 
-        prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), albumCoverFile)
+        prevUsedObj.addRecord(str(Path('/'.join(downloadPath.parts[3:]))), coverArtFile)
         yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
         return 'ok'
         

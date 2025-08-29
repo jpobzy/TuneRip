@@ -162,9 +162,9 @@ function TrackTable({refreshRecords, setRefresh}){
     key: 'fileLocation'
   },
   {
-    title: 'Album Cover File',
-    dataIndex: 'albumCoverFile',
-    key: 'albumCoverFile'
+    title: 'Cover Art File',
+    dataIndex: 'coverArtFile',
+    key: 'coverArtFile'
   },
   {
     title: <div ref={deleteSingleRecordRef}>Delete</div>,
