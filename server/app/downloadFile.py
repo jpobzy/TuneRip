@@ -190,3 +190,61 @@ def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=N
     if updateData == f'Updating {filePath} ':
         updateData = None
     return updateData 
+
+
+def trimAudio(startTime=None, endTime=None, src=None, dst=None):
+    
+    originalFileAudio = MP3(src, ID3=ID3)
+    
+    audio = AudioFileClip(src)
+    audio = audio.subclip(str(startTime), str(endTime))
+    audio.write_audiofile(dst, codec="mp3", bitrate="192k")
+    audio.close()
+
+    newFileAudio = MP3(dst, ID3=ID3)
+   
+
+    if 'TIT2' in originalFileAudio:
+        originalFileTitle = str(originalFileAudio['TIT2'])
+        print(originalFileTitle)
+        newFileAudio['TIT2'] = TIT2(encoding=3, text=originalFileTitle)
+
+    if 'TALB' in originalFileAudio:
+        originalFileAlbumTitle = str(originalFileAudio['TALB'])
+        print(originalFileAlbumTitle)
+        newFileAudio['TALB'] = TALB(encoding=3, text=originalFileAlbumTitle)
+
+    if 'TRCK' in originalFileAudio:
+        originalFileTrackNumber= str(originalFileAudio['TRCK'])
+        print(originalFileTrackNumber)
+        newFileAudio['TRCK'] = TRCK(encoding=3, text=originalFileTrackNumber)
+
+    if 'TPE1' in originalFileAudio:
+        originalFileArtist = str(originalFileAudio['TPE1'])
+        print(originalFileArtist)
+        newFileAudio['TPE1'] = TPE1(encoding=3, text=originalFileArtist)
+
+    if 'COMM::XXX' in originalFileAudio:
+        originalFileComment = str(originalFileAudio['COMM::XXX'])
+        print(originalFileComment)
+        newFileAudio['COMM'] = COMM(encoding=3, text=originalFileComment)
+
+    if 'TCON' in originalFileAudio:
+        originalFileGenre = str(originalFileAudio['TCON'])
+        print(originalFileGenre)
+        newFileAudio['TCON'] = TCON(encoding=3, text=originalFileGenre)
+
+    if 'APIC:Cover' in originalFileAudio:
+        originalFileApic = originalFileAudio['APIC:Cover']
+        apic = APIC(
+            encoding=3,
+            mime='image/jpeg',
+            type=3,
+            desc='Cover',
+            data=originalFileApic.data
+        )
+        newFileAudio.tags.add(apic)
+
+    newFileAudio.save()
+
+    return 

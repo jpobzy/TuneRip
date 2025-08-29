@@ -659,9 +659,10 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 setBalatroBackgroundSettings(prevSettings)
             }else if (currentBackground === 'prismaticBurst'){
                 setPrismaticBurstBackgroundSettings(prevSettings)
-                // console.log(prevSettings)
+                console.log(`prevSettings: ${prevSettings}`)
             }
         } 
+
 
         const currentBackground = req.data[0]
         if (currentBackground === 'aurora'){
@@ -1025,8 +1026,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                         </div>
                     </div>
                 }
-                
-                
             </div>
             <div>
                {children} 

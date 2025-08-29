@@ -18,13 +18,21 @@ export const ToggleProvider = ({children}) => {
                     </div> 
                 </>
                 {showSwitch &&
+                <>
+                    {showUI &&
+                        <div className="text-red-500 bottom-1 right-1 flex font-[15px] absolute  mb-[21px] mr-[62px] visible">
+                            NEW
+                        </div>                    
+                    }
+
                     <div className="absolute bottom-1 right-1">
                         <div className="text-white font-[15px]">
                             Toggle UI
                         </div>
                         
                         <Switch onChange={(e)=>setShowUI(!e)} />  
-                    </div>                
+                    </div> 
+                </>             
                 }
             </>
         </toggleContext.Provider>
