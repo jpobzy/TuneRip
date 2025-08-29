@@ -320,7 +320,10 @@ def toggleMoveImages():
 def toggleDeleteImages():
     return imageSettings_obj.toggleDeleteImages(json.loads(request.data))
 
-
+@app.post('/trimAudio')
+def trimAudio():
+    file = controller_obj.trimAudio(request.form.get("startTime"), request.form.get("endTime"), request.files['audio'])
+    return send_file(file, as_attachment=True, download_name="trimmed.mp3")
 
 
 if __name__ == "__main__":

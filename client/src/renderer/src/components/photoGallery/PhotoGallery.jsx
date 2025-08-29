@@ -118,7 +118,6 @@ function PhotoGallery(){
         if (req.status === 200){
             togglePrevUsed(req.data['hidePrevUsed'])
             setPostDownloadSetting(prev => {return {...prev, deleteSwitchChecked :  req.data.deleteImagePostDownload, moveSwitchChecked :  req.data.moveImagetoSubfolderPostDownload}})
-            console.log(req.data)
         }else{
             message.error('Something went wrong when getting getPrevUseStatus')
         }
@@ -156,7 +155,6 @@ function PhotoGallery(){
 
 
         const req = await axios.post('http://localhost:8080/toggleMoveImages', {'data' : e})
-        console.log(req)
         if (req.status === 200){
             notification.success({
             message: 'Status changed',

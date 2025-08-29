@@ -18,9 +18,19 @@ import FolderMerge from "./folderMerge/FolderMerge";
 import PhotoGallery from "./photoGallery/PhotoGallery";
 import FileNameFilter from "./fileNameFilter/FileNameFilter";
 import About from "./about/About";
+import AudioTrimmer from "./audioTrimmer/AudioTrimmer";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
+    const [tabsDisabled, setTabsDisabled] = useState(false)
+    const [currentTabKey, setCurrentTabKey] = useState('1')
+
+    const handleTabClicked = (e) => {
+        if (tabsDisabled){
+            return
+        }
+        setCurrentTabKey(e)
+    }
 
     const newLabel = (title) =>{
         return (
@@ -53,7 +63,7 @@ function Settings(){
         children:
             <div className="text-center mt-[20px]">
                 <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
-            </div>       
+            </div>
     },
     {
         key: '3',
@@ -98,9 +108,16 @@ function Settings(){
             <EditMetaData />
         </div>
     },
-
     {
         key: '8',
+        label : newLabel('Audio Trimmer'),   
+        children: 
+        <div className="text-center mt-[50px]">
+            <AudioTrimmer  setTabsDisabled={setTabsDisabled} />
+        </div>
+    },
+    {
+        key: '9',
         label: 'Merge folders',
         children: 
         <div className="text-center mt-[50px]">
@@ -108,7 +125,7 @@ function Settings(){
         </div>
     },
     {
-        key: '9',
+        key: '10',
         label: newLabel('Change background'),
         children: 
         <div className="text-center mt-[60px]">
@@ -116,7 +133,7 @@ function Settings(){
         </div>
     },
     {
-        key: '10',
+        key: '11',
         label: 'Change Cursor',
         children: 
         <div className="text-center mt-[50px]">
@@ -124,26 +141,24 @@ function Settings(){
         </div>
     },
     {
-        key: '11',
+        key: '12',
         label: 'About',
         children: 
         <div className="text-center mt-[50px]">
             <About />
         </div>
     },
-
     ];
 
 
     return (
         <div className="inline-block mt-[30px]">
             <div className="mx-auto text-center text-gray-200 text-[50px] justify-center z-10 ">
-            {/* <div className="flex justify-center items-center text-white ">  */}
                 Settings
             </div>
             
             <div className="w-[700px] mx-auto mb-[00px]">
-                <Tabs destroyOnHidden={true} defaultActiveKey="1" items={tabItems} />
+                <Tabs onTabClick={(e)=> handleTabClicked(e)}  activeKey={currentTabKey}  destroyOnHidden={true}  items={tabItems} />
             </div>
         </div>
     )

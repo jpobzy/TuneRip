@@ -76,7 +76,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     const endAmount = Number(e) * gallerySettings.imagesPerPage
 
     if (downloadType === 'channel' && gallerySettings.prevUsedChannelArr){
-      console.log(1)
       setGallerySettings(prev => {
         if (prev.prevUsedChannelArr.length > 0){
           return {...prev, currentImagesShown : prev.prevUsedChannelArr.slice(startAmount, endAmount), currentPaginationPage : e}
@@ -84,7 +83,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         return {...prev, currentImagesShown : prev.allImages.slice(startAmount, endAmount), currentPaginationPage : e}
       })  
     }else{
-      console.log(2)
       setGallerySettings(prev => {
         return {...prev, currentImagesShown : prev.allImages.slice(startAmount, endAmount), currentPaginationPage : e}
       })      
@@ -195,7 +193,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       const roundUp = Math.ceil(coverArtResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
       if (prevUsedChannelImage){
         if (coverArtResponse.data.files.includes(prevUsedChannelImage)){
-          console.log(3)
           const arrWithoutChannelImage = coverArtResponse.data.files.filter(item => item !== prevUsedChannelImage)
           const channelImagesArr = [prevUsedChannelImage].concat(arrWithoutChannelImage)
           
@@ -207,8 +204,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           }})
 
         }else{
-          console.log(4)
-          console.log('doesnt include')
           setGallerySettings(prev => {return {...prev, 
             currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
             paginationTotal : roundUp, 
@@ -216,7 +211,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           }})
         }
       }else{
-        console.log(5)
         setGallerySettings(prev => {return {...prev, 
           currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
           paginationTotal : roundUp, 
@@ -582,10 +576,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             
         </div>      
       }
-
-      {/* <Button onClick={()=> console.log(gallerySettings)}>sadsa me</Button>  */}
-      {/* <Button onClick={()=> console.log(channelData)}>sadsa me</Button> 
-       {/* <Button onClick={()=> dispatcher({type: "togglePagination",})}>click me</Button> */}
     </div>
   )
 })

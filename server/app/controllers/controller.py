@@ -1,4 +1,4 @@
-from app.downloadFile import download_video, editTrackData
+from app.downloadFile import download_video, editTrackData, trimAudio
 # from oldcode.validator import validate_path
 import os
 from pytubefix import YouTube, Channel, Playlist
@@ -51,6 +51,7 @@ class controller():
             basePath = Path.home() / 'Documents' / 'TuneRip'
             self.pathMaker(basePath)
             self.pathMaker(basePath / 'server')
+            self.pathMaker(basePath / 'server/appdata')
             self.pathMaker(basePath / 'server/static')
             self.pathMaker(basePath / 'server/database')
             self.pathMaker(basePath / 'downloads')
@@ -917,3 +918,22 @@ class controller():
         
 
 
+
+    def trimAudio(self, startTime, endTime, file):
+        try:
+            tempFile = Path(self.appdataDir / 'temp.mp3')
+            file.save(str(tempFile))
+            trimAudio(startTime, endTime, str(tempFile), str(self.appdataDir / file.filename))
+            os.remove(str(tempFile))
+            with open(f'{Path(self.appdataDir / file.filename)}', 'rb') as mp3File:
+                data = io.BytesIO(mp3File.read())
+            os.remove(str(Path(self.appdataDir / file.filename)))
+            return data
+
+        except Exception as error:
+            self.logger.logError('Error when trying to trim audio')
+            self.logger.logError(error)
+            raise Exception('Error when trying to trim audio')
+        
+
+    
