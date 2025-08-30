@@ -34,7 +34,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 //////////////////////////////////////////////////////////////////////////////////
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false}) //
-  const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false})
+  const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false, prevChannelCoverArtArr : []})
   const [gallerySettings, setGallerySettings] = useState({currentImagesShown : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
@@ -176,21 +176,28 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         })    
         setCoverArtData(prev => {return {...prev, deleteCoverArt : false}}) 
         setGallerySettings(prev => {return {...prev,
-            showPagination : false
-          }})     
+          showPagination : false
+        }})     
     }
 
     setCoverArtData(prev => {return {...prev, coverArtFileNames : coverArtResponse.data.files, 
       prevUsedCoverArtFileNames : coverArtResponse.data.coverArtSettings.prevUsedCoverArtData}}
     )
 
-    if (!mode){ //for refresh
+    if (!mode){ // when refreshing/adding new image
       mode = downloadType
       prevUsedChannelImage = coverArtData.prevCoverArtUsed
+
+      setGallerySettings(prev => {
+        return {...prev, 
+          currentPaginationPage : 1
+        }
+      })
     }
 
     if (mode === 'channel'){
       const roundUp = Math.ceil(coverArtResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
+      
       if (prevUsedChannelImage){
         if (coverArtResponse.data.files.includes(prevUsedChannelImage)){
           const arrWithoutChannelImage = coverArtResponse.data.files.filter(item => item !== prevUsedChannelImage)
@@ -203,20 +210,29 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
             prevUsedChannelArr : channelImagesArr
           }})
 
-        }else{
-          setGallerySettings(prev => {return {...prev, 
-            currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
-            paginationTotal : roundUp, 
-            allImages: coverArtResponse.data.files
-          }})
+          setCoverArtData(prev=>{
+            return {
+              ...prev, prevChannelCoverArtArr : Object.values(coverArtResponse.data.coverArtSettings.prevUsedCoverArtData)
+            }
+          })
+
+          return
         }
-      }else{
-        setGallerySettings(prev => {return {...prev, 
-          currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
-          paginationTotal : roundUp, 
-          allImages: coverArtResponse.data.files
-        }})
       }
+      console.log(2)
+      setGallerySettings(prev => {return {...prev, 
+        currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
+        paginationTotal : roundUp, 
+        allImages: coverArtResponse.data.files
+      }})
+
+      setCoverArtData(prev=>{
+        return {
+          ...prev, prevChannelCoverArtArr : Object.values(coverArtResponse.data.prevUsedChannelCoverArt)
+        }
+      })
+      return
+      
 
     } else if (mode === 'track'){
       const roundUp = Math.ceil(coverArtResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
@@ -284,8 +300,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         }})
         
       }
-
-    }else{
 
     }
   }
@@ -399,7 +413,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   <div className='text-white'>
                     {isLoading && !showResult && 
                     <>
-
                       <div className="rounded-lg mt-[150px] ">
                         {Loading(
                           downloadType === 'track' ? 'Track is downloading' : 'Tracks are downloading'
@@ -487,6 +500,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                         key = {filename[1]}
                         imgClicked={''}
                         enlargenImg={false}
+                        prevChannelCoverArtArr={coverArtData.prevChannelCoverArtArr}
+
                         />
                     </div>                
                 ))}
@@ -511,6 +526,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
           {gallerySettings.showPagination &&
+          
             <div className="flex mx-auto justify-center">
                 <Pagination 
                 current={gallerySettings.currentPaginationPage}
@@ -573,7 +589,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
       {Object.keys(channelData.channelsList).length > 0  &&  !cardClicked && 
         <div className='mt-[20px] inline-block mb-[20px]' ref={deleteChannelRef}>
           <Switch onChange={() =>  setChannelData(prev => {return {...prev, editChannels : !channelData.editChannels}})} />        
-            
         </div>      
       }
     </div>

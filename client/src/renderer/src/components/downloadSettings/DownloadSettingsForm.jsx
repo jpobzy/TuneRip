@@ -563,10 +563,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 </div>
             </Tooltip>
         </div>
-            
-        {/* <div className='flex text-red-500 -mt-[50px] mb-[20px] ml-[100px]'>
-            NEW
-        </div> */}
+
 
 
 

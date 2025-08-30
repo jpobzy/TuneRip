@@ -22,9 +22,15 @@ class database():
         cur = database.cursor()
         try:
             cur.execute("ALTER TABLE channels RENAME COLUMN previousAlbumCoverUsed to previousCoverArtUsed")
-
         except:
             pass
+
+        try:
+            
+            cur.execute("ALTER TABLE tracks RENAME COLUMN albumCoverFile to coverArtFile")
+        except Exception as error:
+            pass
+
         try:
             cur.execute("ALTER TABLE tracks RENAME COLUMN user to channel")
             cur.execute("ALTER TABLE users RENAME TO channels")
@@ -274,4 +280,24 @@ class database():
             self.logger.logError(f'Was not able to update channel [{channel}] with new cover art [{newCoverArtFile}]')
             self.logger.logError(error)
             raise Exception(f'Failed to update channel data in database')
+        
+    def getChannelCoverArt(self):
+        """
+        Gets all channels cover art in format:
+          {"channelName" : "..." : "coverArtFile" : "asdjlksa.png"}
+        """
+        database = sqlite3.connect(self.db_path)
+        cur = database.cursor()
+
+        try:
+            res = {}
+            query = cur.execute('SELECT * FROM channels')
+            for record in query:
+                res[record[0]] = record[2]
+            return res
+        
+        except Exception as error:
+            self.logger.logError('Something when wrong when requesting for all channels cover art file names')
+            self.logger.logError(error)
+            raise Exception(f'Failed to get all channels cover art filenames from database')
         

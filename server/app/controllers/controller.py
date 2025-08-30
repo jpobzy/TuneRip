@@ -937,3 +937,5 @@ class controller():
         
 
     
+    def getPrevUsedChannelsCoverArtData(self):
+        return self.db.getChannelCoverArt()

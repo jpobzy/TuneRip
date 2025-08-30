@@ -57,27 +57,9 @@ function SelectBackground(){
         { value: 'squares', label: 'Squares' }, 
         { value: 'liquidChrome', label: 'Liquid Chrome' }, 
         { value: 'balatro', label: 'Balatro' }, 
-        // { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
-        { value: 'prismaticBurst', label:  <>
-        <div className="flex">
-            <div className="text-red-500 mr-[5px]">
-                NEW
-            </div>
-            <div>
-                Prismatic Burst
-            </div>
-
-        </div>
-
-        </>
-
-
-        }, 
+        { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
     ]
 
-//                             <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
-                            //     NEW
-                            // </div>
     const changeBackground = (e) => {
         setSelectChosen(e)
         setFormData({})
@@ -427,11 +409,11 @@ function SelectBackground(){
     return (
         <>
             <div className="-mt-[30px]">
-                {!selectChosen && 
+                {/* {!selectChosen && 
                     <div className="flex absolute mt-[6px] ml-[200px] text-red-500">
                         NEW
                     </div>                
-                }
+                } */}
 
                 <Select
                     defaultValue=""
