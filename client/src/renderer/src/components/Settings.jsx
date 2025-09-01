@@ -67,7 +67,7 @@ function Settings(){
     },
     {
         key: '3',
-        label: newLabel('Cover Art Settings'),        
+        label: 'Cover Art Settings',        
         children: 
         <>
             <div className="text-center mt-[30px]">
@@ -110,7 +110,7 @@ function Settings(){
     },
     {
         key: '8',
-        label : newLabel('Audio Trimmer'),   
+        label : 'Audio Trimmer',   
         children: 
         <div className="text-center mt-[50px]">
             <AudioTrimmer  setTabsDisabled={setTabsDisabled} />
@@ -126,7 +126,7 @@ function Settings(){
     },
     {
         key: '10',
-        label: newLabel('Change background'),
+        label: 'Change background',
         children: 
         <div className="text-center mt-[60px]">
             <SelectBackground />

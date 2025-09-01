@@ -5,7 +5,7 @@ import minusIcon from '../../assets/minusIcon.svg'
 import axios from 'axios';
 
 
-export default function CoverArtCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg}) {
+export default function CoverArtCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg, prevChannelCoverArtArr}) {
     const [loaded, setLoaded] = useState(false);
 
     async function deleteImg() {
@@ -49,13 +49,21 @@ export default function CoverArtCard({filename, cardClicked, previousImg, edit, 
                         onLoad={() => setLoaded(true)}
                         />
     
-                        {previousImg == filename && 
-                            <div className='text-[16px] absolute ml-[30px] justify-center  text-center text-white font-bold '>Last used</div>
+                        {previousImg === filename && loaded &&
+                            <div className='text-[16px] absolute left-1/2 w-full -translate-x-1/2 justify-center  text-center text-white font-bold '>Last used</div>
                         }    
 
-                        {imgClicked == filename && enlargenImg !== true &&
+                        {imgClicked === filename && enlargenImg !== true && loaded &&
                             <div className='text-[16px] absolute mx-auto justify-center left-1/2 w-full -translate-x-1/2  text-white font-bold mt-[5px]'>New cover art</div>
                         }    
+
+                        {prevChannelCoverArtArr && prevChannelCoverArtArr.includes(filename) === true && previousImg !== filename && loaded &&
+                            <>
+                                <div className='text-[16px] absolute justify-center left-1/2 w-full -translate-x-1/2 text-center text-white font-bold '>
+                                    Used elsewhere
+                                </div>
+                            </>    
+                        }
 
                     </div>
                 </div>

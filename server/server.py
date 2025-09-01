@@ -309,6 +309,7 @@ def getArtDownloadStatus():
 def getChannelAndArtCoverData():
     data = controller_obj.returnCoverArtFileNames()
     data['coverArtSettings'] = imageSettings_obj.getRecords()
+    data['prevUsedChannelCoverArt'] = controller_obj.getPrevUsedChannelsCoverArtData()
     return jsonify(data)
 
 @app.post('/toggleMoveImages')

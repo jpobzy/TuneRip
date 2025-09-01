@@ -255,9 +255,6 @@ function PhotoGallery(){
 
                     <div className=" ">
                         <div className="flex -ml-[05px]">
-                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
-                                NEW
-                            </div>
                             <div className="text-white absolute ">
                                Hide art
                             </div>
@@ -277,10 +274,6 @@ function PhotoGallery(){
 
                     <div className=" ">
                         <div className="flex -ml-[10px]">
-
-                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
-                                NEW
-                            </div>
                             <div className="text-white absolute ">
                                 Delete art
                             </div>
@@ -297,9 +290,6 @@ function PhotoGallery(){
 
                     <div className=" ">
                         <div className="flex -ml-[5px]">
-                            <div className="text-red-500 mr-[5px] absolute -ml-[35px] mt-[0px] visible">
-                                NEW
-                            </div>
                             <div className="text-white absolute ">
                                Move art
                             </div>
