@@ -28,6 +28,7 @@ function Crop(){
     const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
+    const [cropSubmessage, setCropSubmessage] = useState('')
 
     const [open, setOpen] = useState(false);
     const steps = [
@@ -69,7 +70,6 @@ function Crop(){
         
     }
 
-    const [disabled, setDisabled] = useState(false);
     const onChange = checked => {
         setZoom(checked)
     };
@@ -100,6 +100,7 @@ function Crop(){
                 setResultStatusCode(200)
                 setIsLoading(false)
                 setShowResult(true)
+                setCropSubmessage(response.data)
             }else{
                 setResultStatusCode(400)
                 setIsLoading(false)
@@ -114,12 +115,13 @@ function Crop(){
     const goBack = () => {
         setIsLoading(false)
         setShowResult(false)
+        setCropSubmessage('')
     }
 
 
     return(
         <div className=" mb-[100px]">
-            <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+            <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
             {!isLoading && !showResult &&
                 <>
                     <div className="flex justify-center">
@@ -216,8 +218,11 @@ function Crop(){
             } 
             {!isLoading && showResult && 
                 <>
-                    {resultStatusCode === 200  && ResultSuccess('Successfully saved the cropped image','', goBack)}
-                    {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the log folder', goBack)}             
+                    <div className="bg-white rounded-xl inline-block">
+                        {resultStatusCode === 200  && ResultSuccess('Successfully saved the cropped image', cropSubmessage, goBack)}
+                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the log folder', goBack)}                           
+                    </div>
+          
                 </>
             }    
 

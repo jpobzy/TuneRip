@@ -12,9 +12,14 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
+        '@renderer': resolve('src/renderer/src'),
+        components: "/src/components",
+        assets: "/src/assets",
       }
     },
-    plugins: [react()]
+    plugins: [react()],
+              define: {
+        '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
+    }
   }
 })

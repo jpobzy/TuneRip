@@ -52,14 +52,20 @@ class database():
     
 
 
-    def addNewChannel(self, data):
+    def addChannel(self, data):
         """"
         adds channel into channels db, format:
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
-        cur.execute(f"INSERT INTO channels VALUES (?, ?, ?)", (data['name'], data['ytLink'], None))
-        database.commit()
+
+        record = cur.execute('SELECT * FROM channels WHERE name = ?', (data['name'],))
+        if len(record.fetchall()) == 0:
+            cur.execute(f"INSERT INTO channels VALUES (?, ?, ?)", (data['name'], data['ytLink'], None))
+            database.commit()
+        else:
+            self.logger.logInfo(f'Skipping adding channel to databasae since channel [{data['name']}] already exists')
+
         database.close()
         return
 
@@ -142,26 +148,6 @@ class database():
        
 
 
-    def getRecordsFromChannel(self, channel, limit, offset):
-        database = sqlite3.connect(self.db_path)
-        cur = database.cursor()
-        query = cur.execute("SELECT * FROM tracks WHERE channel=? LIMIT ? OFFSET ?", (channel, limit, offset))
-        ret = []
-        for record in query:
-            ret.append({
-                'channel' : record[0],
-                'albumTitle' : record[1],
-                'trackName' : record[2],
-                'trackId' : record[3],
-                'status' : record[4],
-                'coverArtFile' : record[5],
-                'link' : record[6],
-                'whenRecordAdded' : record[7],
-            })
-        database.close()
-        return ret
-
-
     def getDownloadCount(self):
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
@@ -200,19 +186,7 @@ class database():
             database.commit()
             database.close()
             return "Success", 200
-            
-    def updateChannelsImgUsed(self, channel, file):
-        """
-        Updates the channels last image used in channels table
-        """
-        database = sqlite3.connect(self.db_path)
-        cur = database.cursor()
-        cur.execute('UPDATE channels SET previousCoverArtUsed = ? WHERE name = ?', (file, channel))
-        database.commit()
-        database.close()
-        return 
-    
-
+               
     def getAlbumTitles(self):
         """"
         for /history req
@@ -265,12 +239,15 @@ class database():
 
     def updateChannelData(self, channel, newCoverArtFile):
         """
-        Updates the channel data if parameters 
+        Updates the channels last image used in channels table
         """
         database = sqlite3.connect(self.db_path)
         cur = database.cursor()
         
         self.logger.logInfo(f'Updating channel [{channel}] with new cover art [{newCoverArtFile}])')
+        if len(newCoverArtFile) == 0:
+            self.logger.logError('Error no cover art was found')
+            raise Exception('Error no cover art was found')
 
         try:
             cur.execute('UPDATE channels SET previousCoverArtUsed = ? WHERE name = ?', (newCoverArtFile, channel))

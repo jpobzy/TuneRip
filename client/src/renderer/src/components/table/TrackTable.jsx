@@ -290,7 +290,7 @@ function TrackTable({refreshRecords, setRefresh}){
                 </div>
           </div>
       </div>
-      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+      <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
     </div>
   )
 

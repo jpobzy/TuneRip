@@ -1,20 +1,19 @@
-import electronLogo from './assets/electron.svg'
-import Home from './components/Home'
-import './assets/mainApp.css'
-import React, { useEffect, useState } from 'react'
-import { AnimatedBackground } from 'animated-backgrounds';
-import { Button, Space, DatePicker, version, App } from 'antd';
-import Dock from './components/dock/Dock'
-import { VscHome, VscAccount, VscArchive, VscSettingsGear } from 'react-icons/vsc';
-import { FaCropSimple } from "react-icons/fa6";
-import History from './components/history/History'
+
+import Home from 'components/Home'
+import 'assets/mainApp.css'
+import React, { useState } from 'react'
+import Dock from 'components/dock/Dock'
+import { VscHome, VscArchive, VscSettingsGear } from 'react-icons/vsc';
+
+import History from 'components/history/History'
 import { useRef, } from 'react'
-import Settings from './components/Settings'
-import Crop from './components/crop/Crop';
-import { ToggleProvider } from './components/context/UseContext';
-import { useToggle } from './components/context/UseContext';
-import { TourProvider } from './components/context/SettingsTourContext';
-import { HomeProvider } from './components/context/HomeContext';
+import Settings from 'components/Settings'
+import { useToggle } from 'components/context/UseContext';
+import { TourProvider } from 'components/context/SettingsTourContext';
+import { HomeProvider } from 'components/context/HomeContext';
+import PatchNotes from './components/patchNotes/PatchNotes';
+import PatchNotesFile from 'assets/patchNotes.txt';
+import { Button } from 'antd';
 
 
 function MainApp() {
@@ -24,6 +23,18 @@ function MainApp() {
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
   const {showDock, disableDockFunctionality} = useToggle()
+  
+  
+  const [text, setText] = useState();
+  const test = async() => {
+    
+    fetch(PatchNotesFile)
+      .then((response) => response.text())
+      .then((textContent) => {
+        setText(textContent);
+        console.log(textContent)
+      });
+  }
 
   const handleHomeClicked = () => {
     if (disableDockFunctionality){
@@ -67,11 +78,14 @@ function MainApp() {
     <>
     <div className='wrapper'>
           <div >
+            <PatchNotes/>
             {page === 'Home' && 
-              <HomeProvider>
-                  <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
-              </HomeProvider>
-              
+              <>
+
+                <HomeProvider>
+                    <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
+                </HomeProvider>              
+              </>
             }
 
             {page === 'History' && <History />}
@@ -84,10 +98,6 @@ function MainApp() {
           
         { showDock &&
           <div className='dock-wrapper flex justify-center items-center'>
-            {/* <div className='absolute bottom-0 mx-auto text-red-900 z-999 ml-[130px] mb-[15px]'>
-              new
-            </div> */}
-            
             <Dock
               className='custom-dock'
               items={items}

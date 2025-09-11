@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Form, Input, App, Popconfirm, Table, Tooltip,  Tour, Space } from 'antd';
+import React, { use, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Form, Input, App, Popconfirm, Table, Tooltip,  Tour, Space, Radio, Select, Result } from 'antd';
 import axios from 'axios';
-import './FileNameFilter.css'
+import './PhraseFilter.css'
 import { QuestionOutlined  } from '@ant-design/icons';
-
+import { resultToggle } from '../context/ResultContext';
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 
@@ -83,12 +83,13 @@ const EditableCell = ({
 
 
 
-const FileNameFilter = ({refreshRecords, setRefresh}) => {
+const TitleFilter = ({refreshRecords, setRefresh}) => {
   const [dataSource, setDataSource] = useState() // format: {1: [records]} 
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
   const [originalData, setOriginalData] = useState()
-  const [open, setOpen] = useState(false);
+  const [openTableTour, setTableTourOpen] = useState(false);
+  const [openApplyTour, setApplyTourOpen] = useState(false);
   const addRowRef = useRef(null)
   const [existingRecordsAmount, setExistingRecordsAmount] = useState(0)
   const {message} = App.useApp();
@@ -100,24 +101,16 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   const [searchText, setSearchText] = useState('');
   const searchRef = useRef(null)
 
-  const handleDelete = key => {
-    setCount(count-1)
-    const newData = dataSource.filter(item => item.key !== key);
-    setDataSource(newData);
-  };
-
-
-
-  const tableRef = useRef(null)
-  const deleteSelectedButtonRef = useRef(null);
-  const deleteSingleRecordRef = useRef(null);
+  const selectRef = useRef(null)
+  const saveRef = useRef(null);
+  const deleteRecordRef = useRef(null);
   const [isLoading, setLoading] = useState(false)
 
-  const steps = [
+  const tableSteps = [
     {
       title: 'Add phrases to be filtered out in track names when downloading',
       description: 'Add one or multiple phrases that will be removed from a video title when downloading',
-      //  target: () => selectPlaylistsRef.current
+
     },
     {
       title: 'Add a row to add a new phrase',
@@ -135,6 +128,26 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       description: 'After editing click on save or cancel to save or cancel your edits',
       //  target: () => submitPlaylistsRef.current
     },
+    {
+      title: 'Delete',
+      description: 'Click on the delete button that corresponds with the records row and then click on "yes" in the popup to delete it',
+       target: () => document.querySelector('.deleteColumn')
+    },
+  ]
+
+
+  const applySteps = [
+    {
+      title: 'Select a folder',
+      description: 'Select a folder in downloads to remove all phrases in each files title and file name from the phrase filter table',
+      target: () => selectRef.current
+    },
+    {
+      title: 'Save',
+      description: "Click to start the removal process",
+      target: () => saveRef.current
+    },
+  
   ]
 
   const help = (i, v) => {
@@ -165,7 +178,8 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
   async function getRecords(){
     const res = await axios.get('http://localhost:8080/filterWords');
-    setDataSource(res.data.reverse());
+    setOriginalData(res.data)
+    setDataSource(res.data);
     setCount(res.data.length)
     setExistingRecordsAmount(res.data.length - 1)
   }
@@ -180,26 +194,12 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
 
 
   const cancelEdit = () =>{
-    // setDataSource(prev => {
-    //   const newData = [...prev]
-    //   newData[originalData.key].titleFilter = originalData.data
-    //   return newData
-    // })
     setEdit(null)
-    setOriginalData(null)
   }
 
   const saveEdit = async () =>{
     // #####################################################################################
 
-    if (String(edit.data).includes('[Enter new data here]')){
-      message.error('Please change the default input for adding a new record before saving')
-      return
-    }
-    if (Object.values(dataSource).map(x => x.titleFilter).includes(edit.phrase)){
-      message.error('Phrase already exists')
-      return
-    }    
     setLoading(true)
     if (edit.key <= existingRecordsAmount){
       const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit}) 
@@ -220,7 +220,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
     getRecords()
     setLoading(false)
     setEdit(null)
-    setOriginalData(null)
   }
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -228,6 +227,7 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
+  
   const handleReset = (clearFilters, close, confirm) => {
     clearFilters();
     setSearchText(null);
@@ -259,15 +259,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
               Search
             </Button>
           </div>
-          {/* <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button> */}
           <Button
             onClick={() => clearFilters && handleReset(clearFilters, close, confirm)}
             size="small"
@@ -275,26 +266,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
           >
             Reset
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button> */}
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button> */}
         </Space>
       </div>
     ),
@@ -331,7 +302,8 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
         editable: true,
     },
     {
-      title: <div ref={deleteSingleRecordRef}>Delete</div>,
+      // title: 'Delete',
+      title: <div className='deleteColumn' ref={deleteRecordRef}>Delete</div>,
       dataIndex: 'operation',
       key: 'x',
       width: '20%',
@@ -340,7 +312,6 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
           <>
           {edit && edit.phrase === record.titleFilter && edit.key === record.key ?
             <>
-           
               <a onClick={()=> saveEdit()} className='mr-[20px]'>Save</a>
               <a onClick={()=> cancelEdit()}>Cancel</a>
             </>
@@ -367,8 +338,11 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
       key: count,
       titleFilter: `[Enter new data here]`,
     };
-    setDataSource([newData, ...dataSource]);
+    setDataSource([...dataSource, newData]);
     setCount(count + 1);
+    
+    const page = Math.ceil((dataSource.length + 1)  / 10)
+    setPaginationPage(page)
   };
 
   const handleSave = row => {
@@ -399,23 +373,17 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
           console.log('only white space')
           return
         }
-        setOriginalData({"key" : dataSource[index].key, "phrase" : dataSource[index].titleFilter})
       }
 
-      if (newData[index].key > existingRecordsAmount){
-        console.log('saving a record edit that doesnt exist in the current records')
-        setEdit({'key' : newData[index].key, 
-          'phrase' : newData[index].titleFilter
-        })        
-      }else{
-        console.log('saving a record edit that already exists in the current records')
-        setEdit({'key' : newData[index].key, 
-          'phrase' : newData[index].titleFilter
-        })
-      }
+      if (Object.values(originalData).filter(x => x.titleFilter === row.titleFilter).length > 0){
+        message.error('Phrase already exists1')
+        return
+      }  
 
 
-
+      setEdit({'key' : newData[index].key, 
+        'phrase' : newData[index].titleFilter
+      })
       setDataSource(newData);
   };
 
@@ -444,36 +412,163 @@ const FileNameFilter = ({refreshRecords, setRefresh}) => {
   });
   
 
+  // add section
+  const [mode, setMode] = useState('table')
+  const [existingPlaylistNames, setExistingPlaylistNames] = useState(null)
+  const [playlist, setPlaylistChosen] = useState(null)
+  const [applyLoading, setApplyLoading] = useState(false)
+  const [resultStatusCode, setResultStatusCode] = useState()
+  const [showResult, setShowResult] = useState(false)
+
+  const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
+
+  const options = [
+  { label: 'Table', value: 'table' },
+  { label: 'Apply filter', value: 'applyFilter' },
+  ];
+
+
+  const getExistingPlaylists = async ()=>{
+      const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
+      setExistingPlaylistNames(req.data)
+  }
+
+  useEffect(()=>{
+    getExistingPlaylists();
+    
+  }, [])
+
+  const goBack = () => {
+    setApplyLoading(false)
+    setShowResult(false)  
+  }
+
+  const playlistChoseon = (e) => {
+    setPlaylistChosen(e)
+  }
+ 
+
+  async function handleApplyFilter(){
+    setApplyLoading(true)
+    const req = await axios.post('http://localhost:8080/apply-filters-to-folder', {'playlist' : playlist})
+
+    if (req.status === 200){
+      setResultStatusCode(200)
+      setApplyLoading(false)
+    }else{
+      setResultStatusCode(400)
+    }
+    setApplyLoading(false)
+    setShowResult(true)
+    setPlaylistChosen(null)
+  }
+
+  const [currentPaginationPage, setCurrentPaginationPage] = useState(1)
+
+  function setPaginationPage(e){
+    setCurrentPaginationPage(e)
+  }
+
+  function handleOpenTour(){
+    if (mode === 'table'){
+      setTableTourOpen(true)
+    }else{
+      setApplyTourOpen(true)
+    }
+
+  }
+
+
   return (
     <>
-      <div>
-        <div className='inline-block' ref={addRowRef}>
-          <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-            Add a row
-          </Button>
-        </div>
+      <div className='mb-[30px]'>
+        {!applyLoading && !showResult &&
+          <>
+            <div className='mx-auto justify-center flex mt-[30px] mb-[20px]'>       
+              <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>setMode(e.target.value)}/> 
+            </div>     
+            <div className='absolute font-[15px] text-red-500 ml-[160px] -mt-[45px]'>
+              NEW
+            </div>
+            <div className="flex -mt-[52px] mb-[30px] ml-[505px]" >
+                <Tooltip title="help">
+                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleOpenTour()}/>
+                </Tooltip>                                    
+            </div>                       
+          </>
+        }
 
+        {mode === 'table' &&
+        <>
+          <div>
+            <div className='inline-block' ref={addRowRef}>
+              <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+                Add a row
+              </Button>
+            </div>
+            <Table
+              components={components}
+              rowClassName={() => 'editable-row'}
+              bordered
+              dataSource={dataSource}
+              columns={columns}
+              loading={isLoading}
+              pagination={{current : currentPaginationPage, onChange : (page) => {
+                setPaginationPage(page)
+              }}}
+            />          
+          </div>        
+        </>
+        }
 
-        <div className="flex -mt-[48px] mb-[30px] ml-[405px]" >
-            <Tooltip title="help">
-                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-            </Tooltip>                                    
-        </div>          
-
-        <Table
-          components={components}
-          rowClassName={() => 'editable-row'}
-          bordered
-          dataSource={dataSource}
-          columns={columns}
-          loading={isLoading}
-        />
+        {mode === 'applyFilter' && existingPlaylistNames &&
+          <>
+            {!applyLoading && !showResult && 
+            <>
+              <div className="inline-block" ref={selectRef}>
+                  <Select
+                      allowClear={true}
+                      defaultValue={[]}
+                      style={{ width: 500 }}
+                      onChange={(e) => playlistChoseon(e)}
+                      options={existingPlaylistNames}
+                  />                               
+              </div>  
+              {playlist && 
+                <>
+                  <div>
+                    <div className='mt-[20px] inline-block' ref={saveRef}>
+                      <Button onClick={()=> handleApplyFilter()} >Save</Button>
+                    </div>                   
+                  </div>
+                </>
+              }
+            </>
+            }
+            {applyLoading && !showResult && 
+              <>
+                <div className="mt-[100px]">
+                  {Loading('Filters are being appended?')}
+                </div>
+              </>
+            } 
+            {!applyLoading && showResult && 
+              <>
+                <div className="bg-white rounded-xl inline-block">
+                  {resultStatusCode === 200  && ResultSuccess('Successfully removed all phrases from the phrase table to all files in the folder', '', goBack)}
+                  {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the log folder', goBack)}                         
+                </div>
+              </>
+            }   
+          </>
+        }
       </div>    
-      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+      <Tour disabledInteraction={true} open={openTableTour} onClose={() => setTableTourOpen(false)} steps={tableSteps} />
+      <Tour disabledInteraction={true} open={openApplyTour} onClose={() => setApplyTourOpen(false)} steps={applySteps} />
     </>
   );
 };
-export default FileNameFilter;
+export default TitleFilter;
 
 
 

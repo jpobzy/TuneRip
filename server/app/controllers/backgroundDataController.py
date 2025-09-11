@@ -5,7 +5,8 @@ import urllib.parse
 
 class backgroundData():
     data = """
-    {
+    {   
+        "showPatchNotes" : false,
         "selectedBackground" : "aurora",
         "Backgrounds" : {
             "aurora" : {
@@ -116,8 +117,8 @@ class backgroundData():
     """
 
     def __init__(self, logger): 
+        self.logger = logger
         try:
-            # if Path(Path.home() / 'Documents/TuneRip/server/appdata').exists():
             appdataFolder = Path(Path.home() / 'Documents/TuneRip/server/appdata')
             if not appdataFolder.exists():
                 Path.mkdir(appdataFolder)
@@ -133,11 +134,12 @@ class backgroundData():
                 with open(self.defaultDataFile, 'w') as file:
                     file.write(backgroundData.data)
             self.addNewBackground()
+            self.getShowPatchNotesStatus()
             return
 
         except Exception as error:
-            logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
-            logger.logError(error)
+            self.logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
+            self.logger.logError(error)
             raise Exception('Something went wrong on app startup please check logs')
         
 
@@ -381,8 +383,7 @@ class backgroundData():
             data = json.load(file)
 
         currentBackground = data['selectedBackground']
-        currentBackgroundSettings = data['Backgrounds'][currentBackground]
-
+        
         with open(self.defaultDataFile, 'r') as file:
             defaultData = json.load(file)
 
@@ -395,7 +396,6 @@ class backgroundData():
 
         return currentBackground, res, keyList
     
-
     def addNewBackground(self):
         """
         Adds background to default background file + regular background file
@@ -432,6 +432,38 @@ class backgroundData():
             with open(self.file, 'w') as file:
                 json.dump(data, file, indent=4)  
 
+    def getShowPatchNotesStatus(self):
+        jsonFile = self.file
+        with open(jsonFile, 'r') as file:
+            data = json.load(file)
 
+        if 'showPatchNotes' not in data:
+            data['showPatchNotes'] = 'true'
+            with open(self.file, 'w') as file:
+                json.dump(data, file, indent=4)   
+
+
+        showPatchNotes = data['showPatchNotes']
+        return {'showPatchNotes' : showPatchNotes}
+
+
+    def togglePatchNotesStatus(self, setting):
+        try:
+
+            self.logger.logInfo('Toggling showPatchNotes')
+            jsonFile = self.file
+            with open(jsonFile, 'r') as file:
+                data = json.load(file)              
+                
+            data['showPatchNotes'] = setting['status']
             
-             
+            with open(self.file, 'w') as file:
+                json.dump(data, file, indent=4)   
+            self.logger.logInfo('Toggle completed')
+            return 'ok'
+        
+        except Exception as error:
+            self.logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
+            self.logger.logError(error)
+            raise Exception('Something went wrong on app startup please check logs')
+        

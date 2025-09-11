@@ -20,7 +20,7 @@ export const ToggleProvider = ({children}) => {
                 {showSwitch &&
                 <>
                     <div className="absolute bottom-1 right-1">
-                        <div className="text-white font-[15px]">
+                        <div className={`text-white font-[15px] ${showUI ? 'visible' : 'invisible'}`}>
                             Toggle UI
                         </div>
                         <Switch onChange={(e)=>setShowUI(!e)} />  

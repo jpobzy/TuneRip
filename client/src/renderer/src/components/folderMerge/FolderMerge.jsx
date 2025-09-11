@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { resultToggle } from "../context/ResultContext";
 import axios from "axios";
 import { QuestionOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
+import GradientSubmitButton from "components/gradientSubmitButton/GradientSubmitButton";
 import { App } from 'antd';
 import './FolderMerge.css'
 
@@ -196,7 +196,7 @@ function FolderMerge(){
                         } 
                         {!isLoading && showResult && 
                             <>
-                                <div className="mt-[-20px]">
+                                <div className="mt-[-20px] bg-white rounded-xl inline-block">
                                     {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
                                     {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}                                      
                                 </div>
@@ -215,7 +215,7 @@ function FolderMerge(){
             </div>
 
                     
-            <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+            <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
         </>
     )
 }

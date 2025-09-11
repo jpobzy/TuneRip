@@ -1,4 +1,4 @@
-from app.downloadFile import download_video, editTrackData, trimAudio
+from app.downloadFile import download_video, editTrackData, trimAudio, refilterFileTitle
 # from oldcode.validator import validate_path
 import os
 from pytubefix import YouTube, Channel, Playlist
@@ -6,7 +6,7 @@ from database.database import database
 import urllib.request
 import yaml, re, json, shutil
 from pathlib import Path, PurePath
-import time, time
+import time, io
 from colorthief import ColorThief
 from datetime import datetime
 from PIL import Image
@@ -14,18 +14,18 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TRCK
 from app.controllers.imageSettingsController import imageSettingsController
 import random, string
+from urllib.parse import parse_qs
 
 class controller():
     def __init__(self, databaseFolderRoute, logger):
         try:
             self.projRoot = Path.home() / 'Documents' / 'TuneRip'
-
             self.logger = logger
             self.checkFolders()
             self.db = database(databaseFolderRoute, logger)
-            
             self.prevUsedData = imageSettingsController(logger)
             return
+        
         except Exception as error:
             logger.logError('SOMETHING WENT WRONG WHEN STARTING CONTOLLER')
             logger.logError(error)
@@ -57,37 +57,21 @@ class controller():
             self.pathMaker(basePath / 'downloads')
             self.pathMaker(basePath / 'downloads/playlists')
             self.pathMaker(basePath / 'downloads/customTracks')
+            self.pathMaker(basePath / 'server/static/channelImages')
 
-            if (Path(basePath / 'server/static/images').exists()):
-                oldPath = Path(self.projRoot / 'server/static/images')
-                newPath = Path(self.projRoot / 'server/static/channelImages')
-                oldDebugPath = Path(Path(self.projRoot / 'debug'))
-                if oldPath.exists() and newPath.exists():
-                    self.logger.logInfo('Attempting to remove old images folder')
-                    os.rmdir(oldPath)
-                    self.logger.logInfo('Removal successful')
-                if (oldPath).exists():
-                    self.logger.logInfo('Attempting to rename old images folder')
-                    os.rename(oldPath, newPath)
-                    self.logger.logInfo('Removal successful')
-                if oldDebugPath.exists():
-                    self.logger.logInfo('Attempting to remove old debug folder')
-                    os.rmdir(oldDebugPath)
-                    self.logger.logInfo('Removal successful')
 
-            else:
-                self.pathMaker(basePath / 'server/static/channelImages')
-
-            if (basePath / 'server/static/albumCovers').exists():
+            if (basePath / 'server/static/albumCovers').exists() and not (basePath / 'server/static/coverArt').exists():
                 self.logger.logInfo('Attempting to rename albumcovers folder to coverArt')
                 try:
                     os.rename(basePath / 'server/static/albumCovers', basePath / 'server/static/coverArt')
                 except Exception as error:
                     self.logger.logError('Something went wrong with renaming, check if there are any subfolders within albumCovers as this is not allowed ')
                     self.logger.logError(error)
-            else:
-                self.pathMaker(basePath / 'server/static/coverArt')
-                self.pathMaker(basePath / 'server/static/coverArt/used')
+            elif (basePath / 'server/static/albumCovers').exists() and (basePath / 'server/static/coverArt').exists():
+                os.rmdir(basePath / 'server/static/albumCovers')
+
+            self.pathMaker(basePath / 'server/static/coverArt')
+            self.pathMaker(basePath / 'server/static/coverArt/used')
 
 
 
@@ -95,7 +79,7 @@ class controller():
             self.customTracksDir = Path(basePath / 'downloads/customTracks')
             self.playlistsDir = Path(basePath / 'downloads/playlists')
             self.downloadsDir = Path(basePath / 'downloads')
-
+            self.appdataDir = Path(basePath / 'server/appdata')
 
         except Exception as error:
                 self.logger.logInfo(f'Unable to create folders')
@@ -126,20 +110,22 @@ class controller():
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
 
-    def addNewChannel(self, data):
+    def addChannel(self, data):
         """
         Add a new url to the database
         """
         self.logger.logInfo(f'Looking for channel {data['ytLink']}')
-        if not data['ytLink'].startswith('https://www.youtube.com/@'):
-            return {f'Incorrect youtube link' :400}
+        if not data['ytLink'].startswith('https://www.youtube.com/@') and not data['ytLink'].startswith('www.youtube.com/channel/'):
+            self.logger.logError(f'Error when trying to add channel [{data['ytLink']}], channel did not meet the correct requirements')
+            self.logger.logError(f'Channel did not start with "https://www.youtube.com/@" or "www.youtube.com/channel/"')
+            return f'Incorrect youtube link', 400
         try:
             channel = Channel(data['ytLink'])
             url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/channelImages/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
 
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
-            self.db.addNewChannel(dataToAdd)
+            self.db.addChannel(dataToAdd)
             self.db.loadCache()
 
 
@@ -151,11 +137,12 @@ class controller():
             if not Path(downloadsPath).exists():
                 Path.mkdir(downloadsPath, parents=True)
 
-            return 'Success', 200
+            return f'Successfully added channel: {channel.channel_name}'
 
         except Exception as error:
+            self.logger.logError(f'Could not find channel {data['ytLink']}')
             self.logger.logError(error)
-            return {error: 404}
+            return error, 404
 
 
     def downloadTxt(self, file, status):
@@ -273,15 +260,6 @@ class controller():
         """
         return self.db.getAllUniqueChannels()
 
-    def getRecordsFromChannels(self, query):
-        """
-        gets all records for a specific channel in DB, used for table filtering
-        """
-        page, limit, channel = query.decode('utf-8').split('&')
-        page, limit, channel =  int(page.split('=')[1]), int(limit.split('=')[1]), channel.split('=')[1]
-        offset = (page - 1) * 10
-        return self.db.getRecordsFromChannel(channel, limit, offset)
-
 
     def deleteRecord(self, query):
         """
@@ -328,14 +306,6 @@ class controller():
         os.remove(self.projRoot / f'server/static/channelImages/{query['channel']}.jpg')
         return response, status 
 
-
-    def updateChannelImg(self, channel, filename):
-        """
-        Updates channels last img used in db
-        """
-        self.db.updateChannelsImgUsed(channel, filename)
-        return "Success", 200
-    
     def deleteImg(self, query):
         """
         Deletes the given file from the possible cover album folder
@@ -376,21 +346,18 @@ class controller():
         bottom = data['y'] + data['height'] # y + height
         # Crop box: (1365, 3413, 2048, 4096)
         croppedImg = im.crop((left, top, right, bottom))
-
-        # folderPath = self.coverArtDir
-        # fileNum = 1
-        # for i in Path(folderPath).iterdir():
-        #     if 'croppedImg' in str(i):
-        #         fileNum+=1
-            
+           
         fileSuffix = Path(file.filename).suffix
         newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
         path = Path(self.coverArtDir / f'croppedImg{newFileName}{fileSuffix}')
         
         file.save(path)
         # Shows the image in image viewer
-        croppedImg.save(path)
-        return 'ok', 200
+        # croppedImg.save(path)
+    
+
+
+        return f'Cropped file was stored at: {'/'.join(path.parts[3:])}'
     
     def getAlbumTitles(self):
         """
@@ -502,25 +469,38 @@ class controller():
         artist = playlistData.get('artist')
         genre = playlistData.get('genre')
         fullPath = Path(self.projRoot) / playlistPath
-        
+        newTitle = playlistData.get('title')
+        selectedTrack = playlistData.get('selectedTrack')
+
         for file in fullPath.iterdir():
             try:
                 if file.suffix == '.mp3':
+                    if selectedTrack == file.parts[-1] and newTitle:
+                        editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre, trackTitle=newTitle)
+                        break
                     editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre)
                     if updateDatabase:
                         self.db.updateTrackData(album=album, artist=artist, trackName=str(file.parts[-1]).replace('.mp3', ''))
-                        if len(Path(playlistPath).parts) == 2:
-                            self.updateChannelImg()
-
-                channel = Path(playlistPath).parts[1]
-                if channel != 'playlists':
-                    self.db.updateChannelData(channel, newCoverArt)
 
 
             except Exception as error:
                 self.logger.logError(f'Error when trying to update files in folder metadata')
                 self.logger.logInfo(f'last data before error is: \nfilePath : {file}\nartist : {artist}\nalbum : {album}\ngenre : {genre}\n newCoverArtfile : {newCoverArt}')
                 self.logger.logError(error)
+                raise Exception(f'Error when trying to update meta data')
+
+        try:
+            parsedPath = Path(playlistPath).parts
+            if len(parsedPath) == 2 and newCoverArt:
+                self.db.updateChannelData(parsedPath[-1], newCoverArt)
+
+
+        except Exception as error:
+            self.logger.logError(f'Error when trying to update filename in channels db')
+            self.logger.logInfo(f'last data before error is parsedPath : [{parsedPath}], newCoverArt: [{newCoverArt}]')
+            self.logger.logError(error)
+            raise Exception(f'Error when trying to update filename in channels db')
+
         return f'Success', 200
 
 
@@ -826,7 +806,7 @@ class controller():
 
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-            
+   
             try:
                 c = Channel(ytLink)
                 erorrCount = 0
@@ -868,7 +848,7 @@ class controller():
                         if erorrCount == 3:
                             raise Exception(f'Too many errors cause this to fail')
                 
-                self.updateChannelImg(channel, coverArtFile)
+                self.db.updateChannelData(channel, coverArtFile)
                 self.logger.logInfo('Download complete')
                 
                 if self.downloadCount > 0:
@@ -939,3 +919,32 @@ class controller():
     
     def getPrevUsedChannelsCoverArtData(self):
         return self.db.getChannelCoverArt()
+    
+    def getAllTracksInDir(self, query_string):
+        try:
+            query = parse_qs(query_string.decode())
+            path = Path(self.projRoot / query['playlist'][-1])
+            res = []
+            for track in path.iterdir():
+                if track.suffix == '.mp3':
+                    res.append({'value': track.parts[-1], 'label': track.parts[-1]})
+            return res
+
+        except Exception as error:
+            self.logger.logError('Error when trying to grab all tracks in dir')
+            self.logger.logError(error)
+            raise Exception('Error when trying to grab all tracks in dir')
+        
+    def applyFiltersToFolder(self, request):
+        try:
+            path = Path(self.projRoot / request['playlist'])
+            
+            for file in path.iterdir():
+                refilterFileTitle(file)
+                
+            return 'ok'
+
+        except Exception as error:
+            self.logger.logError('Error when applying filters to folder')
+            self.logger.logError(error)
+            raise Exception('Error when applying filters to folder')

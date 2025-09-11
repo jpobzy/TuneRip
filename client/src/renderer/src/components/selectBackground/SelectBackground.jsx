@@ -1,25 +1,22 @@
 import { Button, Select, Form, Input, ColorPicker, ConfigProvider, Slider, Switch} from "antd";
 import { useEffect, useState } from "react";
-import { toggleBackgroundSettings } from "../context/BackgroundSettingsContext";
-import { hyperspeedPresets } from "../background/hyperspeedPresets/HyperspeedPresets";
-import { Color } from '@rc-component/color-picker';
-import SquaresBackground from "../background/squares/SquaresBackground";
-import AuroraBackground from "../background/aurora/AuroraBackground";
-import DarkVeilBackground from "../background/darkVeil/DarkVeilBackground";
-import GalaxyBackround from "../background/galaxy/GalaxyBackground";
-import LightningBackground from "../background/lightning/LightningBackground";
-import FaultyTerminalBackground from "../background/faultyTerminal/FaultyTerminalBackground";
-import DotGridBackground from "../background/dotGrid/DotGridBackground";
-import IridescenceBackground from "../background/iridescence/IridescenceBackground";
-import HyperspeedBackground from "../background/hyperspeed/HyperspeedBackground"; 
-import WavesBackground from "../background/waves/WavesBackground";
-import LetterGlitchBackground from "../background/letterGlitch/LetterGlitchBackground";
-import LiquidChromeBackground from "../background/liquidChrome/LiquidChromeBackground";
-import BalatroBackground from "../background/balatro/BalatroBackground";
-import PrismaticBurstBackground from "../background/prismaticBurst/PrismaticBurstBackground";
-
+import { toggleBackgroundSettings } from "components/context/BackgroundSettingsContext";
+import SquaresBackground from "components/background/squares/SquaresBackground";
+import AuroraBackground from "components/background/aurora/AuroraBackground";
+import DarkVeilBackground from "components/background/darkVeil/DarkVeilBackground";
+import GalaxyBackround from "components/background/galaxy/GalaxyBackground";
+import LightningBackground from "components/background/lightning/LightningBackground";
+import FaultyTerminalBackground from "components/background/faultyTerminal/FaultyTerminalBackground";
+import DotGridBackground from "components/background/dotGrid/DotGridBackground";
+import IridescenceBackground from "components/background/iridescence/IridescenceBackground";
+import HyperspeedBackground from "components/background/hyperspeed/HyperspeedBackground"; 
+import WavesBackground from "components/background/waves/WavesBackground";
+import LetterGlitchBackground from "components/background/letterGlitch/LetterGlitchBackground";
+import LiquidChromeBackground from "components/background/liquidChrome/LiquidChromeBackground";
+import BalatroBackground from "components/background/balatro/BalatroBackground";
+import PrismaticBurstBackground from "components/background/prismaticBurst/PrismaticBurstBackground";
 import axios from 'axios';
-import { useToggle } from "../context/UseContext";
+import { useToggle } from "components/context/UseContext";
 
 
 function SelectBackground(){
@@ -42,6 +39,20 @@ function SelectBackground(){
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
     const {setShowSwitch} = useToggle()
 
+    const newLabel = (title) => {
+        return (
+            <>
+                <div className="flex">
+                    <div className="text-red-500 mr-[5px]">
+                        NEW
+                    </div>
+                    <div>
+                        {title}
+                    </div>
+                </div>            
+            </>
+        )
+    }
 
     const backgroundOptions = [
         { value: 'aurora', label: 'Aurora' },
@@ -59,6 +70,9 @@ function SelectBackground(){
         { value: 'balatro', label: 'Balatro' }, 
         { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
     ]
+
+
+
 
     const changeBackground = (e) => {
         setSelectChosen(e)
@@ -500,15 +514,11 @@ function SelectBackground(){
                                             
                                         </>
                                     }
-
-                                    
                                 </Form.Item>                                         
                             }
                         </Form>
                     </div>    
                 </ConfigProvider>
-
-                {/* <Button onClick={()=> console.log(formData)}>clcik em</Button> */}
             </div>
         </>
     )

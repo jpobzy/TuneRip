@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { UserOutlined, AudioOutlined } from '@ant-design/icons';
 import { Input, ConfigProvider, Button } from 'antd';
 import { App, Form } from 'antd';
+import axios from 'axios';
 
 export default function AddChannelForm({setSearchURL, handleChannelAdded}) {
   const { Search } = Input;
@@ -12,14 +13,10 @@ export default function AddChannelForm({setSearchURL, handleChannelAdded}) {
     if (value.length === 0){
       return
     }
-    if (value.includes("@") ){
-      const res = await fetch('http://localhost:8080/newChannel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ytLink: value }),
-      });
+    if (value.includes("@") || value.includes("www.youtube.com/channel/")){
+      const res = await axios.post('http://localhost:8080/addChannel', {'ytLink' : value})
       if (res.status === 200) {
-        handleChannelAdded()
+        handleChannelAdded(res.data)
         setChannel('')
       }else{
         message.error(`Channel ${channel} could not be found`)

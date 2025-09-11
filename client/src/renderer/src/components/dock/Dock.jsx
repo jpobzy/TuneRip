@@ -156,9 +156,9 @@ export default function Dock({
           >
             <DockIcon>{item.icon}</DockIcon>
             <DockLabel>{item.label}</DockLabel>
-            {/* {<div>
+            {<div>
               <div className="absolute text-red-500 flex mt-[5px] -ml-[23px]">{item.label === 'Settings' && 'New'}</div>
-            </div>} */}
+            </div>}
           </DockItem>
         ))}
       </motion.div>

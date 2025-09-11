@@ -1,5 +1,6 @@
 import { Button, Tour } from "antd"
-import { createContext, useContext, useRef, useState } from "react"
+import axios from "axios";
+import { createContext, useContext, useEffect, useRef, useState } from "react"
 
 const createcon = createContext();
 
@@ -216,6 +217,57 @@ export const HomeProvider = ({children}) =>{
         },
     ]
 
+
+    // ##################################### CHANNEL EDITOR #####################################
+     
+     
+    // electric border settings
+    const defualtElectricBorderSettings = {
+        color : '#7df9ff',
+        speed : 1,
+        chaos : 0.5,
+        thickness : 2,
+        borderRadius : 40,
+        disabled : true
+    }
+
+    const [electricBorderSettings, setElectricBorderSettings] = useState(defualtElectricBorderSettings)
+
+    const resetElectricBorderSettings  = () => {
+        setElectricBorderSettings(defualtElectricBorderSettings)
+    }
+
+    //channel card settings
+    const defaultCardSettings = { 
+        backgroundColor: "#FFFFFF56",
+        textColor: "#000000",
+        hoverBackgroundColor: "#d9e8f0",
+        hoverBoxShadowColor: "#128CD3",
+        borderColor : "#808080"
+    }
+
+
+    const [cardSettings, setCardSettings] = useState(defaultCardSettings)
+
+    const resetCardSettings  = () => {
+        setCardSettings(defaultCardSettings)
+    }
+
+
+
+
+    async function getCardData(){
+        const req = await axios.get('http://localhost:8080/get-controller-card-data')
+        setElectricBorderSettings(req.data[0]['electricBorder'])
+        setCardSettings(req.data[0]['card'])
+    }
+
+    useEffect(()=>{
+        getCardData()
+    },[])
+
+
+
     return(
         <div>
             <createcon.Provider value={{searchBarRef, channelRef, deleteChannelRef, homeTourEnabled, setHomeTourEnabled,
@@ -228,13 +280,19 @@ export const HomeProvider = ({children}) =>{
                 downloadScreenValues : {
                     channelDownloadTourEnabled, setChannelDownloadTourEnabled, trackDownloadTourEnabled, 
                     setTrackDownloadTourEnabled, playlistDownloadTourEnabled, setPlaylistDownloadTourEnabled
+                },
+                channelCardSettings: {
+                    electricBorderSettings, cardSettings
                 }
-            }}>
-                {children}
-                <Tour  open={homeTourEnabled} onClose={()=> setHomeTourEnabled(false)} onChange={handleChange} steps={homeSteps}></Tour>
-                <Tour  open={channelDownloadTourEnabled} onClose={()=> setChannelDownloadTourEnabled(false)} onChange={handleChange} steps={channelSteps}></Tour>
-                <Tour  open={trackDownloadTourEnabled} onClose={()=> setTrackDownloadTourEnabled(false)} onChange={handleChange} steps={trackSteps}></Tour>
-                <Tour  open={playlistDownloadTourEnabled} onClose={()=> setPlaylistDownloadTourEnabled(false)} onChange={handleChange} steps={playlistSteps}></Tour>
+
+            }}> 
+                {children} 
+
+                <Tour disabledInteraction={true} open={homeTourEnabled} onClose={()=> setHomeTourEnabled(false)} onChange={handleChange} steps={homeSteps}></Tour>
+                <Tour disabledInteraction={true} open={channelDownloadTourEnabled} onClose={()=> setChannelDownloadTourEnabled(false)} onChange={handleChange} steps={channelSteps}></Tour>
+                <Tour disabledInteraction={true}  open={trackDownloadTourEnabled} onClose={()=> setTrackDownloadTourEnabled(false)} onChange={handleChange} steps={trackSteps}></Tour>
+                <Tour disabledInteraction={true} open={playlistDownloadTourEnabled} onClose={()=> setPlaylistDownloadTourEnabled(false)} onChange={handleChange} steps={playlistSteps}></Tour>
+
             </createcon.Provider>            
         </div>
 

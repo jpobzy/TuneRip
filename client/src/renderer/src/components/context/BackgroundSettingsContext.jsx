@@ -421,7 +421,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     }
 
     const updatePrismaticBurstColorIndex = (index, newColor) => {
-        console.log(`new: ${newColor}`)
         const updatedStops = prismaticBurstBackgroundSettings.colors; 
         updatedStops[index] = newColor;              
         setPrismaticBurstBackgroundSettings(prev => {
@@ -659,7 +658,6 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 setBalatroBackgroundSettings(prevSettings)
             }else if (currentBackground === 'prismaticBurst'){
                 setPrismaticBurstBackgroundSettings(prevSettings)
-                console.log(`prevSettings: ${prevSettings}`)
             }
         } 
 

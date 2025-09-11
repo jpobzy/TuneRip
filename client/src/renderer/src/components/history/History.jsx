@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react'
-import AnimatedList from './animatedList/AnimatedList'
+import AnimatedList from 'components/animatedList/AnimatedList';
 import './history.css'
 import { useState } from 'react';
 import axios from 'axios';
 import CountUp from './trackInfo/TrackCount';
-import GradientText from '../gradientText/GradientText';
-import { useToggle } from '../context/UseContext';
+import GradientText from 'components/gradientText/GradientText';
 
 export default function History() {
   const items = ['Item 1111111111111111111111111111111111111111111111111', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 
@@ -75,7 +74,8 @@ export default function History() {
           </div>
 
             
-              {!loadingHistory && (
+            {!loadingHistory && (
+              <div className='animatedlist'>
                 <AnimatedList
                 items={trackHistory}
                 onItemSelect={(item, index) => console.log(item, index)}
@@ -83,9 +83,9 @@ export default function History() {
                 enableArrowNavigation={true}
                 displayScrollbar={true}
                 />
-                )
-              }              
-
+              </div>
+              )
+            }              
         </div>
     </div>
   )

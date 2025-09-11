@@ -1,8 +1,8 @@
-import { Button, Select, Form, Input, ColorPicker, ConfigProvider, Slider, Spin} from "antd";
+import { Button, Select, Form, ConfigProvider} from "antd";
 import { useState } from "react";
-import { useClickToggle } from "../context/CursorContext";
-import SplashCursorFormItems from "../cursor/splashCursor/SplashCursorFormItems";
-import ClickSparkFormItems from "../cursor/clickSpark/ClickSparkFormItems";
+import { useClickToggle } from "components/context/CursorContext";
+import SplashCursorFormItems from "components/cursor/splashCursor/SplashCursorFormItems";
+import ClickSparkFormItems from "components/cursor/clickSpark/ClickSparkFormItems";
 import axios from "axios";
 
 

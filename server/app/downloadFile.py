@@ -189,6 +189,14 @@ def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=N
     audio.save()
     if updateData == f'Updating {filePath} ':
         updateData = None
+   
+    
+    if trackTitle:
+        trackTitle = re.sub(r'[\\/:*"?<>|]', '', trackTitle)
+        trackTitle = trackTitle.strip() + '.mp3'
+        newPath = Path('/'.join(filePath.parts[:-1]))  / trackTitle
+        os.rename(filePath, newPath)
+
     return updateData 
 
 
@@ -206,32 +214,32 @@ def trimAudio(startTime=None, endTime=None, src=None, dst=None):
 
     if 'TIT2' in originalFileAudio:
         originalFileTitle = str(originalFileAudio['TIT2'])
-        print(originalFileTitle)
+        # print(originalFileTitle)
         newFileAudio['TIT2'] = TIT2(encoding=3, text=originalFileTitle)
 
     if 'TALB' in originalFileAudio:
         originalFileAlbumTitle = str(originalFileAudio['TALB'])
-        print(originalFileAlbumTitle)
+        # print(originalFileAlbumTitle)
         newFileAudio['TALB'] = TALB(encoding=3, text=originalFileAlbumTitle)
 
     if 'TRCK' in originalFileAudio:
         originalFileTrackNumber= str(originalFileAudio['TRCK'])
-        print(originalFileTrackNumber)
+        # print(originalFileTrackNumber)
         newFileAudio['TRCK'] = TRCK(encoding=3, text=originalFileTrackNumber)
 
     if 'TPE1' in originalFileAudio:
         originalFileArtist = str(originalFileAudio['TPE1'])
-        print(originalFileArtist)
+        # print(originalFileArtist)
         newFileAudio['TPE1'] = TPE1(encoding=3, text=originalFileArtist)
 
     if 'COMM::XXX' in originalFileAudio:
         originalFileComment = str(originalFileAudio['COMM::XXX'])
-        print(originalFileComment)
+        # print(originalFileComment)
         newFileAudio['COMM'] = COMM(encoding=3, text=originalFileComment)
 
     if 'TCON' in originalFileAudio:
         originalFileGenre = str(originalFileAudio['TCON'])
-        print(originalFileGenre)
+        # print(originalFileGenre)
         newFileAudio['TCON'] = TCON(encoding=3, text=originalFileGenre)
 
     if 'APIC:Cover' in originalFileAudio:
@@ -248,3 +256,35 @@ def trimAudio(startTime=None, endTime=None, src=None, dst=None):
     newFileAudio.save()
 
     return 
+
+
+def refilterFileTitle(MP3file):
+
+    filePath = Path(Path.home() / 'Documents/TuneRip/server/appdata/TitleFilterData.json')
+    with open(filePath, 'r') as file:
+        data = json.load(file)
+
+    fileName = Path(MP3file).parts[-1]
+    newTitle = fileName
+
+    for phrase in data['filterWords']:
+        toSkip = str(phrase).lower()
+        lowerCaseString = newTitle.lower()
+        filteredLowerCase = lowerCaseString.find(toSkip)
+        if filteredLowerCase == -1:
+            continue
+        firstPart = newTitle[: filteredLowerCase]
+        secondPart = newTitle[filteredLowerCase + len(toSkip):]
+        combinedString = firstPart + secondPart
+        newTitle = " ".join((combinedString).split())
+
+    audio = MP3(MP3file, ID3=ID3)
+    
+    if 'TIT2' in audio:
+        print(f'deleting audio, new: {newTitle}')
+        del audio['TIT2']
+        audio['TIT2'] = TIT2(encoding=3, text=newTitle) # Title
+        audio.save()
+    newPath = Path('/'.join(Path(MP3file).parts[:-1])) / newTitle
+    os.rename(MP3file, newPath)
+    return 'ok'
