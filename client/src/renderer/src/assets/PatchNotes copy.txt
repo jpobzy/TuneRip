@@ -1,0 +1,43 @@
+Version 1.2.2 Patch Notes
+- Log files will now only be created based on current date and will only add to the file based on the date
+
+- Any log files that are older than 30 days will be deleted automatically now
+
+- Stopped duplicate channels within the channels table from being created
+
+- Added customizable electric border options for channels in settings
+
+- Added customizable channel card settings
+
+- Added in app patch notes in About tab in Settings, will also pop up after every update
+
+- App can no longer have more than 1 instance (only 1 app tab can be opened), if app is minimized it will bring it to focus
+
+- Whenever a new channel name is added it will say "NEW" in red text under the channels profile picture until app is restarted/channel is selected
+
+- Added support for single track meta data edits
+
+- Added error message and error image for channel cards with missing pfp
+------------------------------------------------------------------------------
+
+
+Version 1.2.1 Patch Notes
+- Made file paths more legible for front end
+
+- Changed error logging to exclude the trace if manual error was made
+
+- Added tour to audio trimmer
+
+- Fixed being able to click on things while tour enabled
+
+- Addd file name to "Successfully saved the cropped image"
+
+- Channel download now fully supports hiding other used cover art
+
+- User can now edit the metadata for a single track
+
+- Improved download page looks
+
+- Fixed channels db not being updated when editing metadata
+
+- Added better support for renaming albumCovers folder

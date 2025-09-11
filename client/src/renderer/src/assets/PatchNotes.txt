@@ -1,0 +1,28 @@
+Version 1.2.2 Patch Notes
+- Log files are now created by date and only updated for that date
+- Log files older than 30 days are deleted automatically
+- Fixed issue with duplicate channels being added to the channels table
+- Added customizable electric border options for channels in Settings
+- Added customizable channel card options in Settings
+- Added in-app patch notes:
+* Viewable in the About tab in Settings
+* Will also pop up automatically after each update
+- App can now only run as a single instance (only one app tab at a time). If minimized, reopening will bring the current instance into focus
+- New channels now show a red "NEW" label under their profile picture until the app is restarted or the channel is selected
+- Added support for editing metadata of individual tracks
+- Added error message and placeholder image for channel cards with missing profile pictures
+- Added the ability to select a folder and automatically remove saved phrases from file titles and filenames in Phrase Filter (Title Filter) settings
+------------------------------------------------------------------------------
+
+
+Version 1.2.1 Patch Notes
+- File paths are now displayed in a more readable format
+- Error logging improved (manual errors no longer include stack trace)
+- Added a guided tour to the audio trimmer
+- Fixed issue where UI elements could still be clicked during the tour
+- File name now shown in the "Successfully saved cropped image" message
+- Channel downloads now fully support hiding unused cover art
+- Added ability to edit metadata for individual tracks
+- Improved appearance of the downloads page
+- Fixed issue where editing metadata did not update the channels database
+- Improved handling when renaming the albumCovers folder

@@ -27,11 +27,13 @@ function EditMetaData(){
     const artistInput = useRef(null)
     const albumInput = useRef(null)
     const genreInput = useRef(null)
-    const [updateRequest, setUpdateRequest] = useState(false)
-    const [updateRequestStatus, setUpdateRequestStatus] = useState(null)
-    const [loading, setLoading] = useState(false)
+
     const [imgClicked, setImgClicked] = useState('')
 
+    const [updateTrack, setUpdateTrack] = useState(false)
+    const [existingTrackNames, setExistingTrackNames] = useState([])
+    const [selectedTrack, setSelectedTrack] = useState(null)
+    const updateTrackRef = useRef(null)
 
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
     const [isLoading, setIsLoading] = useState(false)
@@ -46,6 +48,20 @@ function EditMetaData(){
         setExistingPlaylistNames(req.data)
     }
 
+
+    const getExistingTracks = async (e)=>{
+        const data = () => {
+            if (e){
+                return e
+            }
+            return  playlistData.playlist
+        }
+
+        const req = await axios.get('http://localhost:8080/get-all-tracks-in-dir', { params : {'playlist' : data()}});
+        setExistingTrackNames(req.data)
+    }
+
+
     const setPlaylistChosen = (e) =>{
         if (e){
             setIsPlaylistChosen(true)
@@ -53,7 +69,8 @@ function EditMetaData(){
                 const newSettings = {
                     ...prev,
                     playlist: e,
-                    updateDatabase: updateDatabase
+                    updateDatabase: updateDatabase,
+                    updateTrack : updateTrack
                 }
                 return newSettings
             })
@@ -76,6 +93,32 @@ function EditMetaData(){
         })
     }
 
+    const toggleUpdateTrack = (e) => {
+        getExistingTracks()
+        setUpdateTrack(e.target.checked)
+        setPlaylistData(prev =>{
+            const newSettings = {
+                ...prev,
+                updateTrack: e.target.checked
+            }
+            return newSettings
+        })
+    }
+
+    const inputTitle = (input) =>{
+        if (input.target.value.length === 0){
+            delete playlistData['title']
+        }else{
+            setPlaylistData(prev =>{
+                const newSettings = {
+                    ...prev,
+                    title : input.target.value
+                }
+                return newSettings
+            })            
+        }
+
+    }
 
     const inputAlbum = (input) =>{
         if (input.target.value.length === 0){
@@ -126,10 +169,18 @@ function EditMetaData(){
         if (Object.keys(playlistData).length === 0){
             message.error('Error no folder is selected')
         }else{
-            
-            if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && !Object.keys(playlistData).includes('artist') && imgClicked == ''){
+            if (playlistData.updateTrack && !playlistData.selectedTrack){
+                message.error('Update track was selected but no track was selected to be updated')
+            } else if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && 
+            !Object.keys(playlistData).includes('artist') && imgClicked == '' && !Object.keys(playlistData).includes('title')){
                 message.error('No inputs were added')
             }else{
+                for (const [key, value] of Object.entries(playlistData)) {
+                    if (String(value).trim().length == 0){
+                        message.error(`Empty inputs are not allowed`)
+                        return  
+                    }
+                }
                 setIsLoading(true)
                 const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData, newCoverArt : imgClicked})
                 if (response.status === 200){
@@ -156,6 +207,11 @@ function EditMetaData(){
           title: 'Update database',
           description: "Enable this to update the music database after editing track info.",
            target: () => toggleDatabase.current
+        },
+        {
+          title: 'Update single track',
+          description: "Enable this to update a single track's metadata",
+           target: () => updateTrackRef.current
         },
         {
           title: 'Update artist name',
@@ -194,7 +250,6 @@ function EditMetaData(){
 
     const endTour = () => {
         setOpen(false)
-        // setIsPlaylistChosen(false)
     }
 
     const goBack = () => {
@@ -207,6 +262,30 @@ function EditMetaData(){
     const playlistChoseon = (e) => {
         setPlaylistChosen(e)
         setImgClicked('')
+        getExistingTracks(e)
+        setSelectedTrack(null)
+        setPlaylistData(prev =>{
+            const copy = prev
+            delete copy['selectedTrack']
+            delete copy['title']
+            return copy
+        })
+    }
+
+    const trackChosen = (e) => {
+        setSelectedTrack(e)
+        setPlaylistData(prev =>{
+            if (e){
+                const newSettings = {
+                    ...prev,
+                    selectedTrack : e
+                }
+                return newSettings                
+            }
+            const copy = prev
+            delete copy['selectedTrack']
+            return copy
+        })
     }
 
     useEffect(()=>{
@@ -231,43 +310,104 @@ function EditMetaData(){
                             form={metadataForm}
                             name="refactor"
                             >
-                            {!updateRequest && 
-                                <Form.Item>
-                                    <div className="inline-block" ref={selectPlaylistsRef}>
-                                        <Select
-                                            allowClear={true}
-                                            defaultValue={[]}
-                                            style={{ width: 500 }}
-                                            onChange={(e) => playlistChoseon(e)}
-                                            options={existingPlaylistNames}
-                                        />                               
-                                    </div>
-                                    <div className="ml-[20px] flex -mt-[32px] ml-[605px]">
-                                        <Tooltip title="help">
-                                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                        </Tooltip>                                           
-                                    </div>
 
-                                </Form.Item>                
-                            }
+                            <Form.Item>
+                                <div className="inline-block" ref={selectPlaylistsRef}>
+                                    <Select
+                                        allowClear={true}
+                                        defaultValue={[]}
+                                        style={{ width: 500 }}
+                                        onChange={(e) => playlistChoseon(e)}
+                                        options={existingPlaylistNames}
+                                    />                               
+                                </div>
+                                <div className="ml-[20px] flex -mt-[32px] ml-[605px]">
+                                    <Tooltip title="help">
+                                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                                    </Tooltip>                                           
+                                </div>
+
+                            </Form.Item>                
+                            
                     
 
                             {isPlaylistChosen &&
-                                <div className="flex justify-center" >
+                                <div className="flex justify-center -mt-[10px]" >
                                     <Form.Item
                                     // ref={toggleDatabase}
                                     // wrapperCol={{ span: 15}}
                                     label="Update database"
                                     name="database"
-                                    onChange={(e) => inputAlbum(e)}
                                     >  
-                                    <div className="inline-block" ref={toggleDatabase}> 
+                                    <div className="inline-block " ref={toggleDatabase}> 
                                         <Checkbox checked={updateDatabase} onChange={e => toggleUpdateDatabase(e)}/>
                                     </div>
 
                                     </Form.Item>                                     
                                 </div>
                             }     
+
+
+
+                            {isPlaylistChosen &&
+                                <>
+                                    <div className="flex justify-center -mt-[10px] -mb-[10px]" >
+                                        <Form.Item
+                                        label="Edit single track"
+                                        name="track"
+                                        >  
+                                        <div className="inline-block" ref={updateTrackRef}> 
+                                            <Checkbox checked={updateTrack} onChange={e => toggleUpdateTrack(e)}/>
+                                        </div>
+
+                                        </Form.Item>                                     
+                                    </div>                                
+                                </>
+
+                            }     
+
+
+                            {isPlaylistChosen && updateTrack &&
+                                <Form.Item>
+                                    <div className="inline-block" ref={null}>
+                                        <Select
+                                            allowClear={true}
+                                            defaultValue={[]}
+                                            style={{ width: 500 }}
+                                            onChange={(e) => trackChosen(e)}
+                                            options={existingTrackNames}
+                                            value={selectedTrack}
+                                        />                               
+                                    </div>
+                                </Form.Item>
+                            }
+
+
+
+                            {isPlaylistChosen && updateTrack && selectedTrack &&
+                                <div className="flex justify-center">
+                                    <Form.Item
+                                    wrapperCol={{ span: 15}}
+                                    label="Track title"
+                                    name="title"
+                                    onChange={(e) => inputTitle(e)}
+                                    >  
+                                    <div className="inline-block"ref={null} >
+                                        <Input 
+                                        onClear={() => delete playlistData['title']} 
+                                        allowClear={true}
+                                        style={{ width: 350 }}
+                                        placeholder="Change artist info"/>                                    
+                                    </div>
+        
+                                    </Form.Item>                                     
+                                </div>
+                            }  
+
+
+
+
+
 
                             {isPlaylistChosen &&
                                 <div className="flex justify-center">
@@ -335,35 +475,23 @@ function EditMetaData(){
                             }
 
 
-                            {!updateRequest && 
-                                <Form.Item>
-                                    <div className="flex justify-center">
-                                        <div className="flex" ref={submitPlaylistsRef}>
-                                            <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor}/>                                
-                                        </div>
-                                        {/* <div className="flex ml-[5px]" >
-                                            <Tooltip title="help">
-                                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                            </Tooltip>                                    
-                                        </div> */}
+                            <Form.Item>
+                                <div className="flex justify-center">
+                                    <div className="flex" ref={submitPlaylistsRef}>
+                                        <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor}/>                                
                                     </div>
-                                </Form.Item>
-                            }
+                                    {/* <div className="flex ml-[5px]" >
+                                        <Tooltip title="help">
+                                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                                        </Tooltip>                                    
+                                    </div> */}
+                                </div>
+                            </Form.Item>
+
                         </Form>                            
                     </ConfigProvider>
                 }        
 
-
-                {loading &&
-                    <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[90%] text-white '>
-                        <div >
-                            <Spin indicator={<LoadingOutlined spin style={{ fontSize: 50 }} />} size="large" />
-                        </div>
-                        <div>
-                            Edit is in progress
-                        </div>
-                    </div> 
-                }
 
                 {isLoading && !showResult && 
                     <>
@@ -376,14 +504,15 @@ function EditMetaData(){
 
                 {!isLoading && showResult && 
                     <>
-                        {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
-                        {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                        <div className="bg-white rounded-xl inline-block">
+                            {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
+                            {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}             
+                        </div>
                     </>
                 }  
             </div>
 
-            <Tour open={open} onClose={() => endTour()} steps={steps} />
-
+            <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
         </div>
     )
 }

@@ -1,11 +1,10 @@
 import { Button, Form, Select, Tooltip, Result, Tour  } from "antd";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import GradientSubmitButton from "../gradientSubmitButton/GradientSubmitButton";
+import GradientSubmitButton from "components/gradientSubmitButton/GradientSubmitButton";
 import {App} from 'antd'
-import { useTourContext } from "../context/SettingsTourContext";
 import { QuestionOutlined  } from '@ant-design/icons';
-import { resultToggle } from "../context/ResultContext";
+import { resultToggle } from "components/context/ResultContext";
 
 function ReorderTracks(){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
@@ -147,7 +146,7 @@ function ReorderTracks(){
 
             </div>
             <div className="mb-[100px]"></div>
-            <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+            <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
         </div>
     )
 }

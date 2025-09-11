@@ -14,7 +14,6 @@ export default function UploadTxt() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-
         const response = await axios.post("http://localhost:8080/uploadTxt", formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
@@ -25,8 +24,8 @@ export default function UploadTxt() {
                 window.location.reload()
             )
         }
-        
     };
+
     const fileData = () => {
         if (selectedFile){
             return (
@@ -46,13 +45,13 @@ export default function UploadTxt() {
         }
     }
 
-  return (
-    <div>
+    return (
         <div>
-            <input type='file' onChange={onFileChange} />
-            <button onClick={onFileUpload}>Upload!</button>
+            <div>
+                <input type='file' onChange={onFileChange} />
+                <button onClick={onFileUpload}>Upload!</button>
+            </div>
+            {fileData()}
         </div>
-        {fileData()}
-    </div>
-  )
+    )
 }

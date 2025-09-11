@@ -72,6 +72,7 @@ export const TourProvider = ({children}) => {
     <variables.Provider value={{filterSearchBarRef, filterFilesRef, tableRef, deleteSelectedButtonRef, deleteSingleRecordRef, isTouring, setEnableTour, setcurrStep, selectPlaylistsRef, submitPlaylistsRef}} >
         {children}
         <Tour 
+          disabledInteraction={true}
           open={isTouring} 
           onClose={() => closeTour()} 
           steps={steps}

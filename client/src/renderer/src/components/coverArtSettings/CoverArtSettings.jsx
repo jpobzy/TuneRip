@@ -1,18 +1,14 @@
-import { Button, Switch, Select, Tooltip, Result, Tour, Checkbox, Spin } from "antd";
+import { Button, Switch, Tooltip, Tour } from "antd";
 import axios from "axios";
-import { use, useEffect, useRef, useState } from "react";
-import { App, Pagination, Input } from 'antd';
-import CoverArtCard from "../coverArtCard/CoverArtCard";
-import { resultToggle } from "../context/ResultContext";
-import UploadButton from "../uploadImagesButton/UploadButton";
+import { useEffect, useRef, useState } from "react";
+import { App, Pagination } from 'antd';
+import CoverArtCard from "components/coverArtCard/CoverArtCard";
+import UploadButton from "components/uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
-import { useToggle } from "../context/UseContext";
-
-import { FcFullTrash } from "react-icons/fc";
-import { FcEmptyTrash } from "react-icons/fc";
+import { useToggle } from "components/context/UseContext";
 
 
-function PhotoGallery(){
+function CoverArtSettings(){
     const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
@@ -23,7 +19,7 @@ function PhotoGallery(){
 
     const hideText = <span>Hide previously used cover art in the cover art selection page when downloading playlists</span>;
     const moveText = <span>After download process finishes move the selected art into the subfolder in 'Documents/TuneRip/server/static/coverAlbums/used</span>;
-    const deleteText = <span>After download finishes delete the selected cover art</span>;
+    const deleteText = <span>After download finishes delete the selected cover art file</span>;
 
     const [switchLoading, setSwitchLoading] = useState(false)
     const {setDisableDockFunctionality} = useToggle()
@@ -273,7 +269,7 @@ function PhotoGallery(){
 
 
                     <div className=" ">
-                        <div className="flex -ml-[10px]">
+                        <div className="flex -ml-[10px]">                         
                             <div className="text-white absolute ">
                                 Delete art
                             </div>
@@ -289,7 +285,7 @@ function PhotoGallery(){
 
 
                     <div className=" ">
-                        <div className="flex -ml-[5px]">
+                        <div className="flex -ml-[5px]">                             
                             <div className="text-white absolute ">
                                Move art
                             </div>
@@ -318,11 +314,11 @@ function PhotoGallery(){
                 />
             </div>
             
-            <Tour open={open} onClose={() => endTour()} steps={steps} />
+            <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
 
             <div className="mb-[80px]"></div>
         </>
     )
 }
 
-export default PhotoGallery;
+export default CoverArtSettings;

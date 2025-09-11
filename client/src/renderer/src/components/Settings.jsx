@@ -1,24 +1,22 @@
-import FilterForm from "./filterFrom/FilterForm";
-import TrackTable from "./table/TrackTable";
+
 import { useState } from "react";
-import { Tooltip, Button, Collapse, Tabs } from "antd";
-import { QuestionOutlined } from '@ant-design/icons';
-import { AppstoreOutlined, MailOutlined, SettingOutlined } from '@ant-design/icons';
-import { Menu } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
-import { Dropdown, message, Space } from 'antd';
-import {  SmileOutlined } from '@ant-design/icons';
+import { Tabs } from "antd";
+
 import './settings.css'
-import ReorderTracks from "./reorder/ReorderTracks";
-import Crop from "./crop/Crop";
-import EditMetaData from "./editMetaData/EditMetaData";
-import SelectBackground from "./selectBackground/SelectBackground";
-import SelectCursor from "./selectCursor/SelectCursor";
-import FolderMerge from "./folderMerge/FolderMerge";
-import PhotoGallery from "./photoGallery/PhotoGallery";
-import FileNameFilter from "./fileNameFilter/FileNameFilter";
-import About from "./about/About";
-import AudioTrimmer from "./audioTrimmer/AudioTrimmer";
+
+import TrackTable from "./table/TrackTable";
+import ReorderTracks from "components/reorder/ReorderTracks";
+import Crop from "components/crop/Crop";
+import EditMetaData from "components/editMetaData/EditMetaData";
+import SelectBackground from "components/selectBackground/SelectBackground";
+import SelectCursor from "components/selectCursor/SelectCursor";
+import FolderMerge from "components/folderMerge/FolderMerge";
+import CoverArtSettings from "./coverArtSettings/CoverArtSettings";
+import PhraseFilter from "./PhraseFilter/PhraseFilter";
+import About from "components/about/About";
+import AudioTrimmer from "components/audioTrimmer/AudioTrimmer";
+import VideoFilter from "./filterFrom/VideoFilter";
+import ChannelCardEditor from "./channelCardEditor/ChannelCardEditor";
 
 function Settings(){
     const [refreshRecords, setRefresh] = useState(false)
@@ -51,15 +49,15 @@ function Settings(){
     const tabItems = [
     {
         key: '1',
-        label: 'Video Filter',
+        label: ('Video Filter'),
         children: 
         <div className="text-center mt-[20px]">
-            <FilterForm setRefresh={setRefresh}/>
+            <VideoFilter setRefresh={setRefresh}/>
         </div>
     },
     {
         key: '2',
-        label: 'Track Database',
+        label: ('Track Database'),
         children:
             <div className="text-center mt-[20px]">
                 <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
@@ -67,26 +65,26 @@ function Settings(){
     },
     {
         key: '3',
-        label: 'Cover Art Settings',        
+        label: ('Cover Art Settings'),        
         children: 
         <>
             <div className="text-center mt-[30px]">
-                <PhotoGallery />
+                <CoverArtSettings />
             </div>        
         </>
 
     },
     {
         key: '4',
-        label: 'Title filter',
+        label: newLabel('Phrase filter'),
         children:
         <div className="text-center mt-[20px]">
-            <FileNameFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+            <PhraseFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
         </div>
     },
     {
         key: '5',
-        label: 'Reorder Tracks',
+        label: ('Reorder Tracks'),
         children: 
         <div className="text-center mt-[50px]">
             <ReorderTracks />
@@ -94,7 +92,7 @@ function Settings(){
     },
     {
         key: '6',
-        label: 'Crop',
+        label: ('Crop'),
         children: 
         <div className="text-center mt-[0px]">
             <Crop />
@@ -102,7 +100,7 @@ function Settings(){
     },
     {
         key: '7',
-        label: 'Edit Meta Data',
+        label: ('Edit Meta Data'),
         children: 
         <div className="text-center mt-[30px]">
             <EditMetaData />
@@ -110,7 +108,7 @@ function Settings(){
     },
     {
         key: '8',
-        label : 'Audio Trimmer',   
+        label : ('Audio Trimmer'),   
         children: 
         <div className="text-center mt-[50px]">
             <AudioTrimmer  setTabsDisabled={setTabsDisabled} />
@@ -118,7 +116,7 @@ function Settings(){
     },
     {
         key: '9',
-        label: 'Merge folders',
+        label: ('Merge folders'),
         children: 
         <div className="text-center mt-[50px]">
             <FolderMerge />
@@ -126,7 +124,7 @@ function Settings(){
     },
     {
         key: '10',
-        label: 'Change background',
+        label: ('Change background'),
         children: 
         <div className="text-center mt-[60px]">
             <SelectBackground />
@@ -134,7 +132,7 @@ function Settings(){
     },
     {
         key: '11',
-        label: 'Change Cursor',
+        label: ('Change Cursor'),
         children: 
         <div className="text-center mt-[50px]">
             <SelectCursor />
@@ -142,7 +140,15 @@ function Settings(){
     },
     {
         key: '12',
-        label: 'About',
+        label: ('Edit Channel Card'),
+        children: 
+        <div className="text-center mt-[50px]">
+            <ChannelCardEditor />
+        </div>
+    },
+    {
+        key: '13',
+        label: ('About'),
         children: 
         <div className="text-center mt-[50px]">
             <About />

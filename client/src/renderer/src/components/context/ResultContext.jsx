@@ -9,16 +9,17 @@ export const ResultProvider = ({children}) =>{
     const ResultSuccess = (titleInput, subTitleInput, goBack) => {
         return (
             <>
-                <div className="bg-white rounded-lg resultsContext mx-auto w-[600px]">
+                {/* <div className="bg-white rounded-lg resultsContext mx-auto w-[600px]"> */}
+                <div className="resultsContext mx-auto w-[600px]">
                     <Result
                         status="success"
                         title={titleInput}
                         subTitle={subTitleInput}
-                            extra={[
-                            <Button type="primary" key="return" onClick={()=> goBack()}>
-                                Go back
-                            </Button>
-                            ]}
+                        extra={[
+                        <Button type="primary" key="return" onClick={()=> goBack()}>
+                            Go back
+                        </Button>
+                        ]}
                     />                          
                 </div>
       
@@ -62,7 +63,7 @@ export const ResultProvider = ({children}) =>{
     const Loading = (loadMessage) =>{
         return (
             <>
-                <div className='mx-auto text-white'>
+                <div className='mx-auto  text-white'>
                     <div >
                         <Spin indicator={<LoadingOutlined spin style={{ fontSize: 100 }} />} size="large" />
                     </div>

@@ -7,7 +7,7 @@
 .channel-container {
     display: grid;
     justify-content: center;
-    gap: 1rem;
+    gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(200px, auto));
     max-width: 800px; 
     margin: 0 auto;   /* center the grid */
@@ -19,17 +19,7 @@
 
 .downloadSettingsForm{
   background: rgba(255, 255, 255, 0.336);
-  /* border: 1px solid grey; */
 }
-
-
-
-/* @media (min-width: 800px) {
-  .channel-container {
-    max-width: 2000px;
-    
-  }
-} */
 
 
 .results .ant-result .ant-result-title {
@@ -45,3 +35,31 @@
    /* color:  black; */
    color : white
 }
+
+
+.animatedlist .bottom-gradient{
+  background: transparent;
+}
+
+.animatedlist .resultsContext .ant-result .ant-result-subtitle {
+  color: white;
+}
+
+.animatedlist .resultsContext .ant-result .ant-result-title { 
+  color: white;
+}
+
+.animatedlist .bg-white {
+  background-color: black
+}
+
+
+
+.test .ant-result .ant-result-title {
+    color: black;
+}   
+
+
+.test .ant-result .ant-result-subtitle {
+    color:  black;
+}   

@@ -13,6 +13,7 @@ from app.controllers.titleFilterController import titleFilterController
 from datetime import datetime
 from app.controllers.loggingController import logController
 from app.controllers.imageSettingsController import imageSettingsController
+from app.controllers.channelCardController import channelCardController
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -35,7 +36,7 @@ backgrounddata_obj = backgroundData(logger)
 cursordata_obj = cursorData(logger)
 titleFilter_obj = titleFilterController(logger)
 imageSettings_obj = imageSettingsController(logger)
-
+channelCard_obj = channelCardController(logger)
 
 
 @app.route("/")
@@ -87,16 +88,18 @@ def getCoverArtFileNames():
     return jsonify(controller_obj.returnCoverArtFileNames())
 
 
-@app.route('/newChannel', methods=['POST'])
-def createNewChannel():
-    response, status = controller_obj.addNewChannel(json.loads(request.data))
+@app.route('/addChannel', methods=['POST'])
+def addChannel():
+    return controller_obj.addChannel(json.loads(request.data))
+    # return 'ok'
+    response, status = controller_obj.addChannel(json.loads(request.data))
     return make_response(jsonify({ 'message': response}), status) 
 
 
 
 @app.route('/reload')
 def reloadCache():
-    response, status = controller_obj.reloadCache()
+    response = controller_obj.reloadCache()
     return  jsonify(response)
 
 
@@ -135,9 +138,6 @@ def getData():
     return jsonify(controller_obj.getData())
 
 
-@app.route('/getrecordsfromchannel')
-def getChannelData():
-    return jsonify(controller_obj.getRecordsFromChannel(request.query_string))
 
 @app.route('/deleteRecord', methods=['DELETE'])
 def deleteRecord():
@@ -289,7 +289,6 @@ def deleteWord():
 
 @app.post('/addTitleFilter')
 def addWord():
-    
     return titleFilter_obj.addTitleFilterData(json.loads(request.data).get('data'))
 
 @app.put('/editTitleFilter')
@@ -325,6 +324,35 @@ def toggleDeleteImages():
 def trimAudio():
     file = controller_obj.trimAudio(request.form.get("startTime"), request.form.get("endTime"), request.files['audio'])
     return send_file(file, as_attachment=True, download_name="trimmed.mp3")
+
+
+@app.get('/get-all-tracks-in-dir')
+def getAllTracksInDir():
+    return jsonify(controller_obj.getAllTracksInDir(request.query_string))
+
+@app.get('/get-controller-card-data')
+def getControllerCardData():
+    return jsonify(channelCard_obj.getControllerCardSettings())
+
+@app.post('/save-channel-card-settings')
+def saveChannelCardSettings():
+    return jsonify(channelCard_obj.saveChannelCardSettings(json.loads(request.data)))
+
+@app.post('/reset-channel-card-settings')
+def resetCardSettings():
+    return jsonify(channelCard_obj.resetCardSettings(json.loads(request.data)))
+
+@app.get('/get-show-patch-notes-status')
+def getShowPatchNotesStatus():
+    return jsonify(backgrounddata_obj.getShowPatchNotesStatus())
+
+@app.put('/toggle-show-patch-notes-status')
+def toggleShowPatchNotesStatus():
+    return jsonify(backgrounddata_obj.togglePatchNotesStatus(json.loads(request.data)))
+
+@app.post('/apply-filters-to-folder')
+def applyFiltersToFolder():
+    return jsonify(controller_obj.applyFiltersToFolder(json.loads(request.data)))
 
 
 if __name__ == "__main__":

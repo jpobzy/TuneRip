@@ -7,7 +7,6 @@ import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 
 
-
 // #################### log section #########################
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -33,28 +32,15 @@ autoUpdater.on('update-available', (info) => {
   })
 });
 
-autoUpdater.on('update-downloaded', (info) => {
-  console.log('[Updater] Update downloaded:', info.version);
-  log.info('Update downloaded — quitting and installing...');
-  autoUpdater.quitAndInstall();
-
-  // const waitForUserAck = () => {
-  //   if (userAcknowledgedUpdate){
-  //     dialog.showMessageBox({
-  //       type: 'info',
-  //       title: 'Update Ready',
-  //       message: 'Install & restart now?',
-  //       buttons: ['Yes', 'Later']
-  //     }).then(result => {
-  //       if (result.response === 0) {
-  //         autoUpdater.quitAndInstall(); 
-  //       }
-  //     });    
-  //   }else {
-  //     setTimeout(waitForUserAck, 1000)
-  //   }
-  // }
-  // waitForUserAck();
+autoUpdater.on('update-downloaded', async (info) => {
+  const req = await axios.put('http://localhost:8080/toggle-show-patch-notes-status', {status: true})
+  if (req.status === 200){
+    log.info('Toggle switched, patch notes should now show');
+    log.info('Update downloaded — quitting and installing...');
+    // autoUpdater.quitAndInstall();
+  }else{
+    log.error('Unable to toggle showPatchNotes')
+  }
 });
 
 // #################### server section #########################
@@ -93,10 +79,10 @@ function startServer(){
 } 
 
 // #################### app section #########################
-
+let mainWindow = null
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     minWidth: 300,
@@ -149,22 +135,39 @@ function createWindow() {
   // } 
 }
 
-  const waitForServerReady = async () => {
-    while (true) {
-      try {
-        await fetch('http://localhost:8080/');
-        log.info('Server was pinged')
-        break;
-      } catch {
-        await new Promise(res => setTimeout(res, 200));
-      }
+const waitForServerReady = async () => {
+  while (true) {
+    try {
+      await fetch('http://localhost:8080/');
+      log.info('Server was pinged')
+      break;
+    } catch {
+      await new Promise(res => setTimeout(res, 200));
     }
-  };
+  }
+  return
+};
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+
+  const gotTheLock = app.requestSingleInstanceLock()
+
+  if (!gotTheLock) {
+    app.quit()
+  } else {
+    app.on('second-instance', (event, commandLine, workingDirectory, ) => {
+      // Someone tried to run a second instance, we should focus our window.
+      // https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore()
+        mainWindow.focus()
+      }
+    })
+  }
+
   if (app.isPackaged) {
     log.info('Server is starting')
     startServer();
