@@ -4,7 +4,7 @@ import { Tabs } from "antd";
 
 import './settings.css'
 
-import TrackTable from "./table/TrackTable";
+import TrackTable from "./trackTable/TrackTable";
 import ReorderTracks from "components/reorder/ReorderTracks";
 import Crop from "components/crop/Crop";
 import EditMetaData from "components/editMetaData/EditMetaData";
@@ -12,10 +12,10 @@ import SelectBackground from "components/selectBackground/SelectBackground";
 import SelectCursor from "components/selectCursor/SelectCursor";
 import FolderMerge from "components/folderMerge/FolderMerge";
 import CoverArtSettings from "./coverArtSettings/CoverArtSettings";
-import PhraseFilter from "./PhraseFilter/PhraseFilter";
+import PhraseFilter from "./phraseFilter/PhraseFilter";
 import About from "components/about/About";
 import AudioTrimmer from "components/audioTrimmer/AudioTrimmer";
-import VideoFilter from "./filterFrom/VideoFilter";
+import VideoFilter from "./videoFilter/VideoFilter";
 import ChannelCardEditor from "./channelCardEditor/ChannelCardEditor";
 
 function Settings(){
@@ -52,7 +52,7 @@ function Settings(){
         label: ('Video Filter'),
         children: 
         <div className="text-center mt-[20px]">
-            <VideoFilter setRefresh={setRefresh}/>
+            <VideoFilter setRefresh={setRefresh} setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -60,7 +60,7 @@ function Settings(){
         label: ('Track Database'),
         children:
             <div className="text-center mt-[20px]">
-                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh}/> 
+                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh} setTabsDisabled={setTabsDisabled}/> 
             </div>
     },
     {
@@ -69,17 +69,17 @@ function Settings(){
         children: 
         <>
             <div className="text-center mt-[30px]">
-                <CoverArtSettings />
+                <CoverArtSettings setTabsDisabled={setTabsDisabled}/>
             </div>        
         </>
 
     },
     {
         key: '4',
-        label: newLabel('Phrase filter'),
+        label: ('Phrase filter'),
         children:
         <div className="text-center mt-[20px]">
-            <PhraseFilter refreshRecords={refreshRecords} setRefresh={setRefresh}/>
+            <PhraseFilter refreshRecords={refreshRecords} setRefresh={setRefresh} setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -87,7 +87,7 @@ function Settings(){
         label: ('Reorder Tracks'),
         children: 
         <div className="text-center mt-[50px]">
-            <ReorderTracks />
+            <ReorderTracks setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -95,7 +95,7 @@ function Settings(){
         label: ('Crop'),
         children: 
         <div className="text-center mt-[0px]">
-            <Crop />
+            <Crop setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -103,7 +103,7 @@ function Settings(){
         label: ('Edit Meta Data'),
         children: 
         <div className="text-center mt-[30px]">
-            <EditMetaData />
+            <EditMetaData setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -119,7 +119,7 @@ function Settings(){
         label: ('Merge folders'),
         children: 
         <div className="text-center mt-[50px]">
-            <FolderMerge />
+            <FolderMerge setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -127,7 +127,7 @@ function Settings(){
         label: ('Change background'),
         children: 
         <div className="text-center mt-[60px]">
-            <SelectBackground />
+            <SelectBackground setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -135,7 +135,7 @@ function Settings(){
         label: ('Change Cursor'),
         children: 
         <div className="text-center mt-[50px]">
-            <SelectCursor />
+            <SelectCursor setTabsDisabled={setTabsDisabled}/>
         </div>
     },
     {
@@ -143,7 +143,7 @@ function Settings(){
         label: ('Edit Channel Card'),
         children: 
         <div className="text-center mt-[50px]">
-            <ChannelCardEditor />
+            <ChannelCardEditor setTabsDisabled={setTabsDisabled} />
         </div>
     },
     {

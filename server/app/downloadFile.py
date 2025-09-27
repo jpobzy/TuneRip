@@ -1,7 +1,7 @@
 from moviepy.editor import AudioFileClip
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, ID3NoHeaderError, TIT2, TALB, TPE1, APIC, PictureType, TRCK, COMM, TCON
-import os, shutil, re, json
+import os, shutil, re, json, time
 # from log import log_data, log_warning, log_error
 from pytubefix import YouTube, Channel
 from pathlib import Path
@@ -88,7 +88,7 @@ def download_video(url='', trackNum=None, trackDst=None, coverArtSrc=None, album
         print('DEBUG MODE IS ENABLED, RETURNING BEFORE DOWNLOADING AUDIO')
         return valid_title
 
-
+    
     #####################################################################################################
 
     # log_data(f'Downloading track {valid_title}', False)
@@ -96,8 +96,6 @@ def download_video(url='', trackNum=None, trackDst=None, coverArtSrc=None, album
     #check if file exists already
     if Path(trackDst / f'{valid_title}.mp3').exists():
         os.remove(trackDst / f'{valid_title}.mp3') 
-
-
 
     audio_file_path = audio_download.download(filename=f'downloadedFile.mp4')
     
@@ -148,7 +146,6 @@ def download_video(url='', trackNum=None, trackDst=None, coverArtSrc=None, album
 def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=None, coverArtFile=None, trackNum=None):
     audio = MP3(filePath, ID3=ID3)
     updateData = f'Updating {filePath} '
-    
     if album:
         audio['TALB'] = TALB(encoding=3, text=album) # Album 
         updateData += 'album, '
@@ -165,6 +162,7 @@ def editTrackData(filePath='', album=None, artist=None, trackTitle=None, genre=N
         audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
         updateData += 'track number, '
 
+    audio.save()
     if coverArtFile and Path(Path.home() / 'Documents/server/static/coverArt' / coverArtFile).exists:
         with open( Path(Path.home() / 'Documents/TuneRip/server/static/coverArt' / coverArtFile), 'rb') as coverArtFileBytes:
             cover_data = coverArtFileBytes.read()

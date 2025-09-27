@@ -6,8 +6,9 @@ import { QuestionOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import GradientSubmitButton from "components/gradientSubmitButton/GradientSubmitButton";
 import { App } from 'antd';
 import './FolderMerge.css'
+import { useToggle } from "../context/UseContext";
 
-function FolderMerge(){
+function FolderMerge({setTabsDisabled}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [mergeFolderForm] = Form.useForm();
     const [open, setOpen] = useState(false);    
@@ -30,6 +31,8 @@ function FolderMerge(){
     const excludeMergeDirValue = existingPlaylistNames.filter(item => item.value !== String(mergeDir))
     const excludedestinationDirValue = existingPlaylistNames.filter(item => item.value !== String(destinationDir))
 
+    const {setDisableDockFunctionality} = useToggle()
+
     const goBack = () => {
         setIsLoading(false)
         setShowResult(false)
@@ -46,6 +49,10 @@ function FolderMerge(){
                 message.error('The same directory was choosen for both inputs')
             }else{
                 setIsLoading(true)
+
+                setDisableDockFunctionality(true)
+                setTabsDisabled(true)
+
                 const req = await axios.post('http://localhost:8080/foldermerge', { mergeDir : mergeDir, destinationDir : destinationDir, newCoverArt : imgClicked})
                 console.log(`req status is: ${req.status}`)
                 if (req.status === 200){
@@ -57,6 +64,10 @@ function FolderMerge(){
                     setIsLoading(false)
                     setShowResult(true)
                 }
+
+                setDisableDockFunctionality(false)
+                setTabsDisabled(false)
+
             }
         }else{
             if (!destinationDir && destinationDir.length == 0){
@@ -197,7 +208,7 @@ function FolderMerge(){
                         {!isLoading && showResult && 
                             <>
                                 <div className="mt-[-20px] bg-white rounded-xl inline-block">
-                                    {resultStatusCode === 200  && ResultSuccess('Successfully edited tracks meta data','', goBack)}
+                                    {resultStatusCode === 200  && ResultSuccess('Successfully merged tracks','If track numbers are off please use the reorder tracks feature', goBack)}
                                     {resultStatusCode === 400  && ResultFailed('Something went wrong', 'Please check the debug folder', goBack)}                                      
                                 </div>
            

@@ -74,11 +74,9 @@ export default function PatchNotes({showButton}) {
 
     async function displayPatchNotes(){
         const req = await axios.get('http://localhost:8080/get-show-patch-notes-status')
-        if (req.data.showPatchNotes === 'true'){
+        if (req.data.showPatchNotes === true){
             setIsModalOpen(true)
             const toggle = await axios.put('http://localhost:8080/toggle-show-patch-notes-status', {status: false})
-            console.log(toggle)
-            console.log('toggled off')
         }
     }
 

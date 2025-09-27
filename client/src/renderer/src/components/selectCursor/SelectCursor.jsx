@@ -4,14 +4,16 @@ import { useClickToggle } from "components/context/CursorContext";
 import SplashCursorFormItems from "components/cursor/splashCursor/SplashCursorFormItems";
 import ClickSparkFormItems from "components/cursor/clickSpark/ClickSparkFormItems";
 import axios from "axios";
+import { useToggle } from "../context/UseContext";
 
 
-function SelectCursor(){
+function SelectCursor({setTabsDisabled}){
     const [cursor, setCursor] = useState('');
     const [cursorForm] = Form.useForm();
     const {splashCursorSettings, clickSparkSettings, setClickState, clickState, disableClickState, resetCursorSettings} = useClickToggle();
     const [formData, setFormData] = useState({});
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
+    const {setDisableDockFunctionality} = useToggle()
 
     const cursorOptions = [
         { value: 'splashCursor', label: 'Splash Cursor' },
@@ -56,7 +58,11 @@ function SelectCursor(){
         }
    
         setClickState(cursor)
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)
         await axios.post('http://localhost:8080/savecursorsettings', formData, {params : {'cursor' : cursor}})
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)
     }
 
 

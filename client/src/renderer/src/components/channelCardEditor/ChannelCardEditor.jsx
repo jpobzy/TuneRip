@@ -6,7 +6,9 @@ import ElectricBorder from '../electricBorder/ElectricBorder';
 import electron from 'assets/electron.svg'
 import { hover } from 'framer-motion';
 import { Color } from '@rc-component/color-picker';
-export default function ChannelCardEditor() {
+import { useToggle } from '../context/UseContext';
+
+export default function ChannelCardEditor({setTabsDisabled}) {
     // makes changes using post req, not a fan of this method but i dont want to add another usecontext just for 1 thing 
     const [channelCardForm] = Form.useForm();
     const [electricBorderSettings, setElectricBorderSettings] = useState(null)
@@ -15,6 +17,7 @@ export default function ChannelCardEditor() {
     const [formData, setFormData] = useState({});
     const [mode, setMode] = useState('electricBorder')
     const [hover, setHover] = useState(false);
+    const {setDisableDockFunctionality} = useToggle()
 
     const options = [
     { label: 'Electric Border', value: 'electricBorder' },
@@ -53,8 +56,6 @@ export default function ChannelCardEditor() {
         setElectricBorderSettings(req.data[0]['electricBorder'])
         setElectricBorderEnabled(req.data[0]['electricBorder'].disabled)
         setCardSettings(req.data[0]['card'])
-
-
     }
 
     useEffect( ()=>{
@@ -62,10 +63,17 @@ export default function ChannelCardEditor() {
     },[])
 
     async function saveChanges(){
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)
+
         const req = await axios.post('http://localhost:8080/save-channel-card-settings', formData)
         if (req.status === 200){
 
         }
+
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)
+
     }
 
     function toggleCheckbox(e){
@@ -77,8 +85,6 @@ export default function ChannelCardEditor() {
     }
 
     async function reset(){
-        // const req = await axios.post('http://localhost:8080/reset-channel-card-settings', {mode : mode})
-        // if (req.status === 200){
         if (mode === 'card'){
             channelCardForm.setFieldsValue({
                 backgroundColor :  new Color("#FFFFFF56"),
@@ -93,6 +99,13 @@ export default function ChannelCardEditor() {
                 hoverBackgroundColor : '#128CD3',
                 hoverBoxShadowColor : '#128CD3',
                 borderColor : '#808080',
+            })
+            setFormData({
+                backgroundColor : '#FFFFFF56',
+                textColor : '#000000',
+                hoverBackgroundColor : '#128CD3',
+                hoverBoxShadowColor : '#128CD3',
+                borderColor : '#808080',                
             })
         }
         if (mode === 'electricBorder'){
@@ -112,10 +125,21 @@ export default function ChannelCardEditor() {
                 borderRadius: 40,
                 disabled: false,
             })
-        }            
-        // }
-
+            setFormData({ 
+                color: "#7df9ff",
+                speed: 1,
+                chaos: 0.5,
+                thickness: 2,
+                borderRadius: 40,
+                disabled: false,})
+        } 
     }
+    
+    const changeModes = (e) => {
+        setFormData({})
+        setMode(e)
+    }
+
 
     return (
         <>
@@ -171,7 +195,7 @@ export default function ChannelCardEditor() {
                    
                     <div className='mt-[40px]  mb-[30px]'>
                         <div className='flex justify-center mb-[10px]'>
-                           <Radio.Group block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>setMode(e.target.value)}/> 
+                           <Radio.Group block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>changeModes(e.target.value)}/> 
                         </div>
                         
                         <ConfigProvider
@@ -350,7 +374,7 @@ export default function ChannelCardEditor() {
                             </div>    
                         </ConfigProvider>
                         <Button onClick={()=> saveChanges()} >Save</Button>                    
-                         <Button onClick={()=> reset()} >Reset</Button> 
+                        <Button onClick={()=> reset()} >Reset</Button>
                     </div>      
                 </>
                 }

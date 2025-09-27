@@ -9,8 +9,9 @@ import { LoadingOutlined } from '@ant-design/icons';
 import './editMetaData.css'
 import { resultToggle } from "../context/ResultContext";
 import CoverArtChanger from "../CoverArtChanger/CoverArtChanger";
+import { useToggle } from "../context/UseContext";
 
-function EditMetaData(){
+function EditMetaData({setTabsDisabled}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState({})
     const [buttonDisabled, setButtonDisabled] = useState(false)
@@ -40,7 +41,7 @@ function EditMetaData(){
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
 
-
+    const {setDisableDockFunctionality} = useToggle()
 
 
     const getExistingPlaylists = async ()=>{
@@ -182,6 +183,9 @@ function EditMetaData(){
                     }
                 }
                 setIsLoading(true)
+                setDisableDockFunctionality(true)
+                setTabsDisabled(true)
+
                 const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData, newCoverArt : imgClicked})
                 if (response.status === 200){
                     setResultStatusCode(200)
@@ -192,6 +196,8 @@ function EditMetaData(){
                     setIsLoading(false)
                     setShowResult(true)
                 }                  
+                setDisableDockFunctionality(false)
+                setTabsDisabled(false)
             }
 
         }

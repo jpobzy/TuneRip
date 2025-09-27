@@ -115,7 +115,8 @@ class controller():
         Add a new url to the database
         """
         self.logger.logInfo(f'Looking for channel {data['ytLink']}')
-        if not data['ytLink'].startswith('https://www.youtube.com/@') and not data['ytLink'].startswith('www.youtube.com/channel/'):
+        # if not data['ytLink'].startswith('https://www.youtube.com/@') and not data['ytLink'].startswith('www.youtube.com/channel/'):
+        if not data['ytLink'].startswith('https://www.youtube.com/@') and not 'www.youtube.com/channel/' in  data['ytLink']:
             self.logger.logError(f'Error when trying to add channel [{data['ytLink']}], channel did not meet the correct requirements')
             self.logger.logError(f'Channel did not start with "https://www.youtube.com/@" or "www.youtube.com/channel/"')
             return f'Incorrect youtube link', 400
@@ -123,20 +124,20 @@ class controller():
             channel = Channel(data['ytLink'])
             url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/channelImages/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
-
+            print('4')
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
             self.db.addChannel(dataToAdd)
             self.db.loadCache()
 
-
+            print('3')
             sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
             downloadsPath = self.downloadsDir  / f'{sanitizedChannel}'
             
-
+            print('2')
             if not Path(downloadsPath).exists():
                 Path.mkdir(downloadsPath, parents=True)
-
+            print('1')
             return f'Successfully added channel: {channel.channel_name}'
 
         except Exception as error:
@@ -351,9 +352,8 @@ class controller():
         newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
         path = Path(self.coverArtDir / f'croppedImg{newFileName}{fileSuffix}')
         
-        file.save(path)
         # Shows the image in image viewer
-        # croppedImg.save(path)
+        croppedImg.save(path)
     
 
 
@@ -632,14 +632,15 @@ class controller():
         artist = request.get('artist')
         genre = request.get('genre')
         albumTitle = request.get('album')
-        skipBeatsAndInstrumentals = request.get('skipBeatsAndInstrumentals')
-        addToExistingPlaylist = request.get('addToExistingPlaylistSettings')
+        skipBeatsAndInstrumentals = False if request.get('skipBeatsAndInstrumentals') == 'false' else True
+        addToExistingPlaylist = request.get('addToExistingPlaylistSettings')    
         self.downloadCount = 0
         useFilterTitles = request.get('useTrackFilter')
 
         self.logger.logInfo(f"""Download data = url: [{url}], channel: [{channel}], coverArtFile: [{coverArtFile}], skipDownload: [{skipDownload}],  subFolderName: [{subFolderName}], trackTitle: [{trackTitle}], artist: [{artist}], genre: [{genre}], albumTitle: [{albumTitle}], addToExistingPlaylist: [{addToExistingPlaylist}]""")
         if url and 'playlist?list=' in url:
             playlist = Playlist(url)
+            
             if subFolderName != None:
                 subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                 downloadPath = self.playlistsDir / subFolderName
@@ -680,7 +681,10 @@ class controller():
                     video = YouTube(url)
                     if skipDownload and self.db.checkIfTrackExists(video.video_id):
                         continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
-                   
+
+
+                    yield from self.clientMessageFormatter({'message' : f'Currently downloading {video.title}\n\n'})
+
                     trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                     status = 'downloaded'
 
@@ -696,7 +700,7 @@ class controller():
                     self.trackNum += 1
                     self.downloadCount += 1
 
-                    yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
+                    yield from self.clientMessageFormatter({'message' : f'Finished downloading track\n\n'})
 
 
                     
@@ -751,6 +755,7 @@ class controller():
 
             
             try:
+                yield from self.clientMessageFormatter({'message' : f'Currently downloading {video.title}\n\n'})
                 trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                 status = 'downloaded'
 
@@ -762,8 +767,9 @@ class controller():
 
                 if not debugModeAddToDB:
                     self.db.insertTrackIntoDB(video.author, albumTitle, trackName, video.video_id, status, coverArtFile, video.watch_url, str(Path('/'.join(downloadPath.parts[3:]))) )
+
                 self.downloadCount += 1
-                yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
+                yield from self.clientMessageFormatter({'message' : f'Finished downloading track\n\n'})
                 
 
                 
@@ -796,14 +802,15 @@ class controller():
                 else:
                     subFolderName = re.sub(r'[^\w_. -]', '', subFolderName)
                     downloadPath = self.downloadsDir / f"{subFolderName}"
-                    if not Path(downloadPath).exists():
-                        os.mkdir(downloadPath)
             else:
                 if addToExistingPlaylist != None:
                     downloadPath = self.playlistsDir / addToExistingPlaylist
                 else:
                     downloadPath = self.downloadsDir / f"{sanitizedChannel}"
 
+            if not Path(downloadPath).exists():
+                os.mkdir(downloadPath)
+        
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
    
@@ -815,6 +822,7 @@ class controller():
                         if skipDownload and self.db.checkIfTrackExists(video.video_id):
                             continue # skips track if track exists in database and channel requests to skip prev downloaded tracks
 
+                        yield from self.clientMessageFormatter({'message' : f'Currently downloading {video.title}\n\n'})
                         trackName = download_video(url=video.watch_url, trackNum=self.trackNum, trackDst=downloadPath, coverArtSrc=coverArtPath, albumTitle=albumTitle, trackTitle=trackTitle, artist=artist, genre=genre, debugModeSkipDownload=debugModeSkipDownload, skipBeatsAndInstrumentals=skipBeatsAndInstrumentals, useFilterTitles=useFilterTitles)
                         
                         status = 'downloaded'
@@ -831,7 +839,7 @@ class controller():
                         self.trackNum += 1
                         self.downloadCount += 1
                     
-                        yield from self.clientMessageFormatter({'message' : f'{video.title}\n\n'})
+                        yield from self.clientMessageFormatter({'message' : f'Finished downloading track\n\n'})
 
                         
                     except Exception as error:

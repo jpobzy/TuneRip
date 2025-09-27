@@ -8,8 +8,9 @@ import { UploadOutlined } from '@ant-design/icons';
 import { App } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { resultToggle } from "../context/ResultContext";
+import { useToggle } from "../context/UseContext";
 
-function Crop(){
+function Crop({setTabsDisabled}){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})
@@ -24,6 +25,8 @@ function Crop(){
     const [validFile, setValidFile] = useState(true)
     const { message } = App.useApp();	
 
+    const {setDisableDockFunctionality} = useToggle()
+    
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
     const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
@@ -92,6 +95,10 @@ function Crop(){
     async function save(){
         if (fileData){
             setIsLoading(true)
+
+            setTabsDisabled(true)
+            setDisableDockFunctionality(true)
+
             const formData = new FormData()
             formData.append('imageFile', fileData);
             formData.append('cropData', JSON.stringify(cropData))
@@ -106,6 +113,9 @@ function Crop(){
                 setIsLoading(false)
                 setShowResult(true)
             }
+            
+            setTabsDisabled(false)
+            setDisableDockFunctionality(false)
 
         }else{
             message.error('There is no cropped image to save')

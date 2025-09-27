@@ -5,8 +5,9 @@ import GradientSubmitButton from "components/gradientSubmitButton/GradientSubmit
 import {App} from 'antd'
 import { QuestionOutlined  } from '@ant-design/icons';
 import { resultToggle } from "components/context/ResultContext";
+import { useToggle } from "../context/UseContext";
 
-function ReorderTracks(){
+function ReorderTracks({setTabsDisabled}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState([])
     const {message} = App.useApp();
@@ -21,6 +22,7 @@ function ReorderTracks(){
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
 
+    const {setDisableDockFunctionality} = useToggle()
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
@@ -48,6 +50,10 @@ function ReorderTracks(){
             message.error('Error no folder is selected')
         }else{
             setIsLoading(true)
+
+            setTabsDisabled(true)
+            setDisableDockFunctionality(true)
+
             try{
                 const response = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
                 if (response.status === 200){
@@ -60,6 +66,9 @@ function ReorderTracks(){
                 setIsLoading(false)
                 setShowResult(true)
             }
+
+            setTabsDisabled(false)
+            setDisableDockFunctionality(false)
         }
     
     }

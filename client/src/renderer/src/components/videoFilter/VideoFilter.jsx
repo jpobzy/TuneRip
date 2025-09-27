@@ -10,7 +10,9 @@ import { Upload, Tooltip } from 'antd';
 import { QuestionOutlined } from '@ant-design/icons';
 import { App } from 'antd';
 
-export default function VideoFilter({setRefresh}) {
+import { useToggle } from '../context/UseContext';
+
+export default function VideoFilter({setRefresh, setTabsDisabled}) {
     const { Search } = Input;
     const [channel, setChannel] = useState('');
     const [loading, setLoading] = useState(false)
@@ -20,12 +22,15 @@ export default function VideoFilter({setRefresh}) {
     const [open, setOpen] = useState(false); 
     const filterSearchBarRef = useRef(null) ;
     const filterFilesRef = useRef(null);
+    const [mode, setMode] = useState(null)
 
 
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
     const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
+
+    const {setDisableDockFunctionality} = useToggle()
 
 
 
@@ -44,17 +49,23 @@ export default function VideoFilter({setRefresh}) {
 
     async function onSearch(value) {
         if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
+            setMode('single')
             setLoading(true)
+            setTabsDisabled(true)
+            setDisableDockFunctionality(true)
             const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
 
             if (response.status === 200 || response.status === 304) {
-                setLoading(false);
-                setChannel('');
                 setRefresh(true);
+                message.success(`${value} successfully added`);
             }else{
-                setLoading(false);
-                setChannel('');
+                message.error(`Something went wrong, please check the logs for more details`);
             }
+            setLoading(false);
+            setChannel('');
+            setTabsDisabled(false)
+            setDisableDockFunctionality(false)
+
         } else if (value.length > 0){
             message.error(`Input ${value} is not a valid link`)
         } 
@@ -66,20 +77,27 @@ export default function VideoFilter({setRefresh}) {
     action: 'http://localhost:8080/filter',
     onChange(info) {
         const { status } = info.file;
-        if (status !== 'uploading') {
-            setIsLoading(true)
+
+        if (status === 'uploading') {
+            setLoading(true)
+            setTabsDisabled(true)
+            setDisableDockFunctionality(true)          
         }
 
         if (status === 'done') {
             setResultStatusCode(200)
-            setIsLoading(false)
+            setLoading(false)
             setShowResult(true)
-            message.success(`${info.file.name} file uploaded successfully.`);
+            setTabsDisabled(false)
+            setDisableDockFunctionality(false)   
+            message.success(`${info.file.name} file uploaded successfully`);
         } else if (status === 'error') {
             setResultStatusCode(400)
             setShowResult(true)
-            setIsLoading(false)
-            message.error(`${info.file.name} file upload failed.`);
+            setLoading(false)
+            setTabsDisabled(false)
+            setDisableDockFunctionality(false)   
+            message.error(`${info.file.name} file upload failed`);
         }
     },
         onDrop(e) {},
@@ -123,6 +141,7 @@ export default function VideoFilter({setRefresh}) {
                                 }}
                             >
                                 <div ref={filterSearchBarRef} className='inline-block mr-[50px]'>
+                                    
                                     <Search
                                     placeholder="Paste Youtube Video URL to filter Here"
                                     allowClear={true}
@@ -164,18 +183,18 @@ export default function VideoFilter({setRefresh}) {
                             Click or drag file to this area to upload
                         </p>
                         <p className="ant-upload-hint">
-                            Support for a single or bulk upload. 
+                            Support for a single or bulk upload
                         </p>
                     </Dragger>
                 </div>
-                <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
+                <Tour disabled={true} disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
             </div>
         }
      
         {isLoading && !showResult && 
             <>
                 <div className="mt-[100px]">
-                    {Loading('Tracks are being reordered in folder')}
+                    {Loading('')}
                 </div>
             </>
         } 

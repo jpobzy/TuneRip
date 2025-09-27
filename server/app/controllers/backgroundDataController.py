@@ -449,14 +449,14 @@ class backgroundData():
 
     def togglePatchNotesStatus(self, setting):
         try:
-
             self.logger.logInfo('Toggling showPatchNotes')
             jsonFile = self.file
             with open(jsonFile, 'r') as file:
                 data = json.load(file)              
                 
             data['showPatchNotes'] = setting['status']
-            
+            self.logger.logInfo(f'New patch status: [{setting['status']}]')
+
             with open(self.file, 'w') as file:
                 json.dump(data, file, indent=4)   
             self.logger.logInfo('Toggle completed')

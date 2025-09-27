@@ -91,10 +91,6 @@ def getCoverArtFileNames():
 @app.route('/addChannel', methods=['POST'])
 def addChannel():
     return controller_obj.addChannel(json.loads(request.data))
-    # return 'ok'
-    response, status = controller_obj.addChannel(json.loads(request.data))
-    return make_response(jsonify({ 'message': response}), status) 
-
 
 
 @app.route('/reload')
@@ -116,7 +112,6 @@ def getDownloadCount():
 
 @app.route('/filter', methods=['POST'])
 def filter():
-    # return  {'message': "error cant find track due to"}, 207
     if request.method == 'POST':
         response, statusCode  = controller_obj.addTracksToFilter(request)
     return response, statusCode
@@ -249,21 +244,6 @@ def disableCurrentCursor():
     return cursordata_obj.disableCurrCursor()
 
 
-
-
-
-@app.route('/stream')
-def stream():
-    def getData():
-        count = 0
-        while True:
-            yield f"data: {datetime.now()}\n\n"
-            time.sleep(1)  # prevent hammering the CPU
-            count+=1
-            if count == 5:
-                break
-    return Response(getData(), mimetype="text/event-stream")
-
 @app.route('/downloadStream')
 def streamDownload(): 
     return Response(controller_obj.downloadStream(dict(request.args), imageSettings_obj), mimetype="text/event-stream")
@@ -312,7 +292,7 @@ def getChannelAndArtCoverData():
     return jsonify(data)
 
 @app.post('/toggleMoveImages')
-def toggleMoveImages():
+def toggleMoveImages():    
     return imageSettings_obj.toggleMoveImages(json.loads(request.data))
 
 
