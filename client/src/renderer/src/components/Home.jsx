@@ -127,9 +127,20 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         setShowResult(true)
         setResponseData({message: message, statusCode: parseInt(data.statusCode)})  
       } else if (!skipAddingList.includes(message) && message !== 'Completed download'){
-        setCurrentlyDownloaded(prev => {
-          return [...prev, message]
-        })        
+        if (!message.includes('Finished downloading track')){
+            setCurrentlyDownloaded(prev => {
+            return [...prev, message]
+          })      
+        }else{
+
+          setCurrentlyDownloaded(prev => {
+            const t = prev.map(e => 
+              e.replaceAll('Currently downloading', 'Downloaded')
+            )
+            return t
+          })       
+
+        }
       }
 
       
@@ -365,20 +376,26 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setResultStatusCode(null)
     setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
     setSearchURL('');
-    setChannelData(prev => {return {...prev, editChannels : false}})
+    setChannelData(prev => {return {...prev, editChannels : false, chosenChannel : ''}})
     setGallerySettings(prev => {return {...prev, currentPaginationPage : 1}})
     setDownloadSettings({})
     setskipDownload(false)
     setShowDock(true)
+    getChannelsData()
+    
+    // chosenChannel
+
   }
 
   const handleChannelAdded = (channel) => {
     setChannelData(prev => {
       const copy = prev
       copy['newestChannel'] = channel.replace('Successfully added channel: ', '')
+      copy['editChannels'] = false
       return copy
     })
     getChannelsData();
+
   }
 
   const handleChannelRemoved = () => {

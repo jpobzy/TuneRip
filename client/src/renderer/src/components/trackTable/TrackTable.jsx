@@ -6,8 +6,11 @@ import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
 import { App } from 'antd';
 import './table.css'
 import { QuestionOutlined  } from '@ant-design/icons';
+import { useToggle } from '../context/UseContext';
+import { SearchOutlined } from '@ant-design/icons';
+import Highlighter from 'react-highlight-words';
 
-function TrackTable({refreshRecords, setRefresh}){
+function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
   const [channels, setChannels] = useState([]) // for channel filter
   const [records, setRecords] = useState() // format: {1: [records]}
   const { message } = App.useApp();
@@ -21,8 +24,14 @@ function TrackTable({refreshRecords, setRefresh}){
   const deleteSelectedButtonRef = useRef(null);
   const deleteSingleRecordRef = useRef(null);
   const [open, setOpen] = useState(false);
+  
+  const {setDisableDockFunctionality} = useToggle()
 
-
+  // search
+  const searchInput = useRef(null);
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const searchRef = useRef(null)
 
   const steps = [
     {
@@ -40,6 +49,7 @@ function TrackTable({refreshRecords, setRefresh}){
       description: 'Select multiple records to be deleted, using the top checkbox at the top will only select the records on the current page',
        target: () => document.querySelector('.ant-table-selection-col'),
     },
+    
     {
       title: 'Delete multiple records',
       description: 'After selecting multiple records delete, delete them',
@@ -49,9 +59,15 @@ function TrackTable({refreshRecords, setRefresh}){
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
        target: () => document.querySelector('.channel-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
-    }
-  ] 
+    },
+    {
+      title: 'Search for a phrase',
+      description: "Search for a specific phrase to edit or delete",    
+      target: () => document.querySelector('.track-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
+    },
 
+  ] 
+// 
 
 
   const deleteSelected = async() => {
@@ -59,6 +75,8 @@ function TrackTable({refreshRecords, setRefresh}){
     if (recordsToDelete.length === 0){
       message.info('No tracks was were selected');
     }else{
+      setDisableDockFunctionality(true)
+      setTabsDisabled(true)
       const req = await axios.delete('http://localhost:8080/deleteMultipleRecord', {data: {'records': recordsToDelete}})
       if (req.status === 204){
         message.info('No track was found');
@@ -71,7 +89,10 @@ function TrackTable({refreshRecords, setRefresh}){
         populateChannels();
         getCoverAlbums();
         getRecords();
-      }      
+      }  
+      
+      setDisableDockFunctionality(false)
+      setTabsDisabled(false)  
       setSelectedRowKeys([])
     }
     setLoading(false)
@@ -80,6 +101,8 @@ function TrackTable({refreshRecords, setRefresh}){
 
   const confirm = async (record) =>{
     setLoading(true)
+    setDisableDockFunctionality(true)
+    setTabsDisabled(true)
     const req = await axios.delete('http://localhost:8080/deleteRecord', {data: {'link': record.link}})
     if (req.status === 204){
       message.info('No track was found');
@@ -88,6 +111,8 @@ function TrackTable({refreshRecords, setRefresh}){
       getRecords();
     }
     setLoading(false)
+    setDisableDockFunctionality(false)
+    setTabsDisabled(false)  
   };
 
   const cancel = () => {
@@ -114,6 +139,86 @@ function TrackTable({refreshRecords, setRefresh}){
     return record.channel.includes(value)
   }
 
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  
+  const handleReset = (clearFilters, close, confirm) => {
+    clearFilters();
+    setSearchText(null);
+    setSearchedColumn('')
+    confirm();
+    close()
+  };
+
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={e => e.stopPropagation()} >
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <div className='inline-block' ref={null}>
+            <Button
+              type="primary"
+              onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          </div>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters, close, confirm)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />,
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    filterDropdownProps: {
+      onOpenChange(open) {
+        if (open) {
+          setTimeout(() => searchInput.current?.select(), 100);
+        }
+      },
+    },
+    render: text =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
+
+
+
+
+
+
+
+
+
+
   const cols = [
   {
     title: 'Channel',
@@ -127,6 +232,8 @@ function TrackTable({refreshRecords, setRefresh}){
   {
     title: 'Track title',
     dataIndex: 'tracktitle',
+    className: 'track-filter-column',
+    ...getColumnSearchProps('tracktitle'),
     key: 'tracktitle',
   },
   {

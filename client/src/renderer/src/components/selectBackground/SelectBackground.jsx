@@ -19,7 +19,7 @@ import axios from 'axios';
 import { useToggle } from "components/context/UseContext";
 
 
-function SelectBackground(){
+function SelectBackground({setTabsDisabled}){
     const {background, setChosenBackground, reset, 
         prevEditedBackgrounds, getData,
         auroraSettings, veilSettings, galaxySettings, 
@@ -38,6 +38,8 @@ function SelectBackground(){
     const [selectedPreset, setSelectedPreset] = useState('')
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
     const {setShowSwitch} = useToggle()
+
+    const {setDisableDockFunctionality} = useToggle()
 
     const newLabel = (title) => {
         return (
@@ -397,7 +399,15 @@ function SelectBackground(){
             }
         }
         setChosenBackground(selectChosen)
+
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)      
+          
         await axios.post('http://localhost:8080/savebackgroundsettings', formData, {params : {'background' : selectChosen}})
+    
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)
+    
     }
 
     const handleDefaultSettings = () => {
@@ -408,7 +418,13 @@ function SelectBackground(){
 
     const loadPrevBackgroundSettings = async () => {
         setChosenBackground(selectChosen)
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)   
+        
         await axios.post('http://localhost:8080/savebackgroundsettings', {params : {'background' : selectChosen}})
+        
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)        
         setSelectedHasPrevData(false)
     }   
 

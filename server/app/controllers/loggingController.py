@@ -6,8 +6,11 @@ import logging, traceback, shutil, os
 class logController():
     
     def __init__(self):
-        # logDir = Path(Path.home() / f'Documents/Github/TuneRip/server/')
-        logDir =  Path(Path.home()  / 'Documents/TuneRip/server/logs' )
+        serverDir = Path(Path.home()  / 'Documents/TuneRip/server' )
+        logDir = Path(Path.home()  / 'Documents/TuneRip/server/logs' ) 
+        if not Path(serverDir).exists():
+            Path.mkdir(serverDir)
+
         if not Path(logDir).exists():
             Path.mkdir(logDir)
         

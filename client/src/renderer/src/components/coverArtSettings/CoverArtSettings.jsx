@@ -8,7 +8,7 @@ import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from "components/context/UseContext";
 
 
-function CoverArtSettings(){
+function CoverArtSettings({setTabsDisabled}){
     const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
@@ -99,6 +99,7 @@ function CoverArtSettings(){
         setSwitchLoading(true)
         togglePrevUsed(e)
         setDisableDockFunctionality(true)
+        setTabsDisabled(true)
         const req = await axios.post('http://localhost:8080/toggleHidePrevUsedImages', {'data' : e})
         if (req.status === 200){
             message.success('Status changed')
@@ -107,6 +108,7 @@ function CoverArtSettings(){
         }
         setSwitchLoading(false)
         setDisableDockFunctionality(false)
+        setTabsDisabled(false)
     }
 
     const getArtDownloadStatus = async () => {
@@ -150,6 +152,8 @@ function CoverArtSettings(){
         })
 
 
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)        
         const req = await axios.post('http://localhost:8080/toggleMoveImages', {'data' : e})
         if (req.status === 200){
             notification.success({
@@ -161,6 +165,8 @@ function CoverArtSettings(){
             message.error('Something went wrong')
         }
 
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)
 
         setPostDownloadSetting(prev => {
             return {...prev,  moveSwitchLoading : !prev.moveSwitchLoading}
@@ -184,6 +190,8 @@ function CoverArtSettings(){
         setPostDownloadSetting(prev => {
             return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading, deleteSwitchChecked : !prev.deleteSwitchChecked}
         })
+        setDisableDockFunctionality(true)
+        setTabsDisabled(true)
 
         const req = await axios.post('http://localhost:8080/toggleDeleteImages', {'data' : e})
         if (req.status === 200){
@@ -195,6 +203,9 @@ function CoverArtSettings(){
         }else{
             message.error('Something went wrong')
         }
+
+        setDisableDockFunctionality(false)
+        setTabsDisabled(false)
 
         setPostDownloadSetting(prev => {
             return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading}

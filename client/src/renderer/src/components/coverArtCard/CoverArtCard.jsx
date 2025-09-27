@@ -3,16 +3,20 @@ import './CoverArtImages.css'
 import { Button, Popconfirm, Image} from 'antd';
 import minusIcon from '../../assets/minusIcon.svg'
 import axios from 'axios';
+import { useToggle } from '../context/UseContext';
 
 
 export default function CoverArtCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg, prevChannelCoverArtArr}) {
     const [loaded, setLoaded] = useState(false);
+    const {setDisableDockFunctionality} = useToggle()
 
     async function deleteImg() {
+        setDisableDockFunctionality(true)
         const deleteReq = await axios.delete('http://localhost:8080/deleteimg', {data: {'filename': filename}})
         if (deleteReq.status === 200 || deleteReq.status === 204) {
             refresh?.()
         } 
+        setDisableDockFunctionality(false)
     }
 
 
@@ -64,7 +68,6 @@ export default function CoverArtCard({filename, cardClicked, previousImg, edit, 
                                 </div>
                             </>    
                         }
-
                     </div>
                 </div>
             </div>

@@ -28,12 +28,13 @@
 .ant-upload-wrapper .ant-upload-drag{
     background-color: white;
 }
-/* :where(.css-dev-only-do-not-override-hzbaja).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover{
-    background-color: red;
-} */
 
 
 
 .ant-upload-wrapper .ant-upload-disabled{
     background-color: rgb(255, 255, 255, 0.336);
+}
+
+.ant-upload-list-item-name {
+    color: white;
 }

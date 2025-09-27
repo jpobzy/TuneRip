@@ -6,7 +6,7 @@ import { QuestionOutlined  } from '@ant-design/icons';
 import { resultToggle } from '../context/ResultContext';
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-
+import { useToggle } from '../context/UseContext';
 
 
 const EditableContext = React.createContext(null);
@@ -83,7 +83,7 @@ const EditableCell = ({
 
 
 
-const TitleFilter = ({refreshRecords, setRefresh}) => {
+const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
   const [dataSource, setDataSource] = useState() // format: {1: [records]} 
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
@@ -93,7 +93,7 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
   const addRowRef = useRef(null)
   const [existingRecordsAmount, setExistingRecordsAmount] = useState(0)
   const {message} = App.useApp();
-
+  const {setDisableDockFunctionality} = useToggle()
 
   // search 
   const searchInput = useRef(null);
@@ -161,6 +161,9 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
       return
     }
     setLoading(true)
+    setDisableDockFunctionality(true)
+    setTabsDisabled(true)
+   
     const req = await axios.delete('http://localhost:8080/deleteTitleFilter', {data: {'titleFilter': record.titleFilter}})
     if (req.status === 204){
       message.info('No record was found');
@@ -168,6 +171,9 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
       message.success(`Record ${record.titleFilter} has been deleted`)
       getRecords();
     }
+
+    setDisableDockFunctionality(false)
+    setTabsDisabled(false)    
     setLoading(false)
   };
 
@@ -201,6 +207,8 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
     // #####################################################################################
 
     setLoading(true)
+    setDisableDockFunctionality(true)
+    setTabsDisabled(true)    
     if (edit.key <= existingRecordsAmount){
       const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit}) 
       if (req.status === 200){
@@ -217,8 +225,11 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
         message.error('Something went wrong')
       }
     }
+
     getRecords()
     setLoading(false)
+    setDisableDockFunctionality(false)
+    setTabsDisabled(false)    
     setEdit(null)
   }
 
@@ -450,6 +461,9 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
 
   async function handleApplyFilter(){
     setApplyLoading(true)
+    setDisableDockFunctionality(true)
+    setTabsDisabled(true)
+
     const req = await axios.post('http://localhost:8080/apply-filters-to-folder', {'playlist' : playlist})
 
     if (req.status === 200){
@@ -458,9 +472,13 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
     }else{
       setResultStatusCode(400)
     }
+
     setApplyLoading(false)
     setShowResult(true)
     setPlaylistChosen(null)
+    setDisableDockFunctionality(false)
+    setTabsDisabled(false)
+
   }
 
   const [currentPaginationPage, setCurrentPaginationPage] = useState(1)
@@ -487,9 +505,6 @@ const TitleFilter = ({refreshRecords, setRefresh}) => {
             <div className='mx-auto justify-center flex mt-[30px] mb-[20px]'>       
               <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>setMode(e.target.value)}/> 
             </div>     
-            <div className='absolute font-[15px] text-red-500 ml-[160px] -mt-[45px]'>
-              NEW
-            </div>
             <div className="flex -mt-[52px] mb-[30px] ml-[505px]" >
                 <Tooltip title="help">
                     <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleOpenTour()}/>

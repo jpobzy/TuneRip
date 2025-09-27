@@ -14,12 +14,18 @@ export default function AddChannelForm({setSearchURL, handleChannelAdded}) {
       return
     }
     if (value.includes("@") || value.includes("www.youtube.com/channel/")){
-      const res = await axios.post('http://localhost:8080/addChannel', {'ytLink' : value})
-      if (res.status === 200) {
-        handleChannelAdded(res.data)
-        setChannel('')
-      }else{
-        message.error(`Channel ${channel} could not be found`)
+
+      try{
+        const res = await axios.post('http://localhost:8080/addChannel', {'ytLink' : value})
+        console.log(res.status)
+        if (res.status === 200) {
+          handleChannelAdded(res.data)
+          setChannel('')
+        }else{
+          message.error(`Channel ${channel} could not be found`)
+        }
+      }catch{
+        message.error(`Something went wrong please check the logs`)
       }
     } else {
        setSearchURL(value);

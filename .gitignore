@@ -28,3 +28,4 @@ oldcode/__pycache__/ansi_colors.cpython-313.pyc
 *.mp4
 *.wav
 .DS_Store
+server/test.py

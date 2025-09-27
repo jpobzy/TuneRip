@@ -7,7 +7,6 @@ import ElectricBorder from './electricBorder/ElectricBorder';
 import { useHomeContext } from './context/HomeContext';
 import electronImg from 'assets/electron.svg'
 
-
 export default function YoutuberCard({name, channelPFP, onClick, editChannels, handleChannelRemoved, newestChannel}) {
   const {channelCardSettings} = useHomeContext();
   const [hover, setHover] = useState(false);
@@ -20,14 +19,7 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
     } 
   }
 
-  async function getImg(){
-    const img = await axios.get(`http://localhost:8080/getChannelImage/${channelPFP}`)
-    if (img.status === 200){
-      return img
-    }else{
-      return electronImg
-    }
-  }
+
 
   function handleFailedImg(e){
     e.target.src = electronImg
@@ -38,6 +30,7 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
   return (
     <>
       <div>
+
         {editChannels && 
           <>
             <div className='relative z-999'>

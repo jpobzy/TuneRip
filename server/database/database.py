@@ -8,7 +8,7 @@ class database():
         self.channelCache = {}
         self.logger = logger
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
-        print(self.db_path)
+
         if Path(self.db_path).exists():
             self.revamp()
 
@@ -91,12 +91,16 @@ class database():
         return res
 
     def reloadCache(self):
-        database = sqlite3.connect(self.db_path)
-        cur = database.cursor()
-        self.channelCache = {}
-        for record in cur.execute("SELECT * FROM channels"):
-            self.channelCache[str(record[0])] =  (record[1], record[2])
-        database.close()
+        try:
+            database = sqlite3.connect(self.db_path)
+            cur = database.cursor()
+            self.channelCache = {}
+            for record in cur.execute("SELECT * FROM channels"):
+                self.channelCache[str(record[0])] =  (record[1], record[2])
+            database.close()
+        except Exception as error:
+            self.logger.logError(f'ERROR WHEN RELOADING CACHE')
+            self.logger.logError(error)
         return 
     
     def getRecentlyAddedTracks(self, trackAmount):
@@ -253,6 +257,9 @@ class database():
             cur.execute('UPDATE channels SET previousCoverArtUsed = ? WHERE name = ?', (newCoverArtFile, channel))
             database.commit()
             database.close()
+            self.reloadCache()
+
+            return
         except Exception as error:
             self.logger.logError(f'Was not able to update channel [{channel}] with new cover art [{newCoverArtFile}]')
             self.logger.logError(error)

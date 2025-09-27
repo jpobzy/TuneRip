@@ -1,3 +1,26 @@
+Version 1.2.4 Patch Notes
+- Added search feature in track title column in the track database setting
+- Download track page now shows which track is being downloaded more clearly
+- Fixed database not reloading properly
+
+
+------------------------------------------------------------------------------
+
+
+Version 1.2.3 Patch Notes
+- Fixed "Last used" not being shown on cover art after clicking on "Go back"
+- Fixed channels not being added if 'https' is in the url 'https://www.youtube.com/channel/' since it was only being added if it started with 'www.youtube.com/channel/'
+- Fixed channel being added and editchannels is true 
+- Fixed server dir not being created before log dir being created
+- Fixed channel card not saving default settings once you reset it then click save
+- Fixed trying to update all fields in editmetadata not properly saving
+- Fixed cropped image not saving file properly
+- Fixed an issue where disabling the “Skip downloading beats and instrumental tracks” option did not work correctly
+
+
+------------------------------------------------------------------------------
+
+
 Version 1.2.2 Patch Notes
 - Log files are now created by date and only updated for that date
 - Log files older than 30 days are deleted automatically
@@ -12,6 +35,8 @@ Version 1.2.2 Patch Notes
 - Added support for editing metadata of individual tracks
 - Added error message and placeholder image for channel cards with missing profile pictures
 - Added the ability to select a folder and automatically remove saved phrases from file titles and filenames in Phrase Filter (Title Filter) settings
+
+
 ------------------------------------------------------------------------------
 
 

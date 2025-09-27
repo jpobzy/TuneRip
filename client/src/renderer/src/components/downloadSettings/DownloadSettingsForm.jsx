@@ -80,9 +80,6 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             ...prev,
             skipDownloadingPrevDownload: e.target.checked 
         };
-        if (e.target.checked === false){
-            delete newSettings['skipDownloadingPrevDownload'];
-        }   
         return newSettings;
     })
     }

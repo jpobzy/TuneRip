@@ -20,6 +20,10 @@ export default defineConfig({
     plugins: [react()],
               define: {
         '__APP_VERSION__': JSON.stringify(process.env.npm_package_version),
-    }
+    },
+        server: {
+      host: '127.0.0.1', 
+      port: 5100,
+    },
   }
 })
