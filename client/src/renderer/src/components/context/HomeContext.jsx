@@ -19,12 +19,12 @@ export const HomeProvider = ({children}) =>{
     },
     {
         title: 'Select a channel',
-        description: "After adding a youtuber, you can select them to download all their videos",
+        description: "After adding a youtuber, you can select them to download all their videos.",
         target: () => channelRef.current,
     },
     {
-        title: 'Toggle the switch to delete a channel',
-        description: "Once the switch is toggled you'll see a '-' sign to delete the channel, deleting channels will not delete any downloads.",
+        title: 'Toggle the switch to edit a channel',
+        description: "Once the switch is toggled you can either delete it or change the channels pfp.",
         target: () => deleteChannelRef.current,
     },
     ]    

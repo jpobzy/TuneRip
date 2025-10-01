@@ -2,6 +2,8 @@ Version 1.2.4 Patch Notes
 - Added search feature in track title column in the track database setting
 - Download track page now shows which track is being downloaded more clearly
 - Fixed database not reloading properly
+- Added feature to swap out channel pfp's
+- Added feature to edit an individual tracks track number in edit meta data settings
 
 
 ------------------------------------------------------------------------------

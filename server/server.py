@@ -57,7 +57,7 @@ def get_image(route):
     """
     Sends the requested image file
     """
-    return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg', mimetype='image/gif')
+    return send_from_directory(app.config["UPLOAD_FOLDER"], f'{route}.jpg')
 
 
 @app.route('/getCoverArt/<string:route>')
@@ -305,7 +305,6 @@ def trimAudio():
     file = controller_obj.trimAudio(request.form.get("startTime"), request.form.get("endTime"), request.files['audio'])
     return send_file(file, as_attachment=True, download_name="trimmed.mp3")
 
-
 @app.get('/get-all-tracks-in-dir')
 def getAllTracksInDir():
     return jsonify(controller_obj.getAllTracksInDir(request.query_string))
@@ -333,6 +332,15 @@ def toggleShowPatchNotesStatus():
 @app.post('/apply-filters-to-folder')
 def applyFiltersToFolder():
     return jsonify(controller_obj.applyFiltersToFolder(json.loads(request.data)))
+
+@app.post('/open-dir')
+def openDir():
+    return jsonify(controller_obj.openFolderDir(json.loads(request.data)))
+
+@app.post('/swap-channel-pfp')
+def swapChannelPFP():
+    # return 'ok'
+    return jsonify(controller_obj.changeChannelPFP(request))
 
 
 if __name__ == "__main__":

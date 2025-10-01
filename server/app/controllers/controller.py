@@ -96,17 +96,22 @@ class controller():
 
 
 
-    def downloadImg(self, file):
+    def downloadImg(self, file=None, channel=None):
         """
         Takes an image file the url upload it and saves it locally on the backend
         old: file.save(Path(self.coverArtDir / f'{file.filename}'))
         """
-        fileSuffix = Path(file.filename).suffix
-        newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+        if not channel:
+            newFileName = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+            fileSuffix = Path(file.filename).suffix
+            path = Path(self.coverArtDir / f'{newFileName}{fileSuffix}')
 
-        path = Path(self.coverArtDir / f'{newFileName}{fileSuffix}')
+        else:
+            path = self.projRoot / f'server/static/channelImages/{channel}.jpg'
+            
+
+
         file.save(path)
-
         return {'message': 'File Saved', 'code': 'SUCCESS'}
 
 
@@ -124,20 +129,20 @@ class controller():
             channel = Channel(data['ytLink'])
             url, imgPath = channel.thumbnail_url, self.projRoot / f'server/static/channelImages/{channel.channel_name}.jpg'
             urllib.request.urlretrieve(url, imgPath) # comment this out to avoid re-downloading the .jpg 
-            print('4')
+            
             dataToAdd = {'name':  channel.channel_name, 'ytLink': channel.videos_url}
             self.db.addChannel(dataToAdd)
             self.db.loadCache()
 
-            print('3')
+            
             sanitizedChannel= re.sub(r'[<>:"/\\|?*]', '', channel.channel_name)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
             downloadsPath = self.downloadsDir  / f'{sanitizedChannel}'
             
-            print('2')
+            
             if not Path(downloadsPath).exists():
                 Path.mkdir(downloadsPath, parents=True)
-            print('1')
+
             return f'Successfully added channel: {channel.channel_name}'
 
         except Exception as error:
@@ -471,12 +476,15 @@ class controller():
         fullPath = Path(self.projRoot) / playlistPath
         newTitle = playlistData.get('title')
         selectedTrack = playlistData.get('selectedTrack')
+        trackNumber = playlistData.get('trackNumber')
+
+
 
         for file in fullPath.iterdir():
             try:
                 if file.suffix == '.mp3':
-                    if selectedTrack == file.parts[-1] and newTitle:
-                        editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre, trackTitle=newTitle)
+                    if selectedTrack == file.parts[-1] and (newTitle or trackNumber):
+                        editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre, trackTitle=newTitle, trackNum=trackNumber)
                         break
                     editTrackData(filePath=file, coverArtFile=newCoverArt, album=album, artist=artist, genre=genre)
                     if updateDatabase:
@@ -788,7 +796,7 @@ class controller():
 
 
         else:
-            ytLink = self.db.channelCache[channel][0]
+            ytLink = self.db.channelCache['channels'][channel][0]
             sanitizedChannel = re.sub(r'[<>:"/\\|?*]', '', channel)
             sanitizedChannel = sanitizedChannel.rstrip('.').rstrip(' ')
             coverArtPath = self.coverArtDir / f'{coverArtFile}'
@@ -932,10 +940,17 @@ class controller():
         try:
             query = parse_qs(query_string.decode())
             path = Path(self.projRoot / query['playlist'][-1])
+
+            data = [file for file in path.iterdir() if file.suffix == '.mp3']
             res = []
-            for track in path.iterdir():
-                if track.suffix == '.mp3':
-                    res.append({'value': track.parts[-1], 'label': track.parts[-1]})
+
+            for mfile in sorted(data, key=lambda file: int(str(MP3(file, ID3=ID3)['TRCK']))):
+                # res.append({'value': mfile.parts[-1], 'label': mfile.parts[-1]})
+                res.append({'value': mfile.parts[-1], 'label': f'#{int(str(MP3(mfile, ID3=ID3)['TRCK']))} - {mfile.parts[-1]}'})
+
+            # for track in path.iterdir():
+            #     if track.suffix == '.mp3':
+            #         res.append({'value': track.parts[-1], 'label': track.parts[-1]})
             return res
 
         except Exception as error:
@@ -956,3 +971,38 @@ class controller():
             self.logger.logError('Error when applying filters to folder')
             self.logger.logError(error)
             raise Exception('Error when applying filters to folder')
+        
+    def openFolderDir(self, dir):
+        """
+        Opens file explorer given a directory
+        """
+        dir = dir['downloadPath']
+        if not Path(dir).exists():
+            error = f'Path [{dir}] could not be found'
+            self.logger.logError('Error when trying to open folder directory')
+            self.logger.logError(error)
+            raise Exception(error)
+
+        os.startfile(dir)
+        return 'ok'
+    
+    def changeChannelPFP(self, request):
+        """
+        Changes a channels pfp in the home screen
+        """
+        try:
+            newImage = request.files['file']
+            channel = request.form.get('channel')
+
+            self.logger.logInfo(f'Updating channel {channel} PFP')
+            self.downloadImg(newImage, channel)
+            self.db.addChannelImageVersion(channel)
+
+            self.logger.logInfo(f'Update complete')
+
+            return 'ok'
+        
+        except Exception as error:
+            self.logger.logError(f'Error when trying to update channel [{request.form.get("channel")}] pfp')
+            self.logger.logError(error)
+            raise Exception(error)     

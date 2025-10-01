@@ -2,11 +2,15 @@ import { Button, ConfigProvider, Result, Spin } from "antd";
 import { Children, createContext, useContext, useEffect, useState } from "react";
 import { LoadingOutlined } from '@ant-design/icons';
 import './ResultContext.css'
+
 const toggleResultContext = createContext();
 
 export const ResultProvider = ({children}) =>{
 
-    const ResultSuccess = (titleInput, subTitleInput, goBack) => {
+    const ResultSuccess = (titleInput, subTitleInput, goBack, openFolderDir) => {
+
+
+
         return (
             <>
                 {/* <div className="bg-white rounded-lg resultsContext mx-auto w-[600px]"> */}
@@ -16,9 +20,16 @@ export const ResultProvider = ({children}) =>{
                         title={titleInput}
                         subTitle={subTitleInput}
                         extra={[
-                        <Button type="primary" key="return" onClick={()=> goBack()}>
-                            Go back
-                        </Button>
+                        <div key="return">
+                            <Button type="primary"  onClick={()=> goBack()}>
+                                Go back
+                            </Button>   
+                            {openFolderDir && 
+                            <div className="mt-[10px]">
+                                <Button onClick={()=> openFolderDir()} >Open Folder</Button>
+                            </div>
+                            }                     
+                        </div>
                         ]}
                     />                          
                 </div>
