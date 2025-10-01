@@ -69,11 +69,6 @@ function MainApp() {
   ];
 
 
-
-
-
-
-
   return (
     <>
     <div className='wrapper'>
@@ -81,7 +76,6 @@ function MainApp() {
             <PatchNotes/>
             {page === 'Home' && 
               <>
-
                 <HomeProvider>
                     <Home ref={ref} collapseActiveKey={collapseActiveKey} setCollapseActiveKey={setCollapseActiveKey}/>       
                 </HomeProvider>              

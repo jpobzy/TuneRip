@@ -5,7 +5,7 @@ from datetime import datetime
 
 class database():
     def __init__(self, databaseFolderRoute, logger):
-        self.channelCache = {}
+        self.channelCache = {'channels': {}}
         self.logger = logger
         self.db_path = databaseFolderRoute / "TuneRipDatabase.db"
 
@@ -47,7 +47,9 @@ class database():
             cur.execute("CREATE TABLE tracks(channel, albumTitle, trackName, trackId, status, coverArtFile, link, whenRecordAdded)")
 
         for record in cur.execute("SELECT * FROM channels"):
-            self.channelCache[str(record[0])] =  (record[1], record[2])
+            self.channelCache['channels'][str(record[0])] =  (record[1], record[2])
+
+        self.channelCache['PFPversions'] = {}
         return 
     
 
@@ -94,9 +96,17 @@ class database():
         try:
             database = sqlite3.connect(self.db_path)
             cur = database.cursor()
-            self.channelCache = {}
+            PFPversions = {}
+
+            if 'PFPversions' in self.channelCache:
+                PFPversions = self.channelCache['PFPversions']
+
+            self.channelCache = {'channels' : {}}
             for record in cur.execute("SELECT * FROM channels"):
-                self.channelCache[str(record[0])] =  (record[1], record[2])
+                self.channelCache['channels'][str(record[0])] =  (record[1], record[2])
+
+            self.channelCache['PFPversions'] = PFPversions
+
             database.close()
         except Exception as error:
             self.logger.logError(f'ERROR WHEN RELOADING CACHE')
@@ -189,6 +199,9 @@ class database():
             cur.execute('DELETE FROM channels WHERE name=?', (name, ))
             database.commit()
             database.close()
+            if name in self.channelCache['PFPversions']:
+                del self.channelCache['PFPversions'][name] 
+
             return "Success", 200
                
     def getAlbumTitles(self):
@@ -285,3 +298,11 @@ class database():
             self.logger.logError(error)
             raise Exception(f'Failed to get all channels cover art filenames from database')
         
+    def addChannelImageVersion(self, channel):
+        """
+        Adds a version to the cache for a channels pfp if the user decides to change it
+        """
+        currVersion = 1 + self.channelCache['PFPversions'].get(channel, 1)
+        self.channelCache['PFPversions'][channel] = currVersion
+
+        return

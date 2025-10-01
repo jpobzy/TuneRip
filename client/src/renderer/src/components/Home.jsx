@@ -72,9 +72,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     const response = await axios.get('http://localhost:8080/channels');
     setChannelData(prev => {
       return {
-      ...prev, channelsList : response.data
+      ...prev, channelsList : response.data.channels, pfpVersions : response.data.PFPversions
     }})
-    
   }
 
   const chooseWhichImagesToShow = (e) =>{
@@ -120,12 +119,11 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     sseDownload.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
       const message = data.message
-
-
+      
       if (data.statusCode){
         setResultStatusCode(parseInt(data.statusCode))
         setShowResult(true)
-        setResponseData({message: message, statusCode: parseInt(data.statusCode)})  
+        setResponseData({message: message, statusCode: parseInt(data.statusCode), downloadPath : data.downloadPath})  
       } else if (!skipAddingList.includes(message) && message !== 'Completed download'){
         if (!message.includes('Finished downloading track')){
             setCurrentlyDownloaded(prev => {
@@ -415,7 +413,11 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     } 
   }
 
-  const {channelCardSettings} = useHomeContext();
+  function openFolder(){
+    const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : responseData.downloadPath})
+  }
+
+
   return (
     <>
       <div className='mb-[35px]'>
@@ -432,23 +434,23 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                             {/* <div className=' mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results '> */}
                             {/* <div className='mt-[100px] bg-[rgba(255,255,255,0.336)] border-[1px] inline-block rounded-lg border-gray-400 test' > */}
                             <div className='mt-[100px] bg-[#eeeeee] border-[1px] inline-block rounded-lg border-gray-200 test' >
-                                {resultStatusCode === 200  && ResultSuccess( responseData.message === 'No new tracks to download were found'  ? 'No New Downloads' : 'Successfully downloaded all tracks!', responseData.message, goBack)}
-                                {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
-                                {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)}
+                              {resultStatusCode === 200  && ResultSuccess( responseData.message === 'No new tracks to download were found'  ? 'No New Downloads' : 'Successfully downloaded all tracks!', responseData.message, goBack, openFolder)}
+                              {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
+                              {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)}
                             </div>
                           </FadeContent>       
                         </>
                       } 
                       {(isLoading || !showResult) && 
                         <>
-                            <div className='mt-[150px]'>
-                              {Loading(
-                                downloadType === 'track' ? 'Track is downloading' : 'Tracks are downloading'
-                              )}           
-                              <div className="rounded-lg text-[15px]">
-                                Currently downloaded:
-                              </div>   
-                            </div>
+                          <div className='mt-[150px]'>
+                            {Loading(
+                              downloadType === 'track' ? 'Track is downloading' : 'Tracks are downloading'
+                            )}           
+                            <div className="rounded-lg text-[15px]">
+                              Currently downloaded:
+                            </div>   
+                          </div>
                         </>
                       }
                     </div>
@@ -457,7 +459,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   <div className='w-[600px] mx-auto animatedlist'>
                     <AnimatedList
                     items={[...currentlyDownloaded].reverse()}
-                    onItemSelect={(item, index) => console.log(item, index)}
+                    // onItemSelect={(item, index) => console.log(item, index)}
                     showGradients={true}
                     enableArrowNavigation={true}
                     displayScrollbar={true}
@@ -512,17 +514,17 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
               <div className='cover-art-containter '>
                   {Object.entries(gallerySettings.currentImagesShown).map((filename, index)=>(
                       <div key={filename} className={'mt-[20px] mb-[20px]'}>
-                          <CoverArtCard 
-                          filename={filename[1]}
-                          cardClicked={()=>handleCoverArtClicked(filename[1])}
-                          previousImg={coverArtData.prevCoverArtUsed}
-                          edit={coverArtData.deleteCoverArt}
-                          refresh={getCoverArtData}
-                          key = {filename[1]}
-                          imgClicked={''}
-                          enlargenImg={false}
-                          prevChannelCoverArtArr={coverArtData.prevChannelCoverArtArr}
-                          />
+                        <CoverArtCard 
+                        filename={filename[1]}
+                        cardClicked={()=>handleCoverArtClicked(filename[1])}
+                        previousImg={coverArtData.prevCoverArtUsed}
+                        edit={coverArtData.deleteCoverArt}
+                        refresh={getCoverArtData}
+                        key = {filename[1]}
+                        imgClicked={''}
+                        enlargenImg={false}
+                        prevChannelCoverArtArr={coverArtData.prevChannelCoverArtArr}
+                        />
                       </div>                
                   ))}
               </div>
@@ -575,11 +577,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                       </div>
                     </div>
                     <div>
-                      {/* <div className='header1 text-5xl font-bold mt-10 mb-5 text-gray-200'>
-                        TuneRip
-                      </div> */}
-     
-  
                         <ShinyText 
                           text="TuneRip" 
                           disabled={false} 
@@ -597,8 +594,9 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                               onClick={()=>handleChannelClicked(item[0])}
                               editChannels = {channelData.editChannels}
                               key = {item[0]}
-                              handleChannelRemoved={handleChannelRemoved}
+                              handleChanndelRemoved={handleChannelRemoved}
                               newestChannel={channelData.newestChannel}
+                              pfpVersions = {channelData.pfpVersions}
                             /> 
                           ))}
                         </div>

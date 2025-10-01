@@ -121,6 +121,20 @@ function EditMetaData({setTabsDisabled}){
 
     }
 
+    const inputTrackNumber = (input) => {
+        if (input.target.value.length === 0){
+            delete playlistData['trackNumber']
+        }else{
+            setPlaylistData(prev =>{
+                const newSettings = {
+                    ...prev,
+                    trackNumber : input.target.value
+                }
+                return newSettings
+            })            
+        }        
+    }
+
     const inputAlbum = (input) =>{
         if (input.target.value.length === 0){
             delete playlistData['album']
@@ -173,7 +187,7 @@ function EditMetaData({setTabsDisabled}){
             if (playlistData.updateTrack && !playlistData.selectedTrack){
                 message.error('Update track was selected but no track was selected to be updated')
             } else if (!Object.keys(playlistData).includes('album') && !Object.keys(playlistData).includes('genre') && 
-            !Object.keys(playlistData).includes('artist') && imgClicked == '' && !Object.keys(playlistData).includes('title')){
+            !Object.keys(playlistData).includes('artist') && imgClicked == '' && !Object.keys(playlistData).includes('title') && !Object.keys(playlistData).includes('trackNumber')){
                 message.error('No inputs were added')
             }else{
                 for (const [key, value] of Object.entries(playlistData)) {
@@ -410,7 +424,27 @@ function EditMetaData({setTabsDisabled}){
                                 </div>
                             }  
 
-
+                            {isPlaylistChosen && updateTrack && selectedTrack &&
+                                <div className="flex justify-center">
+                                    <Form.Item
+                                    wrapperCol={{ span: 15}}
+                                    label="Track number"
+                                    name="trackNumber"
+                                    onChange={(e) => inputTrackNumber(e)}
+                                    >  
+                                    <div className="inline-block"ref={null} >
+                                        <Input 
+                                        type="number"
+                                        onClear={() => delete playlistData['trackNumber']} 
+                                        allowClear={true}
+                                        style={{ width: 100 }}
+                                        // placeholder="Change track number"
+                                        />                                    
+                                    </div>
+        
+                                    </Form.Item>                                     
+                                </div>
+                            }  
 
 
 
@@ -517,7 +551,6 @@ function EditMetaData({setTabsDisabled}){
                     </>
                 }  
             </div>
-
             <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
         </div>
     )

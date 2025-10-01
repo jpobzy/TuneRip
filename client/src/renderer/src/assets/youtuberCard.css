@@ -77,3 +77,13 @@ h3{
 .ebtest{
     transition: all 0.25s ease;
 }
+
+.swapPFP{
+    position: absolute;
+    margin-left: 170px;
+    transition: all 0.25s ease;
+}
+
+.swapPFP:hover {
+    transform: scale(1.25);
+}

@@ -1,30 +1,66 @@
 import React, { useEffect, useState } from 'react'
 import 'assets/youtuberCard.css'
 import minusIcon from 'assets/minusIcon.svg'
-import { Button, Popconfirm } from 'antd';
+import { Button, Popconfirm, Upload, Image, Skeleton } from 'antd';
 import axios from 'axios';
 import ElectricBorder from './electricBorder/ElectricBorder';
 import { useHomeContext } from './context/HomeContext';
 import electronImg from 'assets/electron.svg'
+import swapChannelPFPIcon from 'assets/swapChannelPFP.svg'
 
-export default function YoutuberCard({name, channelPFP, onClick, editChannels, handleChannelRemoved, newestChannel}) {
+
+export default function YoutuberCard({name, channelPFP, onClick, editChannels, handleChannelRemoved, newestChannel, pfpVersions}) {
   const {channelCardSettings} = useHomeContext();
   const [hover, setHover] = useState(false);
   const [imgFailedToLoad, setImgFailedToLoad] = useState(false)
+  const [rerender, setRerender] = useState('')
+  const [imgLoaded, setImgLoaded] = useState(false)
+
+  const getExtraData = (file) => ({
+    channel: channelPFP
+  });
+
+  const uploadProps = {
+    name: 'file',
+    action: 'http://localhost:8080/swap-channel-pfp',
+    headers: {
+      authorization: 'authorization-text',
+    },
+    data: getExtraData,
+    multiple : false,
+    showUploadList : false,
+    progress: {
+      showInfo: false 
+    },    
+    onChange(info) {
+      if (info.file.status === 'done') {
+        if (JSON.stringify(pfpVersions).includes(name)){
+          setRerender(pfpVersions[name] + 1)
+        }else{
+          setRerender(1)
+        }
+        handleChannelRemoved()
+      }
+    },    
+  };
   
   async function deleteChannel(){
     const deleteReq = await axios.delete('http://localhost:8080/deleteChannel', {data: {'channel': name}})
     if (deleteReq.status === 200 || deleteReq.status === 204) {
       handleChannelRemoved()
+    
     } 
   }
 
-
+  useEffect(()=>{
+    if (Object.keys(pfpVersions).includes(name)){
+      setRerender(pfpVersions[name])
+    }
+  },[])
 
   function handleFailedImg(e){
     e.target.src = electronImg
     setImgFailedToLoad(true)
-
   }
 
   return (
@@ -45,24 +81,17 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
                 </div>  
               </Popconfirm>             
             </div>
-           
+            <div> 
+              <div className='w-[30px]  swapPFP'>
+                <Upload {...uploadProps} 
+                accept='.png,.jpg,.jpeg'              
+                >
+                    <img src={swapChannelPFPIcon} />        
+                </Upload>
+              </div>   
+            </div>
           </>
-   
         }
-        {/* <div className={editChannels ? "channel-card card-disabled": 'channel-card channel-card-hover'} onClick={onClick}>
-          <img className="avatar" src={`http://localhost:8080/getChannelImage/${channelPFP}`} alt="channel" />
-
-            {newestChannel === name && 
-              <div className='inline-block absolute text-red-500 -mt-[10px] font-bold'>
-                NEW
-              </div>        
-            }
-
-          <div className="info">
-            <h3 className="channel-name">{name}</h3>
-          </div>
-        </div> */}
-      {/* card-disabled z-0 ebtest*/}
         <div className={`z-0 ebtest ${editChannels && 'card-disabled'}`}
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
@@ -91,12 +120,21 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
                 background : channelCardSettings.cardSettings.backgroundColor,
               }}
             >
-                <img className="avatar" src={`http://localhost:8080/getChannelImage/${channelPFP}`}   
-                  // onLoad={() => }
-                  onError={(e) => handleFailedImg(e)
-                  }
-                alt="channel" />
-                {/* <img className="avatar" src={getImg()} alt="channel" /> */}
+              
+                <Image
+                  key={rerender}
+                  preview={false}
+                  width={100}
+                  className="avatar"
+                  onError={(e) => handleFailedImg(e)}
+                  src={`http://localhost:8080/getChannelImage/${channelPFP}?${rerender}`}  
+                  onLoad={()=> setImgLoaded(true)}
+                  placeholder={
+                  <div className='absolute -mt-[50px] w-[100px]'>
+                    <Skeleton.Image active={true} />
+                  </div>
+                }
+                />
                   {newestChannel === name && 
                     <div className='inline-block absolute text-red-500 -mt-[10px] font-bold'>
                       NEW
@@ -108,16 +146,15 @@ export default function YoutuberCard({name, channelPFP, onClick, editChannels, h
                     </div>
                   }
 
-
-                <div className="info">
-                  <div style={{color: channelCardSettings.cardSettings.textColor}} className='text-[15px]'>{name}</div>
-                </div>
+                  {imgLoaded &&
+                    <div className="info">
+                      <div style={{color: channelCardSettings.cardSettings.textColor}} className='text-[15px]'>{name}</div>
+                    </div>                          
+                  }
             </div>
           </ElectricBorder> 
         </div>
-        </div>
-        {/* <Button onClick={()=>console.log(channelCardSettings.cardSettings
-)} >clocl me</Button> */}
+      </div>
     </>
   )
 }
