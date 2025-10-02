@@ -24,7 +24,6 @@ oldcode/__pycache__/ansi_colors.cpython-313.pyc
 /server/build
 *.exe
 *.spec
-*.mp3
 *.mp4
 *.wav
 .DS_Store
