@@ -122,7 +122,17 @@ class database():
         query = cur.execute(f'SELECT * FROM tracks WHERE status <> ?  ORDER BY whenRecordAdded DESC LIMIT ?', ('Filter', trackAmount,))
         retval = []
         for record in query:
-            retval.append({'trackName':record[2], 'channel':record[0]})
+            date_string = record[7]
+            iso = datetime.fromisoformat(date_string)
+            retval.append({
+                'trackName':record[2], 
+                'channel':record[0], 
+                'albumTitle' : record[1],
+                'coverArt' : record[5],
+                'youtubeLink' : record[6],
+                'downloadDate' : "{:%B %d, %Y}".format(iso),
+                'downloadPath' : str(Path.home() / record[8])
+                })
         database.close()
         return retval
 

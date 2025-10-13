@@ -416,6 +416,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   function openFolder(){
     const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : responseData.downloadPath})
   }
+  
 
 
   return (
