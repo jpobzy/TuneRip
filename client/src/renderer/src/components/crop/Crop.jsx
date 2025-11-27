@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Slider, Button, Divider, Result, Tour, InputNumber, ConfigProvider, Spin, Input } from 'antd';
+import { Slider, Button, Divider, Result, Tour, InputNumber, ConfigProvider, Input } from 'antd';
 import Cropper from "react-easy-crop";
 import axios from "axios";
 import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, QuestionCircleFilled, QuestionOutlined  } from '@ant-design/icons';
@@ -10,7 +10,12 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { resultToggle } from "../context/ResultContext";
 import { useToggle } from "../context/UseContext";
 
-function Crop({setTabsDisabled}){
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
+
+function Crop({setTabsDisabled, favorites, setFavorites}){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})
@@ -25,6 +30,8 @@ function Crop({setTabsDisabled}){
     const [validFile, setValidFile] = useState(true)
     const { message } = App.useApp();	
 
+
+    const favoritesRef = useRef(null);
     const {setDisableDockFunctionality} = useToggle()
     
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
@@ -39,6 +46,11 @@ function Crop({setTabsDisabled}){
           title: 'Add an image to crop',
           description: 'Add an image to the crop editor which can be used for any cover art.',
           target: () => refAdd.current,
+        },
+        {
+            title: 'Add to favorites',
+            description: 'Add this feature to your favorites for quick access.',
+            target: () => favoritesRef.current,
         },
         {
           title: 'Crop the image here',
@@ -155,11 +167,26 @@ function Crop({setTabsDisabled}){
      
 
                     </div>
-                   <div className="flex ml-[455px] -mt-[32px] mb-[10px]">
-                            <Tooltip title="help" >
-                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                            </Tooltip>                                  
-                        </div>
+                   <div className="flex ml-[455px] -mt-[32px] -mb-[31.5px]">
+                        <Tooltip title="help" >
+                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                        </Tooltip>                                  
+                    </div>
+
+                    <div className='flex ml-[315px] mb-[30px] inline-block' ref={favoritesRef}>
+                            <Button shape="circle" icon={favorites.crop ? <StarFilled /> : <StarOutlined />}  onClick={() => {
+                                if (favorites.crop === true){
+                                    message.success('Removed crop from favorites')
+                                }else{
+                                    message.success('Added crop to favorites')
+                                }
+                                setFavorites(prev => ({
+                                ...prev, 
+                                ['crop'] : !prev['crop']
+                                }))
+                            }}/>
+                    </div>
+
                     <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
                         <Cropper
                         image={blobURL}

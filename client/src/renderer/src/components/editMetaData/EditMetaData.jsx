@@ -9,8 +9,12 @@ import './editMetaData.css'
 import { resultToggle } from "../context/ResultContext";
 import CoverArtChanger from "../CoverArtChanger/CoverArtChanger";
 import { useToggle } from "../context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function EditMetaData({setTabsDisabled}){
+function EditMetaData({setTabsDisabled, favorites, setFavorites}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState({})
     const [buttonDisabled, setButtonDisabled] = useState(false)
@@ -42,7 +46,7 @@ function EditMetaData({setTabsDisabled}){
     const [resultStatusCode, setResultStatusCode] = useState()
 
     const {setDisableDockFunctionality} = useToggle()
-
+    const favoritesRef = useRef(null);
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
