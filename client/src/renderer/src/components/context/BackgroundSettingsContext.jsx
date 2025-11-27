@@ -17,6 +17,7 @@ import LiquidChrome from "../background/liquidChrome/LiquidChrome";
 import Squares from "../background/squares/Squares";
 import Balatro from "../background/balatro/Balatro";
 import PrismaticBurst from "../background/prismaticBurst/PrismaticBurst";
+import FloatingLines from "../background/floatingLines/FloatingLines";
 
 const toggleSettingsContext = createContext();
 
@@ -439,10 +440,48 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
         })
     }
 
+// ############################### FLOATING LINES SETTINGS ################################
+
+    const defaultFloatingLinesSettings = {
+        lineCount : [10, 15, 20],
+        lineDistance : [8, 6, 4],
+        animationSpeed : 1,
+        linesGradient : []
+    }
+
+    const [floatingLinesBackgroundSettings, setFloatingLinesBackgroundSettings] = useState(defaultFloatingLinesSettings)
+
+    const FloatingLinesFormSettings = {
+        lineCount : {min: 1, max : 20, step : 1},
+        lineDistance : {min: 1, max : 100, step : 0.5},
+        animationSpeed : {min: 0.5, max : 3, step: 0.5}
+    }
+
+
+
+    const updateFloatingLinesLineCountIndex = (index, value) => {
+        const updatedLineCount = floatingLinesBackgroundSettings.lineCount
+        updatedLineCount[index] = value
+        setFloatingLinesBackgroundSettings(prev => ({
+            ...prev, updatedLineCount
+        }))
+        delete floatingLinesBackgroundSettings['updatedLineCount']
+    }
+
+    const updateFloatingLinesLineDistanceIndex = (index, value) => {
+        const updatedLineDistance = floatingLinesBackgroundSettings.lineDistance
+        updatedLineDistance[index] = value
+        setFloatingLinesBackgroundSettings(prev => {
+            return {...prev, lineDistance : updatedLineDistance}
+        })
+        delete floatingLinesBackgroundSettings['updatedLineDistance']
+    }
+
 
 // ###############################################################################
 // ############################### RESET SETTINGS ################################
 // ###############################################################################
+
     const reset = async (backgroundForm) => {
         if (background === 'aurora'){
             setAuroraBackgroundSettings(defaultAuroraBackgroundSettings)
@@ -564,6 +603,8 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                 distort : defaultPrismaticBurstSettings.distort,
                 rayCount : defaultPrismaticBurstSettings.rayCount,
             })                
+        }else if (background === 'floatingLines'){
+            setFloatingLinesBackgroundSettings(defaultFloatingLinesSettings)
         }
 
 
@@ -656,8 +697,12 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
 
             } else if (currentBackground === 'balatro'){
                 setBalatroBackgroundSettings(prevSettings)
-            }else if (currentBackground === 'prismaticBurst'){
+
+            } else if (currentBackground === 'prismaticBurst'){
                 setPrismaticBurstBackgroundSettings(prevSettings)
+
+            } else if (currentBackground === 'floatingLines'){
+                setFloatingLinesBackgroundSettings(prevSettings)
             }
         } 
 
@@ -731,6 +776,7 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
             liquidChromeSettings : {liquidChromeBackgroundSettings, liquidChromeFormSettings, setLiquidChromeBackgroundSettings},
             balatroSettings : {balatroBackgroundSettings, setBalatroBackgroundSettings, balatroFormSettings},
             prismaticBurstSettings : {prismaticBurstBackgroundSettings, setPrismaticBurstBackgroundSettings, prismaticBurstFormSettings, updatePrismaticBurstColorIndex, resetPrismaticBurstColorIndex},
+            floatingLinesSettings : {floatingLinesBackgroundSettings, setFloatingLinesBackgroundSettings, FloatingLinesFormSettings, updateFloatingLinesLineCountIndex, updateFloatingLinesLineDistanceIndex}
         }}>
             <div className="fixed inset-0 -z-10 relative">
                 { background === 'aurora' &&
@@ -1025,6 +1071,29 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
                     </div>
                 }
             </div>
+            {background === 'floatingLines' &&
+                <div className="z-0"
+                style={{
+                position: 'fixed', 
+                width: '100%',
+                height: '100%'  
+                }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                        <FloatingLines 
+                            enabledWaves={['top', 'middle', 'bottom']}
+                            // Array - specify line count per wave; Number - same count for all waves
+                            lineCount={floatingLinesBackgroundSettings.lineCount}
+                            // Array - specify line distance per wave; Number - same distance for all waves
+                            lineDistance={floatingLinesBackgroundSettings.lineDistance}
+                            bendRadius={5.0}
+                            bendStrength={-0.5}
+                            interactive={false}
+                            parallax={true}
+                            animationSpeed={floatingLinesBackgroundSettings.animationSpeed}
+                        />
+                    </div>
+                </div>
+            }
             <div>
                {children} 
             </div>

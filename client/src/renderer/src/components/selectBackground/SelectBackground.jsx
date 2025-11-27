@@ -15,6 +15,8 @@ import LetterGlitchBackground from "components/background/letterGlitch/LetterGli
 import LiquidChromeBackground from "components/background/liquidChrome/LiquidChromeBackground";
 import BalatroBackground from "components/background/balatro/BalatroBackground";
 import PrismaticBurstBackground from "components/background/prismaticBurst/PrismaticBurstBackground";
+import FloatingLinesBackground from "components/background/floatingLines/FloatingLinesBackground";
+
 import axios from 'axios';
 import { useToggle } from "components/context/UseContext";
 
@@ -28,7 +30,7 @@ function SelectBackground({setTabsDisabled}){
         iridescenceSettings, wavesSettings,
         letterGlitchSettings, squaresSettings,
         liquidChromeSettings, balatroSettings,
-        prismaticBurstSettings,
+        prismaticBurstSettings, floatingLinesSettings
     } = toggleBackgroundSettings();
 
     const [selectChosen, setSelectChosen] = useState('')
@@ -71,6 +73,7 @@ function SelectBackground({setTabsDisabled}){
         { value: 'liquidChrome', label: 'Liquid Chrome' }, 
         { value: 'balatro', label: 'Balatro' }, 
         { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
+        { value: 'floatingLines', label: newLabel('FloatingLines') }, 
     ]
 
 
@@ -396,13 +399,41 @@ function SelectBackground({setTabsDisabled}){
                     prismaticBurstSettings.updatePrismaticBurstColorIndex(2, formData.color3)
                 }
 
+            } else if (selectChosen === 'floatingLines'){
+                floatingLinesSettings.setFloatingLinesBackgroundSettings(prev => {
+                    const updates = {}
+                    if (formData.animationSpeed) updates.animationSpeed = formData.animationSpeed
+                    return {...prev, ...updates}
+                })
+
+                if (formData.lineCount1){
+                    floatingLinesSettings.updateFloatingLinesLineCountIndex(0, formData.lineCount1)
+                }
+                if (formData.lineCount2){
+                   floatingLinesSettings.updateFloatingLinesLineCountIndex(1, formData.lineCount2) 
+                } 
+                if (formData.lineCount3){
+                  floatingLinesSettings.updateFloatingLinesLineCountIndex(2, formData.lineCount3)  
+                } 
+
+                if (formData.lineDistance1){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(0, formData.lineDistance1) 
+                } 
+                if (formData.lineDistance2){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(1, formData.lineDistance2) 
+                } 
+                if (formData.lineDistance3){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(2, formData.lineDistance3) 
+                } 
+               
             }
         }
         setChosenBackground(selectChosen)
 
         setDisableDockFunctionality(true)
         setTabsDisabled(true)      
-          
+        
+        console.log(selectChosen, formData)
         await axios.post('http://localhost:8080/savebackgroundsettings', formData, {params : {'background' : selectChosen}})
     
         setDisableDockFunctionality(false)
@@ -446,12 +477,13 @@ function SelectBackground({setTabsDisabled}){
                 } */}
 
                 <Select
+                    showSearch={true}
                     defaultValue=""
                     style={{ width: 220 }}
                     value={selectChosen}
                     onChange={(e) => changeBackground(e)}
                     options={backgroundOptions}
-                    />
+                />
 
 
                 <ConfigProvider
@@ -514,12 +546,13 @@ function SelectBackground({setTabsDisabled}){
                             {selectChosen === 'prismaticBurst' &&
                                 <PrismaticBurstBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
                             }
+                            {selectChosen === 'floatingLines' &&
+                                <FloatingLinesBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                            }
+
+
                             {selectChosen &&
                                 <Form.Item>
-                                    {/* {!selectedHasPrevData &&
-                                        
-                                    } */}
-                                    
                                     {selectedHasPrevData  
                                         ? <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
                                         : <>
@@ -527,7 +560,6 @@ function SelectBackground({setTabsDisabled}){
                                             { selectChosen == background &&
                                             <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
                                             }
-                                            
                                         </>
                                     }
                                 </Form.Item>                                         

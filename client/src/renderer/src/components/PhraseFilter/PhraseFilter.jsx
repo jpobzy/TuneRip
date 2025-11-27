@@ -7,7 +7,10 @@ import { resultToggle } from '../context/ResultContext';
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import { useToggle } from '../context/UseContext';
-
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
 const EditableContext = React.createContext(null);
 
@@ -83,7 +86,7 @@ const EditableCell = ({
 
 
 
-const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
+const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites}) => {
   const [dataSource, setDataSource] = useState() // format: {1: [records]} 
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
@@ -105,6 +108,7 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
   const saveRef = useRef(null);
   const deleteRecordRef = useRef(null);
   const [isLoading, setLoading] = useState(false)
+  const favoritesRef = useRef(null);
 
   const tableSteps = [
     {
@@ -116,6 +120,11 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
       title: 'Add a row to add a new phrase',
       description: "Create a new row then edit the row to add a new phrase",
        target: () => addRowRef.current
+    },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
     },
     {
       title: 'Search for a phrase',
@@ -505,11 +514,19 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
             <div className='mx-auto justify-center flex mt-[30px] mb-[20px]'>       
               <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>setMode(e.target.value)}/> 
             </div>     
-            <div className="flex -mt-[52px] mb-[30px] ml-[505px]" >
+            <div className="flex -mt-[52px] -mb-[32px] ml-[505px]" >
                 <Tooltip title="help">
                     <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleOpenTour()}/>
                 </Tooltip>                                    
-            </div>                       
+            </div>       
+              <div  className='flex ml-[420px] mb-[30px]  inline-block ' ref={favoritesRef}>
+                <Button shape="circle" icon={favorites.phraseFilter ? <StarFilled /> : <StarOutlined />}  onClick={() => {
+                    setFavorites(prev => ({
+                    ...prev, 
+                    ['phraseFilter'] : !prev['phraseFilter']
+                    }))  
+                }}/>              
+            </div>
           </>
         }
 
@@ -542,6 +559,7 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
             <>
               <div className="inline-block" ref={selectRef}>
                   <Select
+                      showSearch={true}
                       allowClear={true}
                       defaultValue={[]}
                       style={{ width: 500 }}

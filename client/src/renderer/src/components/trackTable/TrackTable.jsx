@@ -9,8 +9,13 @@ import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from '../context/UseContext';
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
+import {
+  StarTwoTone,
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
+function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites}){
   const [channels, setChannels] = useState([]) // for channel filter
   const [records, setRecords] = useState() // format: {1: [records]}
   const { message } = App.useApp();
@@ -31,7 +36,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
   const searchInput = useRef(null);
   const [searchedColumn, setSearchedColumn] = useState('');
   const [searchText, setSearchText] = useState('');
-  const searchRef = useRef(null)
+  const favoritesRef = useRef(null);
 
   const steps = [
     {
@@ -56,6 +61,12 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
       target: () => deleteSelectedButtonRef.current,
     },
     {
+      title: 'Add to favorites',
+      description: 'Add this feature to your favorites for quick access.',
+      target: () => favoritesRef.current,
+    },
+
+    {
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
        target: () => document.querySelector('.channel-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
@@ -67,7 +78,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
     },
 
   ] 
-// 
+
 
 
   const deleteSelected = async() => {
@@ -357,7 +368,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
       <div className='-ml-[100px]'>
         <div className='relative right-[330px] h-[50px]'>
           <div className='flex justify-center'>
-            <div ref={deleteSelectedButtonRef} className="inline-block ml-[130px] flex">
+            <div ref={deleteSelectedButtonRef} className="inline-block ml-[160px] flex">
               <Popconfirm
               title="Delete the selected records"
               description="Are you sure to delete  the selected records?"
@@ -367,7 +378,6 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
               cancelText="No"
               >
               <Button type="primary">
-                {/* <Button type="primary" onClick={deleteSelected}> */}
                   Delete selected
                 </Button>    
               </Popconfirm>
@@ -376,7 +386,16 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled}){
                   <Tooltip title="help">
                       <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
                   </Tooltip>                                    
-              </div>      
+              </div>    
+              <div className='flex ml-[5px]'>
+                      <Button shape="circle" icon={favorites.trackDatabase ? <StarFilled /> : <StarOutlined />}  onClick={() => {
+                          setFavorites(prev => ({
+                          ...prev, 
+                          ['trackDatabase'] : !prev['trackDatabase']
+                          }))  
+                      }}/>
+              </div>
+
           </div>
           </div>
           <div className='inline-block'>

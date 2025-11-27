@@ -12,7 +12,13 @@ import { App } from 'antd';
 
 import { useToggle } from '../context/UseContext';
 
-export default function VideoFilter({setRefresh, setTabsDisabled}) {
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
+
+
+export default function VideoFilter({setRefresh, setTabsDisabled, favorites, setFavorites}) {
     const { Search } = Input;
     const [channel, setChannel] = useState('');
     const [loading, setLoading] = useState(false)
@@ -22,6 +28,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled}) {
     const [open, setOpen] = useState(false); 
     const filterSearchBarRef = useRef(null) ;
     const filterFilesRef = useRef(null);
+    const favoritesRef = useRef(null);
     const [mode, setMode] = useState(null)
 
 
@@ -41,8 +48,13 @@ export default function VideoFilter({setRefresh, setTabsDisabled}) {
         target: () => filterSearchBarRef.current,
     },
     {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },
+    {
         title: 'Filter multiple videos from downloading',
-        description: 'Create a text file with multiple youtube links to be filtered, format should be one line per line in the text file',
+        description: 'Create a text file with multiple youtube links to be filtered, format should be one link per line in the text file',
         target: () => filterFilesRef.current,
     }
     ]
@@ -54,10 +66,13 @@ export default function VideoFilter({setRefresh, setTabsDisabled}) {
             setTabsDisabled(true)
             setDisableDockFunctionality(true)
             const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
-
-            if (response.status === 200 || response.status === 304) {
-                setRefresh(true);
-                message.success(`${value} successfully added`);
+            if (response.status === 200){
+                if (response.data === 'Track has been added to the DB'){
+                    setRefresh(true);
+                    message.success(`${value} successfully added`);                    
+                }else if (response.data === 'Track already exists'){
+                    message.info('Track already exists')
+                }
             }else{
                 message.error(`Something went wrong, please check the logs for more details`);
             }
@@ -160,7 +175,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled}) {
                                     onSearch={onSearch}
                                     disabled={loading}
                                     prefix={<UserOutlined />}
-                                    style={{ width: 450 }}
+                                    style={{ width: 420 }}
                                     />
                                 </div>
 
@@ -173,6 +188,20 @@ export default function VideoFilter({setRefresh, setTabsDisabled}) {
                             <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
                         </Tooltip>    
                     </div>
+
+
+                    <div className='flex ml-[5px]'>
+                            <Button shape="circle" icon={favorites.videoFilter ? <StarFilled /> : <StarOutlined />}  onClick={() => {
+                                setFavorites(prev => ({
+                                ...prev, 
+                                ['videoFilter'] : !prev['videoFilter']
+                                }))  
+                            }}/>
+                    </div>
+
+
+
+
                 </div>
                 <div className='mx-auto w-[500px] mt-[20px] inline-block' ref={filterFilesRef}>
                     <Dragger {...props}>

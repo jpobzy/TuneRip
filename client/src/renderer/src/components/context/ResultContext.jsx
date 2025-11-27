@@ -2,14 +2,17 @@ import { Button, ConfigProvider, Result, Spin } from "antd";
 import { Children, createContext, useContext, useEffect, useState } from "react";
 import { LoadingOutlined } from '@ant-design/icons';
 import './ResultContext.css'
+import axios from "axios";
 
 const toggleResultContext = createContext();
 
 export const ResultProvider = ({children}) =>{
 
-    const ResultSuccess = (titleInput, subTitleInput, goBack, openFolderDir) => {
+    const ResultSuccess = (titleInput, subTitleInput, goBack, downloadPath) => {
 
-
+        function openFolder(){
+            const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : downloadPath})
+        }
 
         return (
             <>
@@ -24,10 +27,10 @@ export const ResultProvider = ({children}) =>{
                             <Button type="primary"  onClick={()=> goBack()}>
                                 Go back
                             </Button>   
-                            {openFolderDir && 
-                            <div className="mt-[10px]">
-                                <Button onClick={()=> openFolderDir()} >Open Folder</Button>
-                            </div>
+                            {downloadPath && 
+                                <div className="mt-[10px]">
+                                    <Button onClick={()=> openFolder()} >Open Folder</Button>
+                                </div>
                             }                     
                         </div>
                         ]}

@@ -38,7 +38,6 @@ titleFilter_obj = titleFilterController(logger)
 imageSettings_obj = imageSettingsController(logger)
 channelCard_obj = channelCardController(logger)
 
-
 @app.route("/")
 def hello_world():
     return "hello world"
@@ -114,6 +113,7 @@ def getDownloadCount():
 def filter():
     if request.method == 'POST':
         response, statusCode  = controller_obj.addTracksToFilter(request)
+    print(response, statusCode)
     return response, statusCode
 
 
@@ -211,9 +211,8 @@ def getPlaylistData():
 
 @app.put('/updatemetadata')
 def updateMetaData():
-    imageSettings_obj.updateRecords(json.loads(request.data))
-    controller_obj.updateMetaData(json.loads(request.data))
-    return 'ok'
+    imageSettings_obj.updateRecords(json.loads(request.data))  
+    return make_response(controller_obj.updateMetaData(json.loads(request.data)))
 
 @app.get('/getbackgroundsettings')
 def getBackgroundSettings():
@@ -339,7 +338,6 @@ def openDir():
 
 @app.post('/swap-channel-pfp')
 def swapChannelPFP():
-    # return 'ok'
     return jsonify(controller_obj.changeChannelPFP(request))
 
 

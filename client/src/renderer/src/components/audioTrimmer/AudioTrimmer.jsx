@@ -20,6 +20,7 @@ function AudioTrimmer({setTabsDisabled}){
     const [filename, setFilename] = useState(null)
     const [openTour, setTourOpen] = useState(false);  
     const [inputPrefix, setInputPrefix] = useState('')
+    const [trimButtonDisabled, setTrimButtonDisabled] = useState(false)
 
     const uploadRef = useRef(null)
     const trimRef = useRef(null)
@@ -60,6 +61,7 @@ function AudioTrimmer({setTabsDisabled}){
     }
 
     const handleDownload = async () => {
+        setTrimButtonDisabled(true)
         if (start === '00:00' && end === trackLength){
             message.error('No audio trim was detected')
             return
@@ -87,6 +89,7 @@ function AudioTrimmer({setTabsDisabled}){
             fileDownload(req.data, filename)
         }
 
+        setTrimButtonDisabled(false)
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
     }
@@ -164,7 +167,7 @@ function AudioTrimmer({setTabsDisabled}){
 
 
                     <div className='mt-[10px]'>
-                        <Button ref={trimRef} onClick={()=>handleDownload()}>Trim</Button>
+                        <Button disabled={trimButtonDisabled} ref={trimRef} onClick={()=>handleDownload()}>Trim</Button>
                     </div>                   
                 </div>
             </>

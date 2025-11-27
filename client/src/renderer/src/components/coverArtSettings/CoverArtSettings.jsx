@@ -6,9 +6,12 @@ import CoverArtCard from "components/coverArtCard/CoverArtCard";
 import UploadButton from "components/uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from "components/context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-
-function CoverArtSettings({setTabsDisabled}){
+function CoverArtSettings({setTabsDisabled, favorites, setFavorites}){
     const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
@@ -35,7 +38,8 @@ function CoverArtSettings({setTabsDisabled}){
     const hideCoverArtRef = useRef(null)
     const moveCoverArtRef = useRef(null)
     const deleteCoverArtRef = useRef(null)
-    
+    const favoritesRef = useRef(null);
+
     const handleCoverArtClicked = async(file) =>{
         if (imgClicked === file){
             setImgClicked('')
@@ -71,6 +75,11 @@ function CoverArtSettings({setTabsDisabled}){
         description: 'Add custom cover art through here or through crop in the settings panel',
         target: () => addCoverArtRef.current,
         }, 
+        {
+            title: 'Add to favorites',
+            description: 'Add this feature to your favorites for quick access.',
+            target: () => favoritesRef.current,
+        },
         {
         title: 'Toggle to edit current available cover art',
         description: 'Toggle to remove current available cover art',
@@ -215,7 +224,7 @@ function CoverArtSettings({setTabsDisabled}){
     
     return (
         <>
-            <div>
+            <div className="">
                 <div className="inline-block" ref={addCoverArtRef}>
                     <UploadButton refresh={getNewCoverArt}/>  
                 </div>
@@ -225,6 +234,16 @@ function CoverArtSettings({setTabsDisabled}){
                             <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
                     </Tooltip>                                           
                 </div>
+
+                <div className='flex ml-[545px] -mt-[32px]'>
+                        <Button shape="circle" icon={favorites.coverArtSettings ? <StarFilled /> : <StarOutlined />}  onClick={() => {
+                            setFavorites(prev => ({
+                            ...prev, 
+                            ['coverArtSettings'] : !prev['coverArtSettings']
+                            }))  
+                        }}/>
+                </div>
+
             </div>
             
 
@@ -324,9 +343,7 @@ function CoverArtSettings({setTabsDisabled}){
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
-            
             <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
-
             <div className="mb-[80px]"></div>
         </>
     )

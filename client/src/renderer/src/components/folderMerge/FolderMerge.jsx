@@ -141,6 +141,7 @@ function FolderMerge({setTabsDisabled}){
                                         <Form.Item>
                                             <div className="inline-block" ref={mergeFolderRef}>
                                                 <Select
+                                                    showSearch={true}
                                                     // onDeselect={()=>handleMergeCleared()}
                                                     // onClear={()=>handleMergeCleared()}
                                                     // allowClear={true}
@@ -173,6 +174,7 @@ function FolderMerge({setTabsDisabled}){
                                         <Form.Item>
                                             <div className="inline-block" ref={destinationFolderRef}>
                                                 <Select
+                                                    showSearch={true}
                                                     allowClear={true}
                                                     // defaultValue={[]}
                                                     style={{ width: 600 }}

@@ -472,6 +472,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                         <Form.Item style={{marginLeft: "70px"}}>
                             {/* <div className='ml-[70px] mt-[]'> */}
                                 <Select
+                                    showSearch={true}
                                     defaultValue=""
                                     style={{ width: 250 }}
                                     onChange={(label, value) => setAddToExistingPlaylistSettings(label, value)}
