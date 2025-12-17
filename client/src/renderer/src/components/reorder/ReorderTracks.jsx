@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 
 
-function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
+function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState([])
     const {message} = App.useApp();
@@ -56,9 +56,11 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
             message.error('Error no folder is selected')
         }else{
             setIsLoading(true)
-
             setTabsDisabled(true)
             setDisableDockFunctionality(true)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(true)   
+            }    
 
             try{
                 const response = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
@@ -75,6 +77,10 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
 
             setTabsDisabled(false)
             setDisableDockFunctionality(false)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(false)   
+            }    
+
         }
     
     }
@@ -86,23 +92,20 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
        target: () => selectPlaylistsRef.current
     },
     {
-        title: 'Add to favorites',
-        description: 'Add this feature to your favorites for quick access.',
-        target: () => favoritesRef.current,
-    },
-    {
       title: 'Submit',
       description: 'Click submit to start the process',
        target: () => submitPlaylistsRef.current
     },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },    
     ]
 
     useEffect(()=>{
-            getExistingPlaylists();
-        }, [])
-
-
-
+        getExistingPlaylists();
+    }, [])
 
     return (
         <div>
@@ -114,6 +117,7 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
                         <Form.Item>
                             <div className="inline-block -ml-[55px]" ref={selectPlaylistsRef}>
                                 <Select
+                                    disabled={operationInProgress}
                                     allowClear={true}
                                     mode="multiple"
                                     defaultValue={[]}
@@ -123,17 +127,12 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
                                 />      
                                 <div className="flex  -mt-[32px] ml-[531px] -mb-[32px]" >
                                     <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                        <Button shape="circle" icon={<QuestionOutlined />} onClick={() => setOpen(true)} disabled={operationInProgress}/>
                                     </Tooltip>                                    
                                 </div>
 
                                 <div className='flex ml-[570px] inline-block ' ref={favoritesRef}>
-                                    <Button shape="circle" icon={favorites.reorderTracks ? <StarFilled /> : <StarOutlined />}  onClick={() => {
-                                        setFavorites(prev => ({
-                                        ...prev, 
-                                        ['reorderTracks'] : !prev['reorderTracks']
-                                        }))  
-                                    }}/>
+                                    <Button shape="circle" icon={favorites.reorderTracks[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('reorderTracks')}/>
                                 </div>                                                         
                             </div>
                         
@@ -141,7 +140,7 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites}){
                         <Form.Item>
                             <div className="flex justify-center">
                                 <div className="flex" ref={submitPlaylistsRef}>
-                                    <GradientSubmitButton  callbackFunction={refactor}/>                                
+                                    <GradientSubmitButton  callbackFunction={refactor} operationInProgress={operationInProgress}/>                                
                                 </div>
 
                             </div>

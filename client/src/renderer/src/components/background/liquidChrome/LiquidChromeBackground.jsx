@@ -1,8 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-
-function LiquidChromeBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function LiquidChromeBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, liquidChromeSettings} = toggleBackgroundSettings();
 
     return (
@@ -18,6 +17,7 @@ function LiquidChromeBackground({setFormData, handleFormChange, formData, backgr
                         min={liquidChromeSettings.liquidChromeFormSettings.red.min}
                         max={liquidChromeSettings.liquidChromeFormSettings.red.max}
                         step={liquidChromeSettings.liquidChromeFormSettings.red.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item> 
 
@@ -30,6 +30,7 @@ function LiquidChromeBackground({setFormData, handleFormChange, formData, backgr
                         min={liquidChromeSettings.liquidChromeFormSettings.green.min}
                         max={liquidChromeSettings.liquidChromeFormSettings.green.max}
                         step={liquidChromeSettings.liquidChromeFormSettings.green.step} 
+                        disabled={operationInProgress}
                         />                             
                     </Form.Item>   
                     
@@ -42,6 +43,7 @@ function LiquidChromeBackground({setFormData, handleFormChange, formData, backgr
                         min={liquidChromeSettings.liquidChromeFormSettings.blue.min}
                         max={liquidChromeSettings.liquidChromeFormSettings.blue.max}
                         step={liquidChromeSettings.liquidChromeFormSettings.blue.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item>                                                                    
                 </div>
@@ -55,6 +57,7 @@ function LiquidChromeBackground({setFormData, handleFormChange, formData, backgr
                         min={liquidChromeSettings.liquidChromeFormSettings.speed.min}
                         max={liquidChromeSettings.liquidChromeFormSettings.speed.max}
                         step={liquidChromeSettings.liquidChromeFormSettings.speed.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item>                                       
                 </div>
@@ -71,6 +74,7 @@ function LiquidChromeBackground({setFormData, handleFormChange, formData, backgr
                         min={liquidChromeSettings.liquidChromeFormSettings.amplitude.min}
                         max={liquidChromeSettings.liquidChromeFormSettings.amplitude.max}
                         step={liquidChromeSettings.liquidChromeFormSettings.amplitude.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item>                                       
                 </div>

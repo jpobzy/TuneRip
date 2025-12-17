@@ -14,7 +14,7 @@ import {
   StarFilled
 } from '@ant-design/icons';
 
-function EditMetaData({setTabsDisabled, favorites, setFavorites}){
+function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState({})
     const [buttonDisabled, setButtonDisabled] = useState(false)
@@ -201,12 +201,14 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                     }
                 }
                 setIsLoading(true)
-                // setDisableDockFunctionality(true)
-                // setTabsDisabled(true)
+                setDisableDockFunctionality(true)
+                setTabsDisabled(true)
+                if (currentTabKey === 'fav'){
+                    setOperationInProgress(true)   
+                }    
 
                 const response = await axios.put('http://localhost:8080/updatemetadata', {'playlistData': playlistData, newCoverArt : imgClicked})
                 if (response.status === 200){
-                    console.log(response)
                     setDir(response.data.directory)
 
                     setResultStatusCode(200)
@@ -219,6 +221,9 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                 }                  
                 setDisableDockFunctionality(false)
                 setTabsDisabled(false)
+                if (currentTabKey === 'fav'){
+                    setOperationInProgress(false)   
+                }    
             }
 
         }
@@ -226,46 +231,50 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
 
     const steps = [
         {
-        title: 'Choose a playlist to refactor',
-        description: 'Pick one or multiple playlists to reorganize their track numbers in the correct order',
-        target: () => selectPlaylistsRef.current
+            title: 'Choose a playlist to refactor',
+            description: 'Pick one or multiple playlists to reorganize their track numbers in the correct order',
+            target: () => selectPlaylistsRef.current
         },
         {
-          title: 'Update database',
-          description: "Enable this to update the music database after editing track info.",
-           target: () => toggleDatabase.current
+            title: 'Update database',
+            description: "Enable this to update the music database after editing track info.",
+            target: () => toggleDatabase.current
         },
         {
-          title: 'Update single track',
-          description: "Enable this to update a single track's metadata",
-           target: () => updateTrackRef.current
+            title: 'Update single track',
+            description: "Enable this to update a single track's metadata",
+            target: () => updateTrackRef.current
         },
         {
-          title: 'Update artist name',
-          description: "Update the artist name for all tracks in the folder.",
-           target: () => artistInput.current
+            title: 'Update artist name',
+            description: "Update the artist name for all tracks in the folder.",
+            target: () => artistInput.current
         },        
         {
-          title: 'Update album name',
-          description: "Update the album name for all tracks in the folder.",
-           target: () => albumInput.current
+            title: 'Update album name',
+            description: "Update the album name for all tracks in the folder.",
+            target: () => albumInput.current
         },
         {
-          title: 'Update genre',
-          description: "Update the genre for all tracks in the folder.",
-           target: () => genreInput.current
+            title: 'Update genre',
+            description: "Update the genre for all tracks in the folder.",
+            target: () => genreInput.current
         },
         {
-        title: 'Change cover album',
-        description: 'Change the current folders cover album to something new',
-        // target: () => submitPlaylistsRef.current
-        target: () => coverArtRef.current
+            title: 'Change cover album',
+            description: 'Change the current folders cover album to something new',
+            target: () => coverArtRef.current
         },
         {
-        title: 'Submit',
-        description: 'Click submit to start the process',
-        target: () => submitPlaylistsRef.current
+            title: 'Submit',
+            description: 'Click submit to start the process',
+            target: () => submitPlaylistsRef.current
         },
+        {
+            title: 'Add to favorites',
+            description: 'Add this feature to your favorites for quick access.',
+            target: () => favoritesRef.current,
+        },        
     ]
 
 
@@ -338,24 +347,29 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                             name="refactor"
                             >
 
-                            <Form.Item>
-                                <div className="inline-block" ref={selectPlaylistsRef}>
-                                    <Select
-                                        showSearch={true}
-                                        allowClear={true}
-                                        defaultValue={[]}
-                                        style={{ width: 500 }}
-                                        onChange={(e) => playlistChoseon(e)}
-                                        options={existingPlaylistNames}
-                                    />                               
-                                </div>
-                                <div className="ml-[20px] flex -mt-[32px] ml-[605px]">
-                                    <Tooltip title="help">
-                                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                    </Tooltip>                                           
-                                </div>
+                                <div className="-ml-[55px]">
+                                    <div className="inline-block" ref={selectPlaylistsRef}>
+                                        <Select
+                                            disabled={operationInProgress}
+                                            showSearch={true}
+                                            allowClear={true}
+                                            defaultValue={[]}
+                                            style={{ width: 450 }}
+                                            onChange={(e) => playlistChoseon(e)}
+                                            options={existingPlaylistNames}
+                                        />                               
+                                    </div>
+                                    <div className="flex -mt-[32px] ml-[608px] -mb-[32px]">
+                                        <Tooltip title="help">
+                                                <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => startTour()}/>
+                                        </Tooltip>                                           
+                                    </div>
 
-                            </Form.Item>                
+                                    <div className='flex ml-[570px] inline-block mb-[24px]' ref={favoritesRef}>
+                                        <Button shape="circle" icon={favorites.editMetaData[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('editMetaData')}/>
+                                    </div>
+                                </div>
+                                           
                             
                     
 
@@ -368,7 +382,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     name="database"
                                     >  
                                     <div className="inline-block " ref={toggleDatabase}> 
-                                        <Checkbox checked={updateDatabase} onChange={e => toggleUpdateDatabase(e)}/>
+                                        <Checkbox checked={updateDatabase} disabled={operationInProgress} onChange={e => toggleUpdateDatabase(e)}/>
                                     </div>
 
                                     </Form.Item>                                     
@@ -385,7 +399,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                         name="track"
                                         >  
                                         <div className="inline-block" ref={updateTrackRef}> 
-                                            <Checkbox checked={updateTrack} onChange={e => toggleUpdateTrack(e)}/>
+                                            <Checkbox checked={updateTrack} disabled={operationInProgress} onChange={e => toggleUpdateTrack(e)}/>
                                         </div>
 
                                         </Form.Item>                                     
@@ -399,6 +413,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                 <Form.Item>
                                     <div className="inline-block" ref={null}>
                                         <Select
+                                            disabled={operationInProgress}
                                             showSearch={true}
                                             allowClear={true}
                                             defaultValue={[]}
@@ -423,6 +438,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     >  
                                     <div className="inline-block"ref={null} >
                                         <Input 
+                                        disabled={operationInProgress}
                                         onClear={() => delete playlistData['title']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -443,6 +459,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     >  
                                     <div className="inline-block"ref={null} >
                                         <Input 
+                                        disabled={operationInProgress}
                                         type="number"
                                         onClear={() => delete playlistData['trackNumber']} 
                                         allowClear={true}
@@ -468,6 +485,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     >  
                                     <div className="inline-block"ref={artistInput} >
                                         <Input 
+                                        disabled={operationInProgress}
                                         onClear={() => delete playlistData['artist']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -488,6 +506,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     >  
                                     <div className="inline-block" ref={albumInput} >
                                         <Input
+                                        disabled={operationInProgress}
                                         onClear={() => delete playlistData['album']} 
                                         allowClear={true}
                                         style={{ width: 400 }}
@@ -508,6 +527,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                                     >  
                                     <div className="inline-block" ref={genreInput} >
                                         <Input
+                                        disabled={operationInProgress}
                                         onClear={() => delete playlistData['genre']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -519,7 +539,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
 
                             {isPlaylistChosen &&
                                 <div className="" ref={coverArtRef}>
-                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked} imagesPerPage={6}/> 
+                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked} imagesPerPage={6} operationInProgress={operationInProgress}/> 
                                 </div>
                             }
 
@@ -527,13 +547,8 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                             <Form.Item>
                                 <div className="flex justify-center">
                                     <div className="flex" ref={submitPlaylistsRef}>
-                                        <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor}/>                                
+                                        <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor} operationInProgress={operationInProgress} />                                
                                     </div>
-                                    {/* <div className="flex ml-[5px]" >
-                                        <Tooltip title="help">
-                                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
-                                        </Tooltip>                                    
-                                    </div> */}
                                 </div>
                             </Form.Item>
 
@@ -560,7 +575,6 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites}){
                 }  
             </div>
             <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
-            {/* <Button onClick={()=> {console.log(playlistData), setTabsDisabled(false)}}>cl</Button> */}
         </div>
     )
 }

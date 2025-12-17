@@ -5,7 +5,7 @@ import { App, Pagination, Button } from 'antd';
 import { resultToggle } from "../context/ResultContext";
 import CoverArtCard from "../coverArtCard/CoverArtCard";
 
-function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
+function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage, operationInProgress}){
     const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     
     const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
@@ -75,6 +75,7 @@ function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage}){
                 showSizeChanger={false}
                 defaultCurrent={1} 
                 total={pagnationPages} 
+                disabled={operationInProgress}
                 // total={50} 
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />

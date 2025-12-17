@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 
 
-export default function VideoFilter({setRefresh, setTabsDisabled, favorites, setFavorites}) {
+export default function VideoFilter({setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}) {
     const { Search } = Input;
     const [channel, setChannel] = useState('');
     const [loading, setLoading] = useState(false)
@@ -29,7 +29,6 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
     const filterSearchBarRef = useRef(null) ;
     const filterFilesRef = useRef(null);
     const favoritesRef = useRef(null);
-    const [mode, setMode] = useState(null)
 
 
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
@@ -48,23 +47,25 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
         target: () => filterSearchBarRef.current,
     },
     {
-        title: 'Add to favorites',
-        description: 'Add this feature to your favorites for quick access.',
-        target: () => favoritesRef.current,
-    },
-    {
         title: 'Filter multiple videos from downloading',
         description: 'Create a text file with multiple youtube links to be filtered, format should be one link per line in the text file',
         target: () => filterFilesRef.current,
-    }
+    },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },    
     ]
 
     async function onSearch(value) {
         if (value.includes('https://www.youtube.com/watch?v=') || value.includes('https://youtu.be/') || value.includes("https://youtube.com/watch?v=") ){
-            setMode('single')
             setLoading(true)
             setTabsDisabled(true)
             setDisableDockFunctionality(true)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(true)   
+            }    
             const response = await axios.post('http://localhost:8080/filter', { ytLink: value })
             if (response.status === 200){
                 if (response.data === 'Track has been added to the DB'){
@@ -80,7 +81,9 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
             setChannel('');
             setTabsDisabled(false)
             setDisableDockFunctionality(false)
-
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(false)   
+            }    
         } else if (value.length > 0){
             message.error(`Input ${value} is not a valid link`)
         } 
@@ -96,24 +99,25 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
         if (status === 'uploading') {
             setLoading(true)
             setTabsDisabled(true)
-            setDisableDockFunctionality(true)          
+            setDisableDockFunctionality(true)     
+            setOperationInProgress(true)     
         }
 
         if (status === 'done') {
             setResultStatusCode(200)
-            setLoading(false)
-            setShowResult(true)
-            setTabsDisabled(false)
-            setDisableDockFunctionality(false)   
             message.success(`${info.file.name} file uploaded successfully`);
         } else if (status === 'error') {
             setResultStatusCode(400)
-            setShowResult(true)
-            setLoading(false)
-            setTabsDisabled(false)
-            setDisableDockFunctionality(false)   
             message.error(`${info.file.name} file upload failed`);
         }
+
+        setShowResult(true)
+        setLoading(false)
+        setTabsDisabled(false)
+        setDisableDockFunctionality(false)   
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }            
     },
         onDrop(e) {},
         disabled: loading
@@ -165,6 +169,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                                         className="custom-search-btn"
                                         variant="solid"
                                         loading={loading}
+                                        disabled={operationInProgress}                                        
                                         >
                                         Search
                                         </Button>
@@ -173,7 +178,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                                     value={channel}
                                     onChange={(e) => setChannel(e.target.value)}
                                     onSearch={onSearch}
-                                    disabled={loading}
+                                    disabled={loading || operationInProgress}
                                     prefix={<UserOutlined />}
                                     style={{ width: 420 }}
                                     />
@@ -185,26 +190,19 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                     </div>
                     <div className='flex -ml-[40px]'>
                         <Tooltip title="help">
-                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
+                            <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress}  onClick={() => {setOpen(true)}}/>
                         </Tooltip>    
                     </div>
-
-
-                    <div className='flex ml-[5px]'>
-                            <Button shape="circle" icon={favorites.videoFilter ? <StarFilled /> : <StarOutlined />}  onClick={() => {
-                                setFavorites(prev => ({
-                                ...prev, 
-                                ['videoFilter'] : !prev['videoFilter']
-                                }))  
-                            }}/>
+                    <div className='flex ml-[5px]  inline-block' ref={favoritesRef}>
+                        <Button shape="circle" icon={favorites.videoFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('videoFilter')}/>
                     </div>
-
-
-
-
                 </div>
                 <div className='mx-auto w-[500px] mt-[20px] inline-block' ref={filterFilesRef}>
-                    <Dragger {...props}>
+                    <Dragger
+                     accept='.txt'
+                     {...props}
+                     disabled={operationInProgress}
+                     >
                         <p className="ant-upload-drag-icon">
                             <InboxOutlined />
                         </p>
@@ -227,6 +225,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                 </div>
             </>
         } 
+
         {!isLoading && showResult && 
             <>
                 <div className='bg-white rounded-xl inline-block'>

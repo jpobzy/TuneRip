@@ -17,7 +17,7 @@ export const ResultProvider = ({children}) =>{
         return (
             <>
                 {/* <div className="bg-white rounded-lg resultsContext mx-auto w-[600px]"> */}
-                <div className="resultsContext mx-auto w-[600px]">
+                <div className="resultsContext mx-auto w-[700px]">
                     <Result
                         status="success"
                         title={titleInput}

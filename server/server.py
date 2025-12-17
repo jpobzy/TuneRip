@@ -14,6 +14,7 @@ from datetime import datetime
 from app.controllers.loggingController import logController
 from app.controllers.imageSettingsController import imageSettingsController
 from app.controllers.channelCardController import channelCardController
+from app.controllers.favoritesDataController import favoritesDataController
 
 basePath = Path.home() / 'Documents' / 'TuneRip'
 
@@ -37,6 +38,7 @@ cursordata_obj = cursorData(logger)
 titleFilter_obj = titleFilterController(logger)
 imageSettings_obj = imageSettingsController(logger)
 channelCard_obj = channelCardController(logger)
+favoritesTab_obj = favoritesDataController(logger)
 
 @app.route("/")
 def hello_world():
@@ -113,7 +115,6 @@ def getDownloadCount():
 def filter():
     if request.method == 'POST':
         response, statusCode  = controller_obj.addTracksToFilter(request)
-    print(response, statusCode)
     return response, statusCode
 
 
@@ -339,6 +340,19 @@ def openDir():
 @app.post('/swap-channel-pfp')
 def swapChannelPFP():
     return jsonify(controller_obj.changeChannelPFP(request))
+
+@app.get('/getTabs')
+def getTabs():
+    return jsonify(favoritesTab_obj.getSavedTabs())
+
+
+@app.post('/addTab')
+def addTab():
+    return favoritesTab_obj.addTab(json.loads(request.data))
+
+@app.post('/removeTab')
+def removeTab():
+    return  jsonify(favoritesTab_obj.removeTab(json.loads(request.data)))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider, Spin } from 'antd';
 import { useClickToggle } from '../../context/CursorContext';
 
-function SplashCursorFormItems({}){
+function SplashCursorFormItems({operationInProgress}){
     const {reset, splashCursorSettings} = useClickToggle();
 
     return (
@@ -16,6 +16,7 @@ function SplashCursorFormItems({}){
                     min={splashCursorSettings.splashCursorFormSettings.SPLAT_RADIUS.min}
                     max={splashCursorSettings.splashCursorFormSettings.SPLAT_RADIUS.max}
                     step={splashCursorSettings.splashCursorFormSettings.SPLAT_RADIUS.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
         
@@ -28,6 +29,7 @@ function SplashCursorFormItems({}){
                     min={splashCursorSettings.splashCursorFormSettings.SPLAT_FORCE.min}
                     max={splashCursorSettings.splashCursorFormSettings.SPLAT_FORCE.max}
                     step={splashCursorSettings.splashCursorFormSettings.SPLAT_FORCE.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
             </div>        

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function IridescenceBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function IridescenceBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, iridescenceSettings} = toggleBackgroundSettings();
 
     return (
@@ -17,6 +17,7 @@ function IridescenceBackground({setFormData, handleFormChange, formData, backgro
                         min={iridescenceSettings.iridescenceFormSettings.red.min}
                         max={iridescenceSettings.iridescenceFormSettings.red.max}
                         step={iridescenceSettings.iridescenceFormSettings.red.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item> 
 
@@ -29,6 +30,7 @@ function IridescenceBackground({setFormData, handleFormChange, formData, backgro
                         min={iridescenceSettings.iridescenceFormSettings.green.min}
                         max={iridescenceSettings.iridescenceFormSettings.green.max}
                         step={iridescenceSettings.iridescenceFormSettings.green.step} 
+                        disabled={operationInProgress}
                         />                             
                     </Form.Item>   
                     
@@ -41,6 +43,7 @@ function IridescenceBackground({setFormData, handleFormChange, formData, backgro
                         min={iridescenceSettings.iridescenceFormSettings.blue.min}
                         max={iridescenceSettings.iridescenceFormSettings.blue.max}
                         step={iridescenceSettings.iridescenceFormSettings.blue.step} 
+                        disabled={operationInProgress}
                         />
                     </Form.Item>                                                                    
                 </div>
@@ -54,6 +57,7 @@ function IridescenceBackground({setFormData, handleFormChange, formData, backgro
                     min={iridescenceSettings.iridescenceFormSettings.speed.min}
                     max={iridescenceSettings.iridescenceFormSettings.speed.max}
                     step={iridescenceSettings.iridescenceFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                                       
             </div>

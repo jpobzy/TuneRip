@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function LetterGlitchBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function LetterGlitchBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, letterGlitchSettings} = toggleBackgroundSettings();
 
     return (
@@ -16,6 +16,7 @@ function LetterGlitchBackground({setFormData, handleFormChange, formData, backgr
                     min={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.min}
                     max={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.max}
                     step={letterGlitchSettings.letterGlitchFormSettings.glitchSpeed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -28,6 +29,7 @@ function LetterGlitchBackground({setFormData, handleFormChange, formData, backgr
                     >   
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['glitchColor1']
@@ -48,6 +50,7 @@ function LetterGlitchBackground({setFormData, handleFormChange, formData, backgr
                     >
                         <ColorPicker
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['glitchColor2']
@@ -68,6 +71,7 @@ function LetterGlitchBackground({setFormData, handleFormChange, formData, backgr
                     >
                         <ColorPicker
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['glitchColor3']

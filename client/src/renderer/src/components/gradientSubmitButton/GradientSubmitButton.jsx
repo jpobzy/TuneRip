@@ -26,7 +26,7 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
     }
   `,
 }));
-const GradientSubmitButton = ({callbackFunction, buttonDisabled}) => {
+const GradientSubmitButton = ({callbackFunction, buttonDisabled, operationInProgress}) => {
   const { styles } = useStyle();
   return (
     <div className='inline-block'>
@@ -36,7 +36,7 @@ const GradientSubmitButton = ({callbackFunction, buttonDisabled}) => {
         }}
       >
         <Space>
-          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />}  onClick={() => callbackFunction()}>
+          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />} disabled={operationInProgress} onClick={() => callbackFunction()}>
             Submit
           </Button>
 

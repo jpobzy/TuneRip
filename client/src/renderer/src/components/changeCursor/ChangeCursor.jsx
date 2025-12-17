@@ -1,13 +1,17 @@
 import { Button, Select, Form, ConfigProvider} from "antd";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useClickToggle } from "components/context/CursorContext";
 import SplashCursorFormItems from "components/cursor/splashCursor/SplashCursorFormItems";
 import ClickSparkFormItems from "components/cursor/clickSpark/ClickSparkFormItems";
 import axios from "axios";
 import { useToggle } from "../context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
+import { App } from 'antd';
 
-
-function SelectCursor({setTabsDisabled}){
+function ChangeCursor({setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [cursor, setCursor] = useState('');
     const [cursorForm] = Form.useForm();
     const {splashCursorSettings, clickSparkSettings, setClickState, clickState, disableClickState, resetCursorSettings} = useClickToggle();
@@ -15,6 +19,9 @@ function SelectCursor({setTabsDisabled}){
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
     const {setDisableDockFunctionality} = useToggle()
 
+    const favoritesRef = useRef(null);
+    const { message } = App.useApp();
+    
     const cursorOptions = [
         { value: 'splashCursor', label: 'Splash Cursor' },
         { value: 'clickSpark', label: 'Click Spark' },
@@ -24,9 +31,15 @@ function SelectCursor({setTabsDisabled}){
         setCursor(e)
     }
     
-    const disableCurrentCursor = () => {
+    const disableCurrentCursor = async () => {
         setClickState('')
-        axios.post('http://localhost:8080/disablecurrentcursor')
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
+        const req = await axios.post('http://localhost:8080/disablecurrentcursor')
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
     }
 
 
@@ -60,9 +73,17 @@ function SelectCursor({setTabsDisabled}){
         setClickState(cursor)
         setDisableDockFunctionality(true)
         setTabsDisabled(true)
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }            
+
         await axios.post('http://localhost:8080/savecursorsettings', formData, {params : {'cursor' : cursor}})
+
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }            
     }
 
 
@@ -75,19 +96,22 @@ function SelectCursor({setTabsDisabled}){
 
 
 
-
-    
-
-
     return (
         <>
-            <div className="-mt-[20px]">
-                <Select
+            <div className={currentTabKey === 'changeCursor' ? "-mt-[20px]" : ''}>
+                <div>
+                    <Select
                     defaultValue=""
                     style={{ width: 220 }}
                     onChange={(e) => changeCursor(e)}
                     options={cursorOptions}
-                    />
+                    disabled={operationInProgress}
+                    />  
+                    <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
+                        <Button shape="circle" icon={favorites.changeCursor[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('changeCursor')}/>
+                    </div>  
+                </div>
+
                     <ConfigProvider
                     theme={{
                         components: {
@@ -107,10 +131,10 @@ function SelectCursor({setTabsDisabled}){
                         onValuesChange={(e)=>handleFormChange(e)}
                         >
                             {cursor === 'splashCursor' &&
-                                <SplashCursorFormItems />
+                                <SplashCursorFormItems operationInProgress={operationInProgress}/>
                             } 
                             {cursor === 'clickSpark' && 
-                                <ClickSparkFormItems handleFormChange={handleFormChange}/>
+                                <ClickSparkFormItems handleFormChange={handleFormChange} operationInProgress={operationInProgress}/>
                             }
                             {cursor &&
                                 <Form.Item>
@@ -118,8 +142,8 @@ function SelectCursor({setTabsDisabled}){
                                         ? <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
                                         : <>
                                             
-                                            <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
-                                            <Button type="primary" onClick={()=>reset()}>Reset</Button>
+                                            <Button type="primary" disabled={operationInProgress} onClick={()=>saveChanges()}>Save</Button>
+                                            <Button type="primary" disabled={operationInProgress} onClick={()=>reset()}>Reset</Button>
                                             
                                             {/* { selectChosen == background &&
                                             <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
@@ -135,7 +159,7 @@ function SelectCursor({setTabsDisabled}){
 
                 {clickState !== '' && 
                     <div className="mt-[20px]">
-                        <Button type="primary" onClick={()=> disableCurrentCursor()}>Disable current cursor</Button>
+                        <Button type="primary" disabled={operationInProgress} onClick={()=> disableCurrentCursor()}>Disable current cursor</Button>
                     </div>
                 }
             </div>
@@ -143,4 +167,4 @@ function SelectCursor({setTabsDisabled}){
     )
 }
 
-export default SelectCursor;
+export default ChangeCursor;

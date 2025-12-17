@@ -1,21 +1,23 @@
 import React, { useRef } from 'react';
-import { Space, Table, Popconfirm, Tooltip } from 'antd';
+import { Space, Table, Popconfirm, Tooltip, Checkbox } from 'antd';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Input, ConfigProvider, Button, Flex, Tour } from 'antd';
+import { Input, ConfigProvider, Button, Flex, Tour, Menu } from 'antd';
 import { App } from 'antd';
 import './table.css'
 import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from '../context/UseContext';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import {
   StarTwoTone,
   StarOutlined,
-  StarFilled
+  StarFilled,
+  MailOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 
-function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites}){
+function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
   const [channels, setChannels] = useState([]) // for channel filter
   const [records, setRecords] = useState() // format: {1: [records]}
   const { message } = App.useApp();
@@ -61,12 +63,6 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
       target: () => deleteSelectedButtonRef.current,
     },
     {
-      title: 'Add to favorites',
-      description: 'Add this feature to your favorites for quick access.',
-      target: () => favoritesRef.current,
-    },
-
-    {
       title: 'Filter',
       description: 'Use the filter button to help with sorting for specific records',
        target: () => document.querySelector('.channel-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
@@ -76,13 +72,20 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
       description: "Search for a specific phrase to edit or delete",    
       target: () => document.querySelector('.track-filter-column .ant-dropdown-trigger.ant-table-filter-trigger')
     },
-
+    {
+      title: 'Add to favorites',
+      description: 'Add this feature to your favorites for quick access.',
+      target: () => favoritesRef.current,
+    },
   ] 
 
 
 
   const deleteSelected = async() => {
     setLoading(true)
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(true)   
+    }    
     if (recordsToDelete.length === 0){
       message.info('No tracks was were selected');
     }else{
@@ -106,6 +109,9 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
       setTabsDisabled(false)  
       setSelectedRowKeys([])
     }
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(false)   
+    }    
     setLoading(false)
   }
 
@@ -114,6 +120,9 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
     setLoading(true)
     setDisableDockFunctionality(true)
     setTabsDisabled(true)
+    if (currentTabKey === 'fav'){
+      setOperationInProgress(true)   
+    }    
     const req = await axios.delete('http://localhost:8080/deleteRecord', {data: {'link': record.link}})
     if (req.status === 204){
       message.info('No track was found');
@@ -124,6 +133,9 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
     setLoading(false)
     setDisableDockFunctionality(false)
     setTabsDisabled(false)  
+    if (currentTabKey === 'fav'){
+      setOperationInProgress(false)   
+    }
   };
 
   const cancel = () => {
@@ -174,6 +186,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: 'block' }}
+          disabled={operationInProgress}
         />
         <Space>
           <div className='inline-block' ref={null}>
@@ -183,6 +196,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
               icon={<SearchOutlined />}
               size="small"
               style={{ width: 90 }}
+              disabled={operationInProgress}
             >
               Search
             </Button>
@@ -191,6 +205,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
             onClick={() => clearFilters && handleReset(clearFilters, close, confirm)}
             size="small"
             style={{ width: 90 }}
+            disabled={operationInProgress}
           >
             Reset
           </Button>
@@ -224,21 +239,16 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
 
 
 
-
-
-
-
-
-
   const cols = [
   {
     title: 'Channel',
     dataIndex: 'channel',
     key: 'channel',
     fixed: 'left',
-    filters: channels,
+    // filters: channels,
+    filters : operationInProgress === false ? channels : null,
     className: 'channel-filter-column',
-    onFilter: filterItems
+    onFilter: filterItems,
   },
   {
     title: 'Track title',
@@ -251,7 +261,8 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
     title: 'Album Title',
     dataIndex: 'albumTitle',
     key: 'albumTitle',
-    filters: filter(),
+    // filters: filter(),
+    filters : operationInProgress === false ? filter() : null,
     onFilter: (value, record) => record.albumTitle.includes(value)
   },
   {
@@ -293,6 +304,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
       <div >
         <Space size="middle">
           <Popconfirm
+            disabled={operationInProgress}
             title="Delete the record"
             description="Are you sure to delete this record?"
             onConfirm={() => confirm(record)}
@@ -321,7 +333,6 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
   }
 
   async function getRecords(){
-    // setRecords(null);
     const res = await axios.get('http://localhost:8080/getData',{
       params: {'page': 1, 'limit': 100}
     });
@@ -360,6 +371,11 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
+    getCheckboxProps: record => ({
+    // disabled: true, // Column configuration not to be checked
+    disabled : operationInProgress,
+    name: record.name,
+  }),
   };
 
 
@@ -377,44 +393,38 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
               okText="Yes"
               cancelText="No"
               >
-              <Button type="primary">
+              <Button disabled={operationInProgress} type="primary">
                   Delete selected
                 </Button>    
               </Popconfirm>
             </div>  
-              <div className="flex ml-[5px]" >
+              <div className="flex ml-[5px] " >
                   <Tooltip title="help">
-                      <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                      <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
                   </Tooltip>                                    
               </div>    
-              <div className='flex ml-[5px]'>
-                      <Button shape="circle" icon={favorites.trackDatabase ? <StarFilled /> : <StarOutlined />}  onClick={() => {
-                          setFavorites(prev => ({
-                          ...prev, 
-                          ['trackDatabase'] : !prev['trackDatabase']
-                          }))  
-                      }}/>
+              <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
+                <Button shape="circle" icon={favorites.trackTable[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('trackTable')}/>
               </div>
-
           </div>
-          </div>
-          <div className='inline-block'>
-            <div className='mx-auto ml-[50px] w-[800px]'>
-                  <div ref={tableRef} >
-                    <Table 
-                        onChange={(pagination, filters, sorter, extra) => {
-                          handleFilters(filters.channel, filters.albumTitle)           
-                        }}
-                      selectedRowKeys={test}
-                      rowSelection={rowSelection}
-                      loading={isLoading}
-                      columns={cols} 
-                      dataSource={records} 
-                      scroll={{ x: 'max-content' }}  
-                      />;            
-                  </div>
+        </div>
+        <div className=''>
+          <div className='mx-auto ml-[50px] w-[800px]'>
+                <div ref={tableRef} >
+                  <Table 
+                      onChange={(pagination, filters, sorter, extra) => {
+                        handleFilters(filters.channel, filters.albumTitle)           
+                      }}
+                    selectedRowKeys={test}
+                    rowSelection={rowSelection}
+                    loading={isLoading}
+                    columns={cols} 
+                    dataSource={records} 
+                    scroll={{ x: 'max-content' }}  
+                    />;            
                 </div>
-          </div>
+              </div>
+        </div>
       </div>
       <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
     </div>

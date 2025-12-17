@@ -1,14 +1,19 @@
 import axios from 'axios';
-import React from 'react'
-import { Button, Checkbox, Form, Input, ColorPicker, ConfigProvider, Slider, Radio} from "antd";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from 'react';
+import { Button, Checkbox, Form, Tour, ColorPicker, ConfigProvider, Slider, Radio, Tooltip, App} from "antd";
 import ElectricBorder from '../electricBorder/ElectricBorder';
 import electron from 'assets/electron.svg'
-import { hover } from 'framer-motion';
 import { Color } from '@rc-component/color-picker';
 import { useToggle } from '../context/UseContext';
 
-export default function ChannelCardEditor({setTabsDisabled}) {
+import {
+  StarOutlined,
+  StarFilled,
+  QuestionOutlined
+} from '@ant-design/icons';
+
+
+export default function EditChannelCard({setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}) {
     // makes changes using post req, not a fan of this method but i dont want to add another usecontext just for 1 thing 
     const [channelCardForm] = Form.useForm();
     const [electricBorderSettings, setElectricBorderSettings] = useState(null)
@@ -18,10 +23,41 @@ export default function ChannelCardEditor({setTabsDisabled}) {
     const [mode, setMode] = useState('electricBorder')
     const [hover, setHover] = useState(false);
     const {setDisableDockFunctionality} = useToggle()
+    const favoritesRef = useRef(null);
+    const electricBorderButtonRef = useRef(null);
+    const radioRef = useRef(null);
+    const { message } = App.useApp();
 
+
+
+    const [open, setOpen] = useState(false); 
+    const steps = [
+        {
+            title: 'Edit all YouTube channel cards',
+            description: 'Customize each channel card’s background and appearance',
+            target: () => null,
+        },
+        {
+            title: 'Add an electric border',
+            description: 'Apply an electric border to each card and adjust its settings',
+            target: () => radioRef.current,
+        },
+        {
+            title: 'Customize card colors',
+            description: 'Modify text, background, border, and other color options for all channel cards',
+            target: () => radioRef.current,
+        },
+        {
+            title: 'Add to favorites',
+            description: 'Add this feature to your favorites for quick access.',
+            target: () => favoritesRef.current,
+        },        
+    ];
+
+    // { label: 'Electric Border', value: 'electricBorder', ref:  },
     const options = [
-    { label: 'Electric Border', value: 'electricBorder' },
-    { label: 'Card', value: 'card' },
+    { label: 'Electric Border', value: 'electricBorder'},
+    { label: 'Card', value: 'card'},
     ];
 
 
@@ -65,6 +101,9 @@ export default function ChannelCardEditor({setTabsDisabled}) {
     async function saveChanges(){
         setDisableDockFunctionality(true)
         setTabsDisabled(true)
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
 
         const req = await axios.post('http://localhost:8080/save-channel-card-settings', formData)
         if (req.status === 200){
@@ -73,6 +112,9 @@ export default function ChannelCardEditor({setTabsDisabled}) {
 
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
 
     }
 
@@ -143,11 +185,21 @@ export default function ChannelCardEditor({setTabsDisabled}) {
 
     return (
         <>
-            <div className='-mt-[60px] '>
+            <div className={currentTabKey === 'editChannelCard' ? "-mt-[40px]" : ''}>
                 {electricBorderSettings && 
                 <>
-                    <div className='text-white text-[30px] mx-auto '>
+                    <div className='text-white text-[30px] mx-auto -mb-[35px]'>
                         Preview
+                    </div>
+
+                    <div className='flex ml-[410px] -mb-[32px]'>
+                        <Tooltip title="help">
+                            <Button shape="circle" disabled={operationInProgress} icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
+                        </Tooltip>    
+                    </div>
+
+                    <div className='flex ml-[230px] mb-[10px] inline-block' ref={favoritesRef}>
+                        <Button shape="circle" icon={favorites.editChannelCard[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('editChannelCard')}/>
                     </div>
 
                     <div className='mt-[5px] w-[240px] mx-auto  '
@@ -194,8 +246,8 @@ export default function ChannelCardEditor({setTabsDisabled}) {
 
                    
                     <div className='mt-[40px]  mb-[30px]'>
-                        <div className='flex justify-center mb-[10px]'>
-                           <Radio.Group block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>changeModes(e.target.value)}/> 
+                        <div className='flex justify-center mb-[10px] inline-block' ref={radioRef}>
+                           <Radio.Group disabled={operationInProgress} block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>changeModes(e.target.value)}/> 
                         </div>
                         
                         <ConfigProvider
@@ -226,6 +278,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                             <Form.Item style={{marginBottom : "5px"}}
                                             >
                                                 <Checkbox
+                                                    disabled={operationInProgress}
                                                     checked={electricBorderEnabled}
                                                     onChange={(e)=>toggleCheckbox(e)}
                                                 >
@@ -241,7 +294,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 initialValue={electricBorderSettings.color}
                                                 >
                                                     <ColorPicker 
-                                                        
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({color : c.toHexString()});   
                                                         }}
@@ -259,6 +312,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 min={0.1}
                                                 max={3}
                                                 step={0.1} 
+                                                disabled={operationInProgress}
                                                 />
                                             </Form.Item>         
 
@@ -271,6 +325,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 min={0.1}
                                                 max={1}
                                                 step={0.1} 
+                                                disabled={operationInProgress}
                                                 />
                                             </Form.Item>    
 
@@ -283,6 +338,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 min={1}
                                                 max={5}
                                                 step={1} 
+                                                disabled={operationInProgress}
                                                 />
                                             </Form.Item>    
                                         </>
@@ -297,6 +353,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 initialValue={cardSettings.backgroundColor}
                                                 >
                                                     <ColorPicker 
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({backgroundColor : c.toHexString()});   
                                                         }}
@@ -313,7 +370,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 initialValue={cardSettings.textColor}
                                                 >
                                                     <ColorPicker 
-                                                        
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({textColor : c.toHexString()});   
                                                         }}
@@ -330,6 +387,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 initialValue={cardSettings.hoverBackgroundColor}
                                                 >
                                                     <ColorPicker 
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({hoverBackgroundColor : c.toHexString()});   
                                                         }}
@@ -346,7 +404,7 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 initialValue={cardSettings.hoverBoxShadowColor}
                                                 >
                                                     <ColorPicker 
-                                                        
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({hoverBoxShadowColor : c.toHexString()});   
                                                         }}
@@ -360,7 +418,8 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                                 label="Border Color" 
                                                 initialValue={cardSettings.borderColor}
                                                 >
-                                                    <ColorPicker 
+                                                    <ColorPicker
+                                                        disabled={operationInProgress}
                                                         onChange={c => {
                                                             handleFormChange({borderColor : c.toHexString()});   
                                                         }}
@@ -373,12 +432,12 @@ export default function ChannelCardEditor({setTabsDisabled}) {
                                 </Form>
                             </div>    
                         </ConfigProvider>
-                        <Button onClick={()=> saveChanges()} >Save</Button>                    
-                        <Button onClick={()=> reset()} >Reset</Button>
+                        <Button disabled={operationInProgress} onClick={()=> saveChanges()} >Save</Button>                    
+                        <Button disabled={operationInProgress} onClick={()=> reset()} >Reset</Button>
                     </div>      
                 </>
                 }
-                
+                <Tour disabled={true} disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
             </div>    
         </>
 

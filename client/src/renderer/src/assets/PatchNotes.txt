@@ -1,7 +1,12 @@
 Version 1.2.5 Patch Notes
 - Fixed a bug where trying to reoreder multiple folders would only reorder the first folder
 - Added new Floating Lines background
-
+- Fixed a bug where trim button would stay disabled when trying to make an audio trim of with no changes to the original audio file
+- Renamed foldermerge on backend to MergeFolders for more consistency
+- Renamed selectBackground on backend to ChangeBackground for more consistency
+- Added small tour to edit channel card setting
+- Fixed video filter allowing any file type, now will only accept .txt 
+- Added favorites feature
 ------------------------------------------------------------------------------
 
 

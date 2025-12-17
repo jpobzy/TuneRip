@@ -2,7 +2,7 @@ import { Button, ColorPicker, Flex, Form, Radio, Slider, InputNumber, Space } fr
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
 
-function FloatingLinesBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function FloatingLinesBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, floatingLinesSettings} = toggleBackgroundSettings();
     return (
         <>
@@ -17,6 +17,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.lineCount.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.lineCount.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.lineCount.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -29,6 +30,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                 min={floatingLinesSettings.FloatingLinesFormSettings.lineCount.min}
                 max={floatingLinesSettings.FloatingLinesFormSettings.lineCount.max}
                 step={floatingLinesSettings.FloatingLinesFormSettings.lineCount.step} 
+                disabled={operationInProgress}
                 />     
                 </Form.Item> 
 
@@ -42,6 +44,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.lineCount.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.lineCount.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.lineCount.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -55,6 +58,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -68,6 +72,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -79,6 +84,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.lineDistance.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -91,6 +97,7 @@ function FloatingLinesBackground({setFormData, handleFormChange, formData, backg
                     min={floatingLinesSettings.FloatingLinesFormSettings.animationSpeed.min}
                     max={floatingLinesSettings.FloatingLinesFormSettings.animationSpeed.max}
                     step={floatingLinesSettings.FloatingLinesFormSettings.animationSpeed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
             </div>             

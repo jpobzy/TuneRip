@@ -9,32 +9,19 @@ import History from 'components/history/History'
 import { useRef, } from 'react'
 import Settings from 'components/Settings'
 import { useToggle } from 'components/context/UseContext';
-// import { TourProvider } from 'components/context/SettingsTourContext';
 import { HomeProvider } from 'components/context/HomeContext';
 import PatchNotes from './components/patchNotes/PatchNotes';
-import PatchNotesFile from 'assets/patchNotes.txt';
-import { Button } from 'antd';
 
 
 function MainApp() {
   const ipcHandle = () => window.electron.ipcRenderer.send('ping')
   
-  const [page, setPage] = useState("Settings");
+  const [page, setPage] = useState("Home");
   const ref = useRef(null);
   const [collapseActiveKey, setCollapseActiveKey] = useState(['0']) //0 for closed, 1 for open, must be str
   const {showDock, disableDockFunctionality} = useToggle()
   
   
-  const [text, setText] = useState();
-  const test = async() => {
-    
-    fetch(PatchNotesFile)
-      .then((response) => response.text())
-      .then((textContent) => {
-        setText(textContent);
-        console.log(textContent)
-      });
-  }
 
   const handleHomeClicked = () => {
     if (disableDockFunctionality){
@@ -84,9 +71,7 @@ function MainApp() {
 
             {page === 'History' && <History />}
             {page === 'Settings' && 
-              // <TourProvider>
-                <Settings/> 
-              // </TourProvider>
+              <Settings/> 
             }
           </div>
           

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function LightningBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function LightningBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, lightningSettings} = toggleBackgroundSettings();
 
 
@@ -18,6 +18,7 @@ function LightningBackground({setFormData, handleFormChange, formData, backgroun
                     min={lightningSettings.lightningFormSettings.hue.min}
                     max={lightningSettings.lightningFormSettings.hue.max}
                     step={lightningSettings.lightningFormSettings.hue.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -31,6 +32,7 @@ function LightningBackground({setFormData, handleFormChange, formData, backgroun
                     min={lightningSettings.lightningFormSettings.xOffset.min}
                     max={lightningSettings.lightningFormSettings.xOffset.max}
                     step={lightningSettings.lightningFormSettings.xOffset.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -45,6 +47,7 @@ function LightningBackground({setFormData, handleFormChange, formData, backgroun
                     min={lightningSettings.lightningFormSettings.speed.min}
                     max={lightningSettings.lightningFormSettings.speed.max}
                     step={lightningSettings.lightningFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -58,6 +61,7 @@ function LightningBackground({setFormData, handleFormChange, formData, backgroun
                     min={lightningSettings.lightningFormSettings.intensity.min}
                     max={lightningSettings.lightningFormSettings.intensity.max}
                     step={lightningSettings.lightningFormSettings.intensity.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -71,6 +75,7 @@ function LightningBackground({setFormData, handleFormChange, formData, backgroun
                     min={lightningSettings.lightningFormSettings.size.min}
                     max={lightningSettings.lightningFormSettings.size.max}
                     step={lightningSettings.lightningFormSettings.size.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 

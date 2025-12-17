@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function WavesBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function WavesBackground({setFormData, handleFormChange, formData, operationInProgress}){
     const {reset, wavesSettings} = toggleBackgroundSettings();
 
     return (
@@ -16,6 +16,7 @@ function WavesBackground({setFormData, handleFormChange, formData, backgroundFor
                     min={wavesSettings.wavesFormSettings.waveSpeedX.min}
                     max={wavesSettings.wavesFormSettings.waveSpeedX.max}
                     step={wavesSettings.wavesFormSettings.waveSpeedX.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
         
@@ -29,6 +30,7 @@ function WavesBackground({setFormData, handleFormChange, formData, backgroundFor
                     >   
                             <ColorPicker 
                             allowClear
+                            disabled={operationInProgress}
                             onChange={c => {
                                 if (c.cleared){
                                     delete formData['wavesColor']
