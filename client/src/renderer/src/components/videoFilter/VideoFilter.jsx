@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 
 
-export default function VideoFilter({setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}) {
+export default function VideoFilter({setRefresh, setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}) {
     const { Search } = Input;
     const [channel, setChannel] = useState('');
     const [loading, setLoading] = useState(false)
@@ -38,7 +38,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
 
     const {setDisableDockFunctionality} = useToggle()
 
-
+    const [tabSaving, setIsTabSaving] = useState(false)
 
     const steps = [   
     {
@@ -128,7 +128,13 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
         setShowResult(false)
     }
 
-  return (
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('videoFilter')
+        setIsTabSaving(false)
+    }
+
+    return (
     <div>
         {!isLoading && !showResult &&
             <div >
@@ -169,7 +175,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                                         className="custom-search-btn"
                                         variant="solid"
                                         loading={loading}
-                                        disabled={operationInProgress}                                        
+                                        disabled={operationInProgress  ||  tabSaving}                                        
                                         >
                                         Search
                                         </Button>
@@ -178,7 +184,7 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                                     value={channel}
                                     onChange={(e) => setChannel(e.target.value)}
                                     onSearch={onSearch}
-                                    disabled={loading || operationInProgress}
+                                    disabled={loading || operationInProgress ||  tabSaving}
                                     prefix={<UserOutlined />}
                                     style={{ width: 420 }}
                                     />
@@ -194,14 +200,14 @@ export default function VideoFilter({setRefresh, setTabsDisabled, favorites, set
                         </Tooltip>    
                     </div>
                     <div className='flex ml-[5px]  inline-block' ref={favoritesRef}>
-                        <Button shape="circle" icon={favorites.videoFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('videoFilter')}/>
+                        <Button shape="circle" loading={tabSaving} icon={favorites.videoFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleTabSaving()}/>
                     </div>
                 </div>
                 <div className='mx-auto w-[500px] mt-[20px] inline-block' ref={filterFilesRef}>
                     <Dragger
                      accept='.txt'
                      {...props}
-                     disabled={operationInProgress}
+                     disabled={operationInProgress || tabSaving}
                      >
                         <p className="ant-upload-drag-icon">
                             <InboxOutlined />

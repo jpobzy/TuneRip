@@ -94,6 +94,13 @@ function ChangeCursor({setTabsDisabled, favorites, operationInProgress, setOpera
         }))         
     }
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('changeCursor')
+        setIsTabSaving(false)
+    }
 
 
     return (
@@ -105,10 +112,10 @@ function ChangeCursor({setTabsDisabled, favorites, operationInProgress, setOpera
                     style={{ width: 220 }}
                     onChange={(e) => changeCursor(e)}
                     options={cursorOptions}
-                    disabled={operationInProgress}
+                    disabled={operationInProgress || tabSaving}
                     />  
                     <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
-                        <Button shape="circle" icon={favorites.changeCursor[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('changeCursor')}/>
+                        <Button shape="circle" icon={favorites.changeCursor[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>
                     </div>  
                 </div>
 
@@ -142,8 +149,8 @@ function ChangeCursor({setTabsDisabled, favorites, operationInProgress, setOpera
                                         ? <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
                                         : <>
                                             
-                                            <Button type="primary" disabled={operationInProgress} onClick={()=>saveChanges()}>Save</Button>
-                                            <Button type="primary" disabled={operationInProgress} onClick={()=>reset()}>Reset</Button>
+                                            <Button type="primary" disabled={operationInProgress || tabSaving} onClick={()=>saveChanges()}>Save</Button>
+                                            <Button type="primary" disabled={operationInProgress || tabSaving} onClick={()=>reset()}>Reset</Button>
                                             
                                             {/* { selectChosen == background &&
                                             <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
@@ -159,7 +166,7 @@ function ChangeCursor({setTabsDisabled, favorites, operationInProgress, setOpera
 
                 {clickState !== '' && 
                     <div className="mt-[20px]">
-                        <Button type="primary" disabled={operationInProgress} onClick={()=> disableCurrentCursor()}>Disable current cursor</Button>
+                        <Button type="primary" disabled={operationInProgress || tabSaving} onClick={()=> disableCurrentCursor()}>Disable current cursor</Button>
                     </div>
                 }
             </div>

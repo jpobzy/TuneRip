@@ -491,6 +491,14 @@ function ChangeBackground({setTabsDisabled, favorites, operationInProgress, setO
         }
     }, [operationInProgress])
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('changeBackground')
+        setIsTabSaving(false)
+    }
+
     return (
         <>
             {/* <div className="-mt-[30px]"> */}
@@ -503,10 +511,10 @@ function ChangeBackground({setTabsDisabled, favorites, operationInProgress, setO
                         value={selectChosen}
                         onChange={(e) => changeBackground(e)}
                         options={backgroundOptions}
-                        disabled={operationInProgress}
+                        disabled={operationInProgress || tabSaving}
                     />     
                     <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
-                        <Button shape="circle" icon={favorites.changeBackground[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('changeBackground')}/>
+                        <Button shape="circle" icon={favorites.changeBackground[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>
                     </div>
                 </div>
 
@@ -580,11 +588,11 @@ function ChangeBackground({setTabsDisabled, favorites, operationInProgress, setO
                             {selectChosen &&
                                 <Form.Item>
                                     {selectedHasPrevData  
-                                        ? <Button type="primary" disabled={operationInProgress} onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
+                                        ? <Button type="primary" disabled={operationInProgress || tabSaving} onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
                                         : <>
-                                            <Button type="primary" disabled={operationInProgress}  onClick={()=>saveChanges()}>Save</Button>
+                                            <Button type="primary" disabled={operationInProgress || tabSaving}  onClick={()=>saveChanges()}>Save</Button>
                                             { selectChosen == background &&
-                                            <Button type="primary" disabled={operationInProgress}  onClick={()=>handleDefaultSettings()}>Revert to default</Button>
+                                            <Button type="primary" disabled={operationInProgress || tabSaving}  onClick={()=>handleDefaultSettings()}>Revert to default</Button>
                                             }
                                         </>
                                     }

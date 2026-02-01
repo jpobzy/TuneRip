@@ -29,7 +29,10 @@ function MainApp() {
     }
     setPage('Home')
     if (ref.current){
+      console.log('curr ref')
       ref.current.resetAll();
+    }else{
+      console.log('ref:  ', ref)
     }
     setCollapseActiveKey(['0'])
   }

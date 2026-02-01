@@ -11,7 +11,7 @@ import axios from 'axios'
 import { App } from 'antd';
 import { useHomeContext } from '../context/HomeContext';
 
-function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setGallerySettings, coverArtFileNames, setShowPagnation, imagesPerPage}){
+function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, setskipDownload, setPrevPlaylistArt, setGallerySettings, coverArtFileNames, coverArtData, imagesPerPage}){
     const [componentDisabled, setComponentDisabled] = useState(true);
     const [createSubfolder, setCreateSubfolder] = useState(false)
     const [skipBeatsAndInstrumentals, setSkipBeatsAndInstrumentals] = useState(true)
@@ -19,7 +19,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [useTrackFilter, setUseTrackFilter] = useState(true)
     const newFeatureText = <span>All track titles will remove any text thats in the filter titles table in settings</span>;
-    const [usePrevData, setUsePrevData] = useState(false) // disabled/enables artist/genre/album title inputs
+    const [usePrevData, setUsePrevData] = useState(true) // disabled/enables artist/genre/album title inputs
     
     const { message, notification } = App.useApp();	
     const [form] = Form.useForm();
@@ -37,6 +37,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             }else if (downloadType === 'playlist'){
                 setDownloadSettings({"skipBeatsAndInstrumentals" : true, 'useTrackFilter' : true})
                 setskipDownload(false)
+            // }else if (downloadType === 'textFile'){
 
             } else{
 
@@ -52,8 +53,9 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setGallerySettings(prev => {
             return {
                 ...prev, 
-                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
-                showPagination : true, currentPaginationPage : 1
+                currentImagesShown: prev.allImages.slice(0, imagesPerPage),
+                showPagination : true, 
+                currentPaginationPage : 1
             }})
 
             if (requestedPrevPlaylistData){
@@ -71,6 +73,17 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setUsePrevData(false)
         }
     }
+
+
+
+
+
+
+
+
+
+
+
 
     const setSkip = (e) => {
         setskipDownload(e.target.checked)
@@ -169,7 +182,7 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 console.log(2)
                 return {
                     ...prev, 
-                    currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
+                    currentImagesShown: prev.allImages.slice(0, imagesPerPage),
                     showPagination : true, currentPaginationPage : 1
                 }
             })
@@ -274,8 +287,9 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 }else{
                     return {
                             ...prev, 
-                            currentImagesShown: prev.imagesToNotShow && downloadType !== 'track' ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
-                            showPagination : true, currentPaginationPage : 1,
+                            currentImagesShown: prev.allImages.slice(0, imagesPerPage),
+                            showPagination : true, 
+                            currentPaginationPage : 1,
                         }                    
                 }
             })
@@ -315,8 +329,9 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
             setGallerySettings(prev => {
             return {
                 ...prev, 
-                currentImagesShown: prev.imagesToNotShow ? prev.imagesToNotShow.slice(0, imagesPerPage) : coverArtFileNames.slice(0, imagesPerPage), 
-                showPagination : true, currentPaginationPage : 1
+                currentImagesShown: prev.allImages.slice(0, imagesPerPage),
+                showPagination : true, 
+                currentPaginationPage : 1
             }})
             setUsePrevData(false)
             return
@@ -591,8 +606,8 @@ function DownloadSettingsForm({downloadType, setDownloadSettings, skipDownload, 
                 wrapperCol={{ span: 15}}
                 label="Album Title"
                 name="album"
-                
-                >
+            >
+
             <Input 
                 disabled={usePrevData}
                 placeholder='Default: YouTube Album Prod <YT channel>' 

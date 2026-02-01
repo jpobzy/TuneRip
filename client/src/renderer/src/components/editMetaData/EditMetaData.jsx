@@ -14,7 +14,7 @@ import {
   StarFilled
 } from '@ant-design/icons';
 
-function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
+function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState({})
     const [buttonDisabled, setButtonDisabled] = useState(false)
@@ -324,6 +324,15 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
         })
     }
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('editMetaData')
+        setIsTabSaving(false)
+    }
+
     useEffect(()=>{
             getExistingPlaylists();
     }, [])
@@ -350,7 +359,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                 <div className="-ml-[55px]">
                                     <div className="inline-block" ref={selectPlaylistsRef}>
                                         <Select
-                                            disabled={operationInProgress}
+                                            disabled={operationInProgress || tabSaving}
                                             showSearch={true}
                                             allowClear={true}
                                             defaultValue={[]}
@@ -361,12 +370,12 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     </div>
                                     <div className="flex -mt-[32px] ml-[608px] -mb-[32px]">
                                         <Tooltip title="help">
-                                                <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => startTour()}/>
+                                                <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress || tabSaving} onClick={() => startTour()}/>
                                         </Tooltip>                                           
                                     </div>
 
                                     <div className='flex ml-[570px] inline-block mb-[24px]' ref={favoritesRef}>
-                                        <Button shape="circle" icon={favorites.editMetaData[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('editMetaData')}/>
+                                        <Button shape="circle" icon={favorites.editMetaData[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving('editMetaData')}/>
                                     </div>
                                 </div>
                                            
@@ -382,7 +391,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     name="database"
                                     >  
                                     <div className="inline-block " ref={toggleDatabase}> 
-                                        <Checkbox checked={updateDatabase} disabled={operationInProgress} onChange={e => toggleUpdateDatabase(e)}/>
+                                        <Checkbox checked={updateDatabase} disabled={operationInProgress || tabSaving} onChange={e => toggleUpdateDatabase(e)}/>
                                     </div>
 
                                     </Form.Item>                                     
@@ -399,7 +408,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                         name="track"
                                         >  
                                         <div className="inline-block" ref={updateTrackRef}> 
-                                            <Checkbox checked={updateTrack} disabled={operationInProgress} onChange={e => toggleUpdateTrack(e)}/>
+                                            <Checkbox checked={updateTrack} disabled={operationInProgress || tabSaving} onChange={e => toggleUpdateTrack(e)}/>
                                         </div>
 
                                         </Form.Item>                                     
@@ -413,7 +422,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                 <Form.Item>
                                     <div className="inline-block" ref={null}>
                                         <Select
-                                            disabled={operationInProgress}
+                                            disabled={operationInProgress || tabSaving}
                                             showSearch={true}
                                             allowClear={true}
                                             defaultValue={[]}
@@ -438,7 +447,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     >  
                                     <div className="inline-block"ref={null} >
                                         <Input 
-                                        disabled={operationInProgress}
+                                        disabled={operationInProgress || tabSaving}
                                         onClear={() => delete playlistData['title']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -459,7 +468,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     >  
                                     <div className="inline-block"ref={null} >
                                         <Input 
-                                        disabled={operationInProgress}
+                                        disabled={operationInProgress || tabSaving}
                                         type="number"
                                         onClear={() => delete playlistData['trackNumber']} 
                                         allowClear={true}
@@ -472,9 +481,6 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                 </div>
                             }  
 
-
-
-
                             {isPlaylistChosen &&
                                 <div className="flex justify-center">
                                     <Form.Item
@@ -485,7 +491,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     >  
                                     <div className="inline-block"ref={artistInput} >
                                         <Input 
-                                        disabled={operationInProgress}
+                                        disabled={operationInProgress || tabSaving}
                                         onClear={() => delete playlistData['artist']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -506,7 +512,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     >  
                                     <div className="inline-block" ref={albumInput} >
                                         <Input
-                                        disabled={operationInProgress}
+                                        disabled={operationInProgress || tabSaving}
                                         onClear={() => delete playlistData['album']} 
                                         allowClear={true}
                                         style={{ width: 400 }}
@@ -527,7 +533,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                                     >  
                                     <div className="inline-block" ref={genreInput} >
                                         <Input
-                                        disabled={operationInProgress}
+                                        disabled={operationInProgress || tabSaving}
                                         onClear={() => delete playlistData['genre']} 
                                         allowClear={true}
                                         style={{ width: 350 }}
@@ -539,7 +545,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
 
                             {isPlaylistChosen &&
                                 <div className="" ref={coverArtRef}>
-                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked} imagesPerPage={6} operationInProgress={operationInProgress}/> 
+                                   <CoverArtChanger imgClicked={imgClicked} setImgClicked={setImgClicked} imagesPerPage={6} operationInProgress={operationInProgress || tabSaving}/> 
                                 </div>
                             }
 
@@ -547,7 +553,7 @@ function EditMetaData({setTabsDisabled, favorites, setFavorites, operationInProg
                             <Form.Item>
                                 <div className="flex justify-center">
                                     <div className="flex" ref={submitPlaylistsRef}>
-                                        <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor} operationInProgress={operationInProgress} />                                
+                                        <GradientSubmitButton buttonDisabled={buttonDisabled} callbackFunction={refactor} operationInProgress={operationInProgress || tabSaving} />                                
                                     </div>
                                 </div>
                             </Form.Item>

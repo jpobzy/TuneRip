@@ -138,13 +138,20 @@ function AudioTrimmer({setTabsDisabled, favorites, operationInProgress, setOpera
     },
     ]
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('audioTrimmer')
+        setIsTabSaving(false)
+    }
 
     return (
         <>
             <div>
                 <div ref={uploadRef}  className={`w-[220px]  justify-center mx-auto  ${currentTabKey === 'audioTrimmer' ? "-mt-[20px]" : ''}`}>
                     <Input
-                    disabled={operationInProgress}
+                    disabled={operationInProgress || tabSaving}
                     prefix={inputPrefix}
                     type="file"
                     accept="audio/*"
@@ -153,11 +160,11 @@ function AudioTrimmer({setTabsDisabled, favorites, operationInProgress, setOpera
                 </div>
                 <div className="flex -mt-[32px] ml-[465px] -mb-[32px]" >
                     <Tooltip title="help">
-                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => loadDemo()}/>
+                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress || tabSaving} onClick={() => loadDemo()}/>
                     </Tooltip>                                    
                 </div>          
                 <div className='flex ml-[335px] inline-block' ref={favoritesRef}>
-                    <Button shape="circle" icon={favorites.audioTrimmer[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('audioTrimmer')}/>
+                    <Button shape="circle" icon={favorites.audioTrimmer[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>
                 </div>                          
             </div>
 
@@ -184,7 +191,7 @@ function AudioTrimmer({setTabsDisabled, favorites, operationInProgress, setOpera
 
 
                     <div className='mt-[10px]'>
-                        <Button disabled={trimButtonDisabled || operationInProgress} ref={trimRef}  onClick={()=>handleDownload()}>Trim</Button>
+                        <Button disabled={trimButtonDisabled || operationInProgress || tabSaving} ref={trimRef}  onClick={()=>handleDownload()}>Trim</Button>
                     </div>                   
                 </div>
             </>

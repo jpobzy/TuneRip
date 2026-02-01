@@ -125,6 +125,13 @@ function MergeFolders({setTabsDisabled, favorites, operationInProgress, setOpera
     },    
     ]
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('videoFilter')
+        setIsTabSaving(false)
+    }
 
     useEffect(()=>{
         getExistingPlaylists();
@@ -158,7 +165,7 @@ function MergeFolders({setTabsDisabled, favorites, operationInProgress, setOpera
                                         <div>
                                             <div className="inline-block" ref={mergeFolderRef}>
                                                 <Select
-                                                    disabled={operationInProgress}
+                                                    disabled={operationInProgress || tabSaving}
                                                     showSearch={true}
                                                     // onDeselect={()=>handleMergeCleared()}
                                                     // onClear={()=>handleMergeCleared()}
@@ -172,11 +179,11 @@ function MergeFolders({setTabsDisabled, favorites, operationInProgress, setOpera
                                             </div>
                                             <div className="flex -mt-[32px] ml-[605px] -mb-[35px]" >
                                                 <Tooltip title="help">
-                                                    <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
+                                                    <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress || tabSaving} onClick={() => setOpen(true)}/>
                                                 </Tooltip>                                    
                                             </div> 
                                             <div className='flex ml-[620px] inline-block' ref={favoritesRef}>
-                                                <Button shape="circle" icon={favorites.mergeFolders[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('mergeFolders')}/>
+                                                <Button shape="circle" icon={favorites.mergeFolders[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleSaveTab('mergeFolders')}/>
                                             </div>                                                                                       
                                         </div>
 
@@ -199,7 +206,7 @@ function MergeFolders({setTabsDisabled, favorites, operationInProgress, setOpera
                                                     style={{ width: 500 }}
                                                     onChange={(e) => setDestinationDir(e)}
                                                     options={excludeMergeDirValue}
-                                                    disabled={isDisabled || operationInProgress}
+                                                    disabled={isDisabled || operationInProgress || tabSaving}
                                                 />                               
                                             </div>
                                         </Form.Item>   

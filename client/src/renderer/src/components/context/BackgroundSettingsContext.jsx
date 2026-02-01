@@ -26,14 +26,9 @@ export const ToggleBackgroundSettingsProvider = ({children}) => {
     const [prevEditedBackgrounds, setPrevEditedBackgrounds] = useState([])
 
     // ############################### AURORA SETTINGS #######################################
-    const [auroraBackgroundSettings, setAuroraBackgroundSettings] = useState({
-        blend: 0.5,
-        amplitude: 1.0,
-        speed: 0.5,
-        colorStops : ["#3A29FF", "#FF94B4", "#FF3232"]
-    })
-
     const defaultAuroraBackgroundSettings = { blend: 0.5,  amplitude: 1.0, speed: 0.5, colorStops : ["#3A29FF", "#FF94B4", "#FF3232"]}
+    
+    const [auroraBackgroundSettings, setAuroraBackgroundSettings] = useState(defaultAuroraBackgroundSettings)
 
     const updateColorStopIndex = (index, newColor) => {
         const updatedStops = auroraBackgroundSettings.colorStops; 

@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 
 
-function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
+function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState([])
     const {message} = App.useApp();
@@ -102,6 +102,14 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInPro
         target: () => favoritesRef.current,
     },    
     ]
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('reorderTracks')
+        setIsTabSaving(false)
+    }
 
     useEffect(()=>{
         getExistingPlaylists();
@@ -117,7 +125,7 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInPro
                         <Form.Item>
                             <div className="inline-block -ml-[55px]" ref={selectPlaylistsRef}>
                                 <Select
-                                    disabled={operationInProgress}
+                                    disabled={operationInProgress || tabSaving}
                                     allowClear={true}
                                     mode="multiple"
                                     defaultValue={[]}
@@ -127,12 +135,12 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInPro
                                 />      
                                 <div className="flex  -mt-[32px] ml-[531px] -mb-[32px]" >
                                     <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />} onClick={() => setOpen(true)} disabled={operationInProgress}/>
+                                        <Button shape="circle" icon={<QuestionOutlined />} onClick={() => setOpen(true)} disabled={operationInProgress || tabSaving}/>
                                     </Tooltip>                                    
                                 </div>
 
                                 <div className='flex ml-[570px] inline-block ' ref={favoritesRef}>
-                                    <Button shape="circle" icon={favorites.reorderTracks[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('reorderTracks')}/>
+                                    <Button shape="circle" icon={favorites.reorderTracks[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving('reorderTracks')}/>
                                 </div>                                                         
                             </div>
                         
@@ -140,7 +148,7 @@ function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInPro
                         <Form.Item>
                             <div className="flex justify-center">
                                 <div className="flex" ref={submitPlaylistsRef}>
-                                    <GradientSubmitButton  callbackFunction={refactor} operationInProgress={operationInProgress}/>                                
+                                    <GradientSubmitButton  callbackFunction={refactor} operationInProgress={operationInProgress || tabSaving}/>                                
                                 </div>
 
                             </div>

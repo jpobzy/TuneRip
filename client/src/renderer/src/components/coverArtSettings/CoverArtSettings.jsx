@@ -261,22 +261,30 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
             return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading}
         })
     }
-    
+
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('coverArtSettings')
+        setIsTabSaving(false)
+    }
+
     return (
         <>
             <div className="">
                 <div className="inline-block" ref={addCoverArtRef}>
-                    <UploadButton refresh={getNewCoverArt} operationInProgress={operationInProgress}/>  
+                    <UploadButton refresh={getNewCoverArt} operationInProgress={operationInProgress || tabSaving}/>  
                 </div>
                  
                 <div className="ml-[20px] flex -mt-[32px] ml-[505px] -mb-[32px]">
                     <Tooltip title="help">
-                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => startTour()}/>
+                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress || tabSaving} onClick={() => startTour()}/>
                     </Tooltip>                                           
                 </div>
 
                 <div className='flex ml-[415px] inline-block' ref={favoritesRef}>
-                    <Button shape="circle" icon={favorites.coverArtSettings[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('coverArtSettings')}/>
+                    <Button shape="circle" icon={favorites.coverArtSettings[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>
                 </div>
 
             </div>
@@ -294,7 +302,7 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
                         key = {filename[1]}
                         imgClicked={imgClicked}
                         enlargenImg={true}
-                        operationInProgress={operationInProgress}
+                        operationInProgress={operationInProgress || tabSaving}
                         />
                     </div>                
                 ))}
@@ -311,7 +319,7 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
                             Edit art
                         </div>
                         <div className='mt-[30px] inline-block' ref={editSwitchCoverArtRef}> 
-                            <Switch onChange={() => setEditImgCard(!editImgCard)} disabled={operationInProgress}/>        
+                            <Switch onChange={() => setEditImgCard(!editImgCard)} disabled={operationInProgress || tabSaving}/>        
                         </div>     
                     </div>
 
@@ -325,7 +333,7 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
                         
                             <div className='mt-[30px] inline-block' ref={hideCoverArtRef}> 
                                 <Tooltip placement="right" title={hideText} >
-                                    <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} disabled={operationInProgress}/>        
+                                    <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} disabled={operationInProgress || tabSaving}/>        
                                 </Tooltip>
                             </div>  
                         
@@ -343,7 +351,7 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
                         </div>
                         <div className='mt-[30px]  inline-block' ref={deleteCoverArtRef}> 
                             <Tooltip placement="right" title={deleteText} >
-                                <Switch  loading={postDownloadSetting.deleteSwitchLoading} value={postDownloadSetting.deleteSwitchChecked} onChange={(e) => handleDeleteImage(e)} disabled={operationInProgress}/> 
+                                <Switch  loading={postDownloadSetting.deleteSwitchLoading} value={postDownloadSetting.deleteSwitchChecked} onChange={(e) => handleDeleteImage(e)} disabled={operationInProgress || tabSaving}/> 
                             </Tooltip>           
                         </div>  
                         
@@ -359,7 +367,7 @@ function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationIn
                         </div>
                             <div className='mt-[30px]  inline-block' ref={moveCoverArtRef}> 
                                 <Tooltip placement="right" title={moveText} >
-                                    <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} disabled={operationInProgress}/>  
+                                    <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} disabled={operationInProgress || tabSaving}/>  
                                 </Tooltip>         
                             </div>
                     </div>

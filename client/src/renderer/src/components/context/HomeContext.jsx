@@ -8,6 +8,7 @@ export const HomeProvider = ({children}) =>{
     // ############################# HOME SCREEN #######################################
     const [homeTourEnabled, setHomeTourEnabled] = useState(false);
     const searchBarRef = useRef();
+    const txtFileRef = useRef();
     const channelRef = useRef();
     const deleteChannelRef = useRef();
 
@@ -16,6 +17,11 @@ export const HomeProvider = ({children}) =>{
         title: 'Paste a YT URL',
         description: 'Paste and search a youtubers account to add the channel or paste a video/playlist URL.',
         target: () => searchBarRef.current,
+    },
+    {
+        title: 'Upload a text file',
+        description: "Upload a text file containing youtube URL's to download.",
+        target: () => txtFileRef.current,
     },
     {
         title: 'Select a channel',
@@ -270,7 +276,7 @@ export const HomeProvider = ({children}) =>{
 
     return(
         <div>
-            <createcon.Provider value={{searchBarRef, channelRef, deleteChannelRef, homeTourEnabled, setHomeTourEnabled,
+            <createcon.Provider value={{searchBarRef, channelRef, deleteChannelRef, txtFileRef, homeTourEnabled, setHomeTourEnabled,
                 downloadScreenRefs : { 
                     addCoverArtRef, selectCoverArtRef, defaultDownloadToggleRef, artistInputRef, 
                     genreInputRef, albumTitleRef, skipDownloadingPrevDownloadToggleRef, 

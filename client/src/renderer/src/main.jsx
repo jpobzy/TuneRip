@@ -7,6 +7,7 @@ import { ToggleProvider } from 'components/context/UseContext';
 import { ToggleBackgroundSettingsProvider } from 'components/context/BackgroundSettingsContext';
 import { ClickProvider } from 'components/context/CursorContext';
 import { ResultProvider } from 'components/context/ResultContext';
+import { FeedbackProvider } from 'components/context/FeedbackContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')).render(
         <ToggleProvider>
           <ClickProvider>
             <ResultProvider>
-              <MainApp />                 
+              <FeedbackProvider>
+                <MainApp />     
+              </FeedbackProvider>
             </ResultProvider>
           </ClickProvider>
         </ToggleProvider>

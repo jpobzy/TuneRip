@@ -15,7 +15,7 @@ import {
   StarFilled
 } from '@ant-design/icons';
 
-function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
+function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})
@@ -151,6 +151,15 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
         setCropSubmessage('')
     }
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('crop')
+        setIsTabSaving(false)
+    }
+
     return(
         <div className=" mb-[100px]">
             <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
@@ -161,7 +170,7 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
                             <Input 
                             type="file"
                             accept='.png,.jpg,.jpeg'
-                            disabled={operationInProgress}
+                            disabled={operationInProgress || tabSaving}
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file.type === 'image/jpeg' || file.type === 'image/png'){
@@ -180,12 +189,12 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
                     </div>
                    <div className="flex ml-[455px] -mt-[32px] -mb-[31.5px]">
                         <Tooltip title="help" >
-                            <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
+                            <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress || tabSaving} onClick={() => setOpen(true)}/>
                         </Tooltip>                                  
                     </div>
 
                     <div className='flex ml-[315px] mb-[30px] inline-block' ref={favoritesRef}>
-                        <Button shape="circle" icon={favorites.crop[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('crop')}/>
+                        <Button shape="circle" icon={favorites.crop[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving('crop')}/>
                     </div>
 
                     <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
@@ -203,8 +212,8 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
                     <div>
                         <div className="flex justify-center">
                             <div className="flex gap-2 w-fit">
-                                <Button ref={refPreview} type="primary" disabled={operationInProgress} onClick={preview}>Preview</Button>
-                                <Button ref={refSave} type="primary" disabled={operationInProgress} onClick={save}>Save</Button>                                  
+                                <Button ref={refPreview} type="primary" disabled={operationInProgress || tabSaving} onClick={preview}>Preview</Button>
+                                <Button ref={refSave} type="primary" disabled={operationInProgress || tabSaving} onClick={save}>Save</Button>                                  
                             </div>
                         </div>
                     
@@ -221,7 +230,7 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
                                 }}
                                 >
                                 <Slider   
-                                    disabled={operationInProgress}
+                                    disabled={operationInProgress || tabSaving}
                                     value={zoom}
                                     defaultValue={30} 
                                     onChange={onChange}
@@ -233,7 +242,7 @@ function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, se
                             </div>
                             <div ref={refZoomInput}>
                                 <InputNumber
-                                disabled={operationInProgress}
+                                disabled={operationInProgress || tabSaving}
                                 min={1}
                                 max={3}
                                 style={{ margin: '0 16px' }}

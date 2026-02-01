@@ -70,7 +70,7 @@ function Settings(){
         )
     }
     
-    const [operationInProgress, setOperationInProgress] = useState(false)
+    const [operationInProgress, setOperationInProgress] = useState(true)
     
 
     function FavTabHeader({tabTitle}) {
@@ -115,7 +115,7 @@ function Settings(){
                 <div key={k}>
                     <FavTabHeader tabTitle={componentHeader} />
                     <div className="text-center mt-[20px]" >
-                        <Component  setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab}   currentTabKey={currentTabKey} operationInProgress={operationInProgress} setOperationInProgress={setOperationInProgress}/>
+                        <Component  setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab}  currentTabKey={currentTabKey} operationInProgress={operationInProgress} setOperationInProgress={setOperationInProgress}/>
                     </div>                               
                 </div>                    
             </>)
@@ -131,7 +131,7 @@ function Settings(){
         label: ('Video Filter'),
         children: 
         <div className="text-center mt-[20px]">
-            <VideoFilter setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab} currentTabKey={currentTabKey}/>
+            <VideoFilter setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab} operationInProgress={operationInProgress} currentTabKey={currentTabKey}/>
         </div>
     },
     {
@@ -139,7 +139,7 @@ function Settings(){
         label: ('Track Table'),
         children:
             <div className="text-center mt-[20px]">
-                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab} operationInProgress={operationInProgress}  currentTabKey={currentTabKey} /> 
+                <TrackTable refreshRecords={refreshRecords} setRefresh={setRefresh} setTabsDisabled={setTabsDisabled} favorites={favorites} setFavorites={setFavorites} handleSaveTab={handleSaveTab} operationInProgress={operationInProgress} currentTabKey={currentTabKey} /> 
             </div>
     },
     {
@@ -282,7 +282,7 @@ function Settings(){
         }                       
 
         setFavorites(prev => {
-            const copy = prev[tabName]
+            const copy = [...prev[tabName]] 
             copy[0] = !copy[0]
             return {...prev, [tabName] : copy}
         }) 

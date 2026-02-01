@@ -1,12 +1,18 @@
+Version 1.2.6 Patch Notes
+- Added support for text files: users can now upload a .txt file containing YouTube links, and each link will be downloaded automatically
+- Fixed an issue where the YouTuber form text inputs were not disabled
+- Fixed a bug where unchecking “Use default settings” interfered with the cover art selector
+- Added a 10-second pause when downloading multiple tracks; the pause occurs every 25 tracks
+
 Version 1.2.5 Patch Notes
-- Fixed a bug where trying to reoreder multiple folders would only reorder the first folder
-- Added new Floating Lines background
-- Fixed a bug where trim button would stay disabled when trying to make an audio trim of with no changes to the original audio file
-- Renamed foldermerge on backend to MergeFolders for more consistency
-- Renamed selectBackground on backend to ChangeBackground for more consistency
-- Added small tour to edit channel card setting
-- Fixed video filter allowing any file type, now will only accept .txt 
-- Added favorites feature
+- Fixed a bug where trying to reorder multiple folders would only reorder the first folder
+- Added a new Floating Lines background
+- Fixed a bug where the Trim button would stay disabled when attempting to trim audio without making any changes to the original file
+- Renamed foldermerge on the backend to MergeFolders for consistency
+- Renamed selectBackground on the backend to ChangeBackground for consistency
+- Added a small tour for editing channel card settings
+- Fixed the video filter to accept only .txt files (previously allowed any file type)
+- Added a Favorites feature
 ------------------------------------------------------------------------------
 
 

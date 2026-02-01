@@ -17,7 +17,7 @@ import {
   AppstoreOutlined,
 } from '@ant-design/icons';
 
-function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
+function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
   const [channels, setChannels] = useState([]) // for channel filter
   const [records, setRecords] = useState() // format: {1: [records]}
   const { message } = App.useApp();
@@ -186,7 +186,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: 'block' }}
-          disabled={operationInProgress}
+          disabled={operationInProgress || tabSaving}
         />
         <Space>
           <div className='inline-block' ref={null}>
@@ -196,7 +196,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
               icon={<SearchOutlined />}
               size="small"
               style={{ width: 90 }}
-              disabled={operationInProgress}
+              disabled={operationInProgress || tabSaving}
             >
               Search
             </Button>
@@ -205,7 +205,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
             onClick={() => clearFilters && handleReset(clearFilters, close, confirm)}
             size="small"
             style={{ width: 90 }}
-            disabled={operationInProgress}
+            disabled={operationInProgress || tabSaving}
           >
             Reset
           </Button>
@@ -271,7 +271,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
     key: 'link'
   },
   {
-    title: 'When added',
+    title: 'Date downloaded',
     dataIndex: 'whenRecordAdded',
     key: 'whenRecordAdded'
   },
@@ -304,7 +304,7 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
       <div >
         <Space size="middle">
           <Popconfirm
-            disabled={operationInProgress}
+            disabled={operationInProgress || tabSaving}
             title="Delete the record"
             description="Are you sure to delete this record?"
             onConfirm={() => confirm(record)}
@@ -373,11 +373,18 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
     onChange: onSelectChange,
     getCheckboxProps: record => ({
     // disabled: true, // Column configuration not to be checked
-    disabled : operationInProgress,
+    disabled : operationInProgress || tabSaving,
     name: record.name,
   }),
   };
 
+  const [tabSaving, setIsTabSaving] = useState(false)
+
+  async function handleTabSaving(){
+      setIsTabSaving(true)
+      await handleSaveTab('trackTable')
+      setIsTabSaving(false)
+  }
 
   return (
     <div>
@@ -393,18 +400,18 @@ function TrackTable({refreshRecords, setRefresh, setTabsDisabled, favorites, set
               okText="Yes"
               cancelText="No"
               >
-              <Button disabled={operationInProgress} type="primary">
+              <Button disabled={operationInProgress ||  tabSaving} type="primary">
                   Delete selected
                 </Button>    
               </Popconfirm>
             </div>  
               <div className="flex ml-[5px] " >
                   <Tooltip title="help">
-                      <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
+                      <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress  ||  tabSaving} onClick={() => setOpen(true)}/>
                   </Tooltip>                                    
               </div>    
               <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
-                <Button shape="circle" icon={favorites.trackTable[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('trackTable')}/>
+                <Button shape="circle" icon={favorites.trackTable[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress ||  tabSaving} onClick={() => handleTabSaving()}/>
               </div>
           </div>
         </div>

@@ -86,7 +86,7 @@ const EditableCell = ({
 
 
 
-const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}) => {
+const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}) => {
   const [dataSource, setDataSource] = useState() // format: {1: [records]} 
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
@@ -355,7 +355,7 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, se
               onCancel={cancelDeletion}
               okText="Yes"
               cancelText="No"
-              disabled={operationInProgress}
+              disabled={operationInProgress || tabSaving}
             >
               <a >Delete</a>
             </Popconfirm>
@@ -517,6 +517,14 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, se
 
   }
 
+  const [tabSaving, setIsTabSaving] = useState(false)
+
+  async function handleTabSaving(){
+      setIsTabSaving(true)
+      await handleSaveTab('phraseFilter')
+      setIsTabSaving(false)
+  }  
+
 
   return (
     <>
@@ -524,15 +532,15 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, se
         {!applyLoading && !showResult &&
           <>
             <div className='mx-auto justify-center flex mt-[30px] mb-[20px]'>       
-              <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} disabled={operationInProgress} onChange={(e)=>setMode(e.target.value)}/> 
+              <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} disabled={operationInProgress || tabSaving} onChange={(e)=>setMode(e.target.value)}/> 
             </div>     
             <div className="flex -mt-[52px] -mb-[32px] ml-[505px]" >
                 <Tooltip title="help">
-                    <Button shape="circle" icon={<QuestionOutlined />} onClick={() => handleOpenTour()} disabled={operationInProgress}/>
+                    <Button shape="circle" icon={<QuestionOutlined />} onClick={() => handleOpenTour()} disabled={operationInProgress || tabSaving}/>
                 </Tooltip>                                    
             </div>       
               <div  className='flex ml-[420px] mb-[30px]  inline-block ' ref={favoritesRef}>
-                <Button shape="circle" icon={favorites.phraseFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('phraseFilter')}/>   
+                <Button shape="circle" icon={favorites.phraseFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>   
             </div>
           </>
         }
@@ -541,7 +549,7 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, se
         <>
           <div>
             <div className='inline-block' ref={addRowRef}>
-              <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }} disabled={operationInProgress}>
+              <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }} disabled={operationInProgress || tabSaving}>
                 Add a row
               </Button>
             </div>
@@ -572,14 +580,14 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, se
                       style={{ width: 500 }}
                       onChange={(e) => playlistChoseon(e)}
                       options={existingPlaylistNames}
-                      disabled={operationInProgress}
+                      disabled={operationInProgress || tabSaving}
                   />                               
               </div>  
               {playlist && 
                 <>
                   <div>
                     <div className='mt-[20px] inline-block' ref={saveRef}>
-                      <Button onClick={()=> handleApplyFilter()} disabled={operationInProgress} >Save</Button>
+                      <Button onClick={()=> handleApplyFilter()} disabled={operationInProgress  || tabSaving} >Save</Button>
                     </div>                   
                   </div>
                 </>

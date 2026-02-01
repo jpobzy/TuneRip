@@ -1,6 +1,6 @@
 {
   "name": "tunerip",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "A desktop app allowing users to conver yt videos to MP3 files",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -68,7 +68,6 @@
     "lucide-react": "^0.511.0",
     "motion": "^12.23.12",
     "next-themes": "^0.4.6",
-    "npm": "^11.5.2",
     "ogl": "^1.0.11",
     "postcss-cli": "^11.0.1",
     "postprocessing": "^6.37.6",

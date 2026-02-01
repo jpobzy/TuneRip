@@ -21,6 +21,9 @@ function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage, operationInP
     
 
     const handleCoverArtClicked = async(file) =>{
+        if (operationInProgress){
+            return
+        }
         if (imgClicked === file){
             setImgClicked('')
         }else{
@@ -65,6 +68,7 @@ function CoverArtChanger({imgClicked, setImgClicked, imagesPerPage, operationInP
                         key = {filename[1]}
                         imgClicked={imgClicked}
                         enlargenImg={false}
+                        operationInProgress={operationInProgress}
                         />
                     </div>                
                 ))}

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, make_response, session
 from flask_cors import CORS
 from app.controllers.controller import controller
 from flask import send_from_directory, redirect
@@ -355,5 +355,18 @@ def removeTab():
     return  jsonify(favoritesTab_obj.removeTab(json.loads(request.data)))
 
 
+@app.post('/saveTextFile')
+def saveTextFile():
+    file = request.files["file"]
+    controller_obj.saveTextFile(file)
+    return 'ok'
+
+
+@app.delete('/deleteTextFile')
+def deleteTextFile():
+    controller_obj.deleteTextFile()
+    return 'ok'
+
 if __name__ == "__main__":
+
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)

@@ -182,6 +182,13 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
         setMode(e)
     }
 
+    const [tabSaving, setIsTabSaving] = useState(false)
+
+    async function handleTabSaving(){
+        setIsTabSaving(true)
+        await handleSaveTab('editChannelCard')
+        setIsTabSaving(false)
+    }
 
     return (
         <>
@@ -194,12 +201,12 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
 
                     <div className='flex ml-[410px] -mb-[32px]'>
                         <Tooltip title="help">
-                            <Button shape="circle" disabled={operationInProgress} icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
+                            <Button shape="circle" disabled={operationInProgress || tabSaving} icon={<QuestionOutlined />}  onClick={() => {setOpen(true)}}/>
                         </Tooltip>    
                     </div>
 
                     <div className='flex ml-[230px] mb-[10px] inline-block' ref={favoritesRef}>
-                        <Button shape="circle" icon={favorites.editChannelCard[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('editChannelCard')}/>
+                        <Button shape="circle" icon={favorites.editChannelCard[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress || tabSaving} onClick={() => handleTabSaving()}/>
                     </div>
 
                     <div className='mt-[5px] w-[240px] mx-auto  '
@@ -219,7 +226,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                             chaos={electricBorderSettings.chaos}
                             thickness={electricBorderSettings.thickness}
                             style={{ borderRadius: electricBorderSettings.borderRadius }}
-                            disabled={electricBorderEnabled}
+                            disabled={electricBorderEnabled || tabSaving}
                         >
                             <div
                             style={{
@@ -247,7 +254,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                    
                     <div className='mt-[40px]  mb-[30px]'>
                         <div className='flex justify-center mb-[10px] inline-block' ref={radioRef}>
-                           <Radio.Group disabled={operationInProgress} block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>changeModes(e.target.value)}/> 
+                           <Radio.Group disabled={operationInProgress || tabSaving} block options={options} defaultValue="electricBorder" optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>changeModes(e.target.value)}/> 
                         </div>
                         
                         <ConfigProvider
@@ -278,7 +285,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                             <Form.Item style={{marginBottom : "5px"}}
                                             >
                                                 <Checkbox
-                                                    disabled={operationInProgress}
+                                                    disabled={operationInProgress || tabSaving}
                                                     checked={electricBorderEnabled}
                                                     onChange={(e)=>toggleCheckbox(e)}
                                                 >
@@ -294,7 +301,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={electricBorderSettings.color}
                                                 >
                                                     <ColorPicker 
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({color : c.toHexString()});   
                                                         }}
@@ -312,7 +319,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 min={0.1}
                                                 max={3}
                                                 step={0.1} 
-                                                disabled={operationInProgress}
+                                                disabled={operationInProgress || tabSaving}
                                                 />
                                             </Form.Item>         
 
@@ -325,7 +332,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 min={0.1}
                                                 max={1}
                                                 step={0.1} 
-                                                disabled={operationInProgress}
+                                                disabled={operationInProgress || tabSaving}
                                                 />
                                             </Form.Item>    
 
@@ -338,7 +345,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 min={1}
                                                 max={5}
                                                 step={1} 
-                                                disabled={operationInProgress}
+                                                disabled={operationInProgress || tabSaving}
                                                 />
                                             </Form.Item>    
                                         </>
@@ -353,7 +360,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={cardSettings.backgroundColor}
                                                 >
                                                     <ColorPicker 
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({backgroundColor : c.toHexString()});   
                                                         }}
@@ -370,7 +377,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={cardSettings.textColor}
                                                 >
                                                     <ColorPicker 
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({textColor : c.toHexString()});   
                                                         }}
@@ -387,7 +394,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={cardSettings.hoverBackgroundColor}
                                                 >
                                                     <ColorPicker 
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({hoverBackgroundColor : c.toHexString()});   
                                                         }}
@@ -404,7 +411,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={cardSettings.hoverBoxShadowColor}
                                                 >
                                                     <ColorPicker 
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({hoverBoxShadowColor : c.toHexString()});   
                                                         }}
@@ -419,7 +426,7 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                                 initialValue={cardSettings.borderColor}
                                                 >
                                                     <ColorPicker
-                                                        disabled={operationInProgress}
+                                                        disabled={operationInProgress || tabSaving}
                                                         onChange={c => {
                                                             handleFormChange({borderColor : c.toHexString()});   
                                                         }}
@@ -432,12 +439,12 @@ export default function EditChannelCard({setTabsDisabled, favorites, operationIn
                                 </Form>
                             </div>    
                         </ConfigProvider>
-                        <Button disabled={operationInProgress} onClick={()=> saveChanges()} >Save</Button>                    
-                        <Button disabled={operationInProgress} onClick={()=> reset()} >Reset</Button>
+                        <Button disabled={operationInProgress || tabSaving} onClick={()=> saveChanges()} >Save</Button>                    
+                        <Button disabled={operationInProgress || tabSaving} onClick={()=> reset()} >Reset</Button>
                     </div>      
                 </>
                 }
-                <Tour disabled={true} disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
+                <Tour  disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
             </div>    
         </>
 

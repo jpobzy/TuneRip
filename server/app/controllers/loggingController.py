@@ -39,6 +39,10 @@ class logController():
         if not "NoneType: None" in trace:
             self.logger.info(f'{trace} \n\n')
         return
+    
+    def logWarning(self, data):
+        self.logger.warning(data)
+        return
 
     def deleteOldLogFiles(self, logDir):
         """

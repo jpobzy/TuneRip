@@ -1,7 +1,7 @@
 import React, { forwardRef, use, useEffect, useReducer, useState } from 'react'
 import axios from 'axios';
 import YoutuberCard from 'components/YoutuberCard';
-import 'assets/youtubers.css'
+import 'assets/home.css'
 import AddChannelForm from 'components/addChannelForm/AddChannelForm'
 import FadeContent from 'components/fade/FadeContent';
 import CoverArtCard from 'components/coverArtCard/CoverArtCard';
@@ -17,24 +17,25 @@ import { useHomeContext } from 'components/context/HomeContext';
 import { resultToggle } from 'components/context/ResultContext';
 import AnimatedList from 'components/animatedList/AnimatedList';
 import ShinyText from './shinyText/ShinyText';
+import { FeedbackContext } from './context/FeedbackContext';
 
 const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const { message, notification  } = App.useApp();
   const {setShowDock} = useToggle()
   const {setHomeTourEnabled, deleteChannelRef, searchBarRef, channelRef, downloadScreenValues, downloadScreenRefs} = useHomeContext();
-
+  const {feedback} = FeedbackContext()
 
   const [cardClicked, setCardClicked] = useState(false);
   const [searchUrl, setSearchURL] = useState([])
   const [downloadSettings, setDownloadSettings] = useState({});
   const [responseData, setResponseData] = useState({})
   const [skipDownload, setskipDownload] = useState(false);
-
-
+  const [textFile, setTextFile] = useState({})
+  
 //////////////////////////////////////////////////////////////////////////////////
   const [downloadType, setDownloadType] = useState('')
   const [channelData, setChannelData] = useState({channelsList : [], chosenChannel : '', editChannels : false, newestChannel : ''}) //
-  const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false, prevChannelCoverArtArr : []})
+  const [coverArtData, setCoverArtData] = useState({coverArtFileNames : [], coverArtChosen : '', prevCoverArtUsed : '', deleteCoverArt : false, prevChannelCoverArtArr : [], prevUsedCoverArtFileNames : null})
   const [gallerySettings, setGallerySettings] = useState({currentImagesShown : [], imagesPerPage : 8, totalRecords : 10, showPagination : true, currentPaginationPage : 1 })
 
   const {ResultSuccess, ResultWarning, Loading, ResultError} = resultToggle()
@@ -46,7 +47,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   const sseDownload = useRef()
   const [currentlyDownloaded, setCurrentlyDownloaded] = useState([])
 
-
+  
   useImperativeHandle(ref, () => ({
     resetAll
   }));
@@ -97,18 +98,33 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   }
 
-  const handleCoverArtClicked = async(file) =>{
+  const handleCoverArtClicked = async(file, mode) =>{
     setIsLoading(true)
     setShowDock(false)
-    setCoverArtData(prev => {return {...prev, coverArtChosen : true}})
+    
     setCurrentlyDownloaded([])
     const params = new URLSearchParams({
-        url: searchUrl,
-        channel: channelData.chosenChannel,
-        coverArt: file,
-        ...downloadSettings
+      url: searchUrl,
+      channel: channelData.chosenChannel,
+      coverArt: file,
+      ...downloadSettings,
     });
+    
 
+    setCoverArtData(prev => {return {...prev, coverArtChosen : true}})
+    if (Object.keys(textFile).length){
+
+      const data = new FormData()
+      data.append('file', textFile)
+      const req = await axios.post('http://localhost:8080/saveTextFile', data).catch(function (error){
+        if (error.response) {
+          feedback.displayErrorNotification('Failed downloaded file')
+          return
+        }
+      });      
+      params.append('mode', 'textFile')
+    }
+    
     if (sseDownload.current){
       sseDownload.current.close()
       sseDownload.current = null
@@ -116,7 +132,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
     sseDownload.current = new EventSource(`http://localhost:8080/downloadStream?${params}`);
     const skipAddingList = ['Connected']
-    sseDownload.current.onmessage = (event) => {
+    sseDownload.current.onmessage = async (event) => {
       const data = JSON.parse(event.data)
       const message = data.message
       console.log(`message: ${message}`)
@@ -160,18 +176,19 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
 
       if (message === 'Completed download'){
-        setShowResult(true)
         console.log('closing session')
         sseDownload.current.close()
         sseDownload.current = null
 
         setIsLoading(false)
         setShowResult(true)
-        // setShowDock(true)
+        setShowDock(true)
         setSearchURL('');
         setChannelData(prev => {return {...prev, chosenChannel : null}})
         setDownloadSettings({})
         setskipDownload(false)
+        const req = await axios.delete('http://localhost:8080/deleteTextFile')
+
       }
     };
 
@@ -183,23 +200,22 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
   }
 
 
+
+
   async function getCoverArtData(mode, prevUsedChannelImage) {
     const coverArtResponse = await axios.get('http://localhost:8080/getChannelAndArtCoverData');
     if (coverArtResponse.data.files.length === 0){
-        notification.info({
-          message : 'No cover art detected',
-          description : 'Please upload cover art png/jpeg files in order to proceed with the download',
-          placement : 'topLeft'
-        })    
+        feedback.displayInfoNotification('No cover art detected', 'Please upload cover art png/jpeg files in order to proceed with the download',)
         setCoverArtData(prev => {return {...prev, deleteCoverArt : false}}) 
         setGallerySettings(prev => {return {...prev,
           showPagination : false
         }})     
     }
 
-    setCoverArtData(prev => {return {...prev, coverArtFileNames : coverArtResponse.data.files, 
-      prevUsedCoverArtFileNames : coverArtResponse.data.coverArtSettings.prevUsedCoverArtData}}
-    )
+    let imagesToShow = coverArtResponse.data.files
+    let allExistingImages = coverArtResponse.data.files
+    let roundUp = null
+    let shownImages = coverArtResponse.data.files
 
     if (!mode){ // when refreshing/adding new image
       mode = downloadType
@@ -210,112 +226,84 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
           currentPaginationPage : 1
         }
       })
-    }
-
-    if (mode === 'channel'){
-      let shownImages = coverArtResponse.data.files
-
+    }else if (mode === 'track'){
+      imagesToShow = coverArtResponse.data.files
+      allExistingImages = coverArtResponse.data.files  
+    }else{
       if (coverArtResponse.data.coverArtSettings.hidePrevUsed){
-        const prevUsedCoverArtArr = Object.values(coverArtResponse.data.coverArtSettings.prevUsedCoverArtData)
+        const prevUsedCoverArtArr = Object.values(coverArtResponse.data.coverArtSettings.prevUsedCoverArtData) 
         shownImages = shownImages.filter(item => !prevUsedCoverArtArr.includes(item))
+      }  
+
+      if (mode ===  'channel'){
+        if (prevUsedChannelImage && coverArtResponse.data.files.includes(prevUsedChannelImage)){
+          const arrWithoutChannelImage = shownImages.filter(item => item !== prevUsedChannelImage)
+          shownImages = [prevUsedChannelImage].concat(arrWithoutChannelImage)
+        }
+      }else if (mode === 'playlist'){
+        if (coverArtResponse.data.coverArtSettings.deleteImagePostDownload){
+          feedback.displayInfoNotification('Post download setting detected', 'Cover art will be deleted post download, change this setting in cover art settings',)
+        }else if (coverArtResponse.data.coverArtSettings.moveImagetoSubfolderPostDownload){
+          feedback.displayInfoNotification('Post download setting detected', 'Cover art will be moved to the subfolder post download, change this setting in cover art settings',) 
+        }
       }
 
-      if (prevUsedChannelImage && coverArtResponse.data.files.includes(prevUsedChannelImage)){
-        const arrWithoutChannelImage = shownImages.filter(item => item !== prevUsedChannelImage)
-        shownImages = [prevUsedChannelImage].concat(arrWithoutChannelImage)
-      }      
-
-      const roundUp = Math.ceil(shownImages.length / gallerySettings.imagesPerPage) * 10;
-
+      allExistingImages = shownImages
+      imagesToShow = shownImages  
       checkIfShownImagesIsEmpty(shownImages)
-
-      setGallerySettings(prev => {return {...prev, 
-        currentImagesShown: shownImages.slice(0, gallerySettings.imagesPerPage), 
-        paginationTotal : roundUp, 
-        allImages: shownImages
-      }})   
-
-
-      setCoverArtData(prev=>{
-        return {
-          ...prev, prevChannelCoverArtArr : Object.values(coverArtResponse.data.prevUsedChannelCoverArt)
-        }
-      })
-      return   
-
-    } else if (mode === 'track'){
-      const roundUp = Math.ceil(coverArtResponse.data.files.length / gallerySettings.imagesPerPage) * 10;
-
-      setGallerySettings(prev => {return {...prev, 
-        currentImagesShown: coverArtResponse.data.files.slice(0, gallerySettings.imagesPerPage), 
-        paginationTotal : roundUp, 
-        allImages: coverArtResponse.data.files
-      }})
-    } else if (mode === 'playlist'){
-      // notifications
-      if (coverArtResponse.data.coverArtSettings.deleteImagePostDownload){
-        notification.info({
-          message : 'Post download setting detected',
-          description : 'Cover art will be deleted post download, change this setting in cover art settings',
-          placement : 'topLeft'
-        })
-      }else if (coverArtResponse.data.coverArtSettings.moveImagetoSubfolderPostDownload){
-        notification.info({
-          message : 'Post download setting detected',
-          description : 'Cover art will be moved to the subfolder post download, change this setting in cover art settings',
-          placement : 'topLeft'
-        })        
-      }
-
-      let shownImages = coverArtResponse.data.files
-
-      if (coverArtResponse.data.coverArtSettings.hidePrevUsed){
-        const prevUsedCoverArtArr = Object.values(coverArtResponse.data.coverArtSettings.prevUsedCoverArtData)
-        shownImages = shownImages.filter(item => !prevUsedCoverArtArr.includes(item))
-      }      
-
-      const roundUp = Math.ceil(shownImages.length / gallerySettings.imagesPerPage) * 10;
-      checkIfShownImagesIsEmpty(shownImages)
-
-      setGallerySettings(prev => {return {...prev, 
-        currentImagesShown: shownImages.slice(0, gallerySettings.imagesPerPage), 
-        paginationTotal : roundUp, 
-        allImages: shownImages
-      }})   
-
-      setCoverArtData(prev=>{
-        return {
-          ...prev, prevChannelCoverArtArr : Object.values(coverArtResponse.data.coverArtSettings.prevUsedCoverArtData)
-        }
-      })
-      return
     }
+
+    setCoverArtData(prev=>{
+       const base = {...prev}
+
+       if (mode === 'channel'){
+        base.prevChannelCoverArtArr = Object.values(
+          coverArtResponse.data.prevUsedChannelCoverArt
+        )
+       }else{
+          base.coverArtFileNames = coverArtResponse.data.files
+          base.prevUsedCoverArtFileNames  = coverArtResponse.data.coverArtSettings.prevUsedCoverArtData
+       }
+       return base
+    })
+
+    roundUp = Math.ceil(shownImages.length / gallerySettings.imagesPerPage) * 10;
+
+    setGallerySettings(prev => {
+        return {
+            ...prev,
+            currentImagesShown : imagesToShow.slice(0, gallerySettings.imagesPerPage), 
+            paginationTotal : roundUp, 
+            allImages : allExistingImages
+        }
+    })
   }
 
 
   function checkIfShownImagesIsEmpty(arr){
     if (arr.length === 0){
-      notification.error({
-        message : 'No unused images available',
-        description : 'All current cover art files have already been used. Since the hide setting is enabled they are hidden. You can change this in the Cover Art settings',
-        placement : 'topLeft'
-      })  
+      feedback.displayErrorNotification('No unused images available','All current cover art files have already been used. Since the hide setting is enabled they are hidden. You can change this in the Cover Art settings')
     }
-
     return
   }
 
 
   async function resetAll(){
+    // runs when home button in dock is clicked
+    if (!cardClicked){
+      return
+    }
+
     setResponseData({})
     setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
-    setChannelData(prev=> {return {...prev, editChannels : false}})
+    setChannelData(prev=> {return {...prev, editChannels : false, chosenChannel : ''}})
     setCardClicked(false);
     setCoverArtData(prev => {return {...prev, coverArtChosen : false}})
     await axios.get(`http://localhost:8080/reload`);
     getChannelsData();
     setDownloadSettings({})
     setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
+    setTextFile({})
     setGallerySettings(prev => {
       return {...prev, currentPaginationPage : 1, showPagination : true, currentImagesShown : [], prevUsedChannelArr : []}
     })
@@ -340,8 +328,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         await Promise.resolve();
         message.error(`${videosearchURL} is not a valid URL`)
       }
-
-
   }
 
 
@@ -349,10 +335,14 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     key: '1',
     label: downloadType === 'channel' ? 'Channel Download Settings' : downloadType === 'track' ? 'Track Download Settings ' : 'Playlist Download Settings' ,
     children: <DownloadSettingsForm  downloadType={downloadType}
-      setDownloadSettings={setDownloadSettings} skipDownload={skipDownload} 
-      setskipDownload={setskipDownload} setPrevPlaylistArt={setCoverArtData}
-      setGallerySettings={setGallerySettings} coverArtFileNames={coverArtData.coverArtFileNames}
+      setDownloadSettings={setDownloadSettings} 
+      skipDownload={skipDownload} 
+      setskipDownload={setskipDownload} 
+      setPrevPlaylistArt={setCoverArtData}
+      setGallerySettings={setGallerySettings} 
+      coverArtFileNames={coverArtData.coverArtFileNames}
       imagesPerPage={gallerySettings.imagesPerPage}
+      coverArtData={coverArtData}
     />
   }];
 
@@ -363,9 +353,10 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setCurrentlyDownloaded([])
     setShowResult(false)
     setIsLoading(false)
-    setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null}})
+    setCoverArtData(prev => {return {...prev, prevCoverArtUsed: null, deleteCoverArt : false}})
     setCollapseActiveKey(['0'])
-    setCoverArtData(prev => {return {...prev, deleteCoverArt : false}})
+    // setCoverArtData(prev => {return {...prev}})
+    setChannelData(prev => {return {...prev, editChannels : false, chosenChannel : ''}})
     setShowDock(true)
   }, []);
 
@@ -383,9 +374,6 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     setskipDownload(false)
     setShowDock(true)
     getChannelsData()
-    
-    // chosenChannel
-
   }
 
   const handleChannelAdded = (channel) => {
@@ -416,14 +404,21 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     } 
   }
 
-  // function openFolder(){
-  //   const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : responseData.downloadPath})
-  // }
 
-  const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10']; 
 
   
-
+  const txtFileUploadProps = {
+    name: 'file',
+    beforeUpload : (file) => {
+      setTextFile(file)
+      setCardClicked(true)
+      getCoverArtData('textFile')
+      setDownloadType('textFile')
+      return false; },
+      onChange(info) {
+        // console.log('hi')
+      },
+  };
 
 
   return (
@@ -521,19 +516,19 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
               <div className='cover-art-containter '>
                   {Object.entries(gallerySettings.currentImagesShown).map((filename, index)=>(
-                      <div key={filename} className={'mt-[20px] mb-[20px]'}>
-                        <CoverArtCard 
-                        filename={filename[1]}
-                        cardClicked={()=>handleCoverArtClicked(filename[1])}
-                        previousImg={coverArtData.prevCoverArtUsed}
-                        edit={coverArtData.deleteCoverArt}
-                        refresh={getCoverArtData}
-                        key = {filename[1]}
-                        imgClicked={''}
-                        enlargenImg={false}
-                        prevChannelCoverArtArr={coverArtData.prevChannelCoverArtArr}
-                        />
-                      </div>                
+                    <div key={filename} className={'mt-[20px] mb-[20px]'}>
+                      <CoverArtCard 
+                      filename={filename[1]}
+                      cardClicked={()=>handleCoverArtClicked(filename[1])}
+                      previousImg={coverArtData.prevCoverArtUsed}
+                      edit={coverArtData.deleteCoverArt}
+                      refresh={getCoverArtData}
+                      key = {filename[1]}
+                      imgClicked={''}
+                      enlargenImg={false}
+                      prevChannelCoverArtArr={coverArtData.prevChannelCoverArtArr}
+                      />
+                    </div>                
                   ))}
               </div>
 
@@ -570,15 +565,16 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                   {/* Anything placed inside this container will be fade into view */
                   <div>
                     <div className='relative'>
-                      <div className='flex  justify-center '>
-                        <div className='inline-block mt-[30px]' ref={searchBarRef}>
+                      <div className='flex justify-center '>
+                        <div className='inline-block mt-[30px]' >
                           <AddChannelForm 
                           setSearchURL={downloadVideo}
                           handleChannelAdded={handleChannelAdded}
+                          txtFileUploadProps={txtFileUploadProps}
                           />                        
                         </div>
                       </div>
-                      <div className='flex -mt-9 justify-center ml-[545px]'>
+                      <div className='flex -mt-9 justify-center ml-[585px]  -mb-[20px]'>
                           <Tooltip title="help">
                               <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setHomeTourEnabled(true)} />
                           </Tooltip>                      
