@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function DarkVeilBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function DarkVeilBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, veilSettings} = toggleBackgroundSettings();
 
     return (
@@ -18,6 +18,7 @@ function DarkVeilBackground({setFormData, handleFormChange, formData, background
                     min={veilSettings.veilFormSettings.speed.min}
                     max={veilSettings.veilFormSettings.speed.max}
                     step={veilSettings.veilFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -31,6 +32,7 @@ function DarkVeilBackground({setFormData, handleFormChange, formData, background
                     min={veilSettings.veilFormSettings.hueShift.min}
                     max={veilSettings.veilFormSettings.hueShift.max}
                     step={veilSettings.veilFormSettings.hueShift.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -45,6 +47,7 @@ function DarkVeilBackground({setFormData, handleFormChange, formData, background
                     min={veilSettings.veilFormSettings.scanlineFrequency.min}
                     max={veilSettings.veilFormSettings.scanlineFrequency.max}
                     step={veilSettings.veilFormSettings.scanlineFrequency.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -58,6 +61,7 @@ function DarkVeilBackground({setFormData, handleFormChange, formData, background
                     min={veilSettings.veilFormSettings.scanlineIntensity.min}
                     max={veilSettings.veilFormSettings.scanlineIntensity.max}
                     step={veilSettings.veilFormSettings.scanlineIntensity.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -71,6 +75,7 @@ function DarkVeilBackground({setFormData, handleFormChange, formData, background
                     min={veilSettings.veilFormSettings.warpAmount.min}
                     max={veilSettings.veilFormSettings.warpAmount.max}
                     step={veilSettings.veilFormSettings.warpAmount.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>        
             </div> 

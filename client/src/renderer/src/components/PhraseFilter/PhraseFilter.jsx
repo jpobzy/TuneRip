@@ -7,7 +7,10 @@ import { resultToggle } from '../context/ResultContext';
 import { SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import { useToggle } from '../context/UseContext';
-
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
 const EditableContext = React.createContext(null);
 
@@ -83,7 +86,7 @@ const EditableCell = ({
 
 
 
-const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
+const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}) => {
   const [dataSource, setDataSource] = useState() // format: {1: [records]} 
   const [count, setCount] = useState();
   const [edit, setEdit] = useState()
@@ -105,12 +108,12 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
   const saveRef = useRef(null);
   const deleteRecordRef = useRef(null);
   const [isLoading, setLoading] = useState(false)
+  const favoritesRef = useRef(null);
 
   const tableSteps = [
     {
       title: 'Add phrases to be filtered out in track names when downloading',
       description: 'Add one or multiple phrases that will be removed from a video title when downloading',
-
     },
     {
       title: 'Add a row to add a new phrase',
@@ -133,6 +136,11 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
       description: 'Click on the delete button that corresponds with the records row and then click on "yes" in the popup to delete it',
        target: () => document.querySelector('.deleteColumn')
     },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },    
   ]
 
 
@@ -163,7 +171,9 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
     setLoading(true)
     setDisableDockFunctionality(true)
     setTabsDisabled(true)
-   
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(true)   
+    }  
     const req = await axios.delete('http://localhost:8080/deleteTitleFilter', {data: {'titleFilter': record.titleFilter}})
     if (req.status === 204){
       message.info('No record was found');
@@ -175,6 +185,9 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
     setDisableDockFunctionality(false)
     setTabsDisabled(false)    
     setLoading(false)
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(false)   
+    } 
   };
 
   const cancelDeletion = () => {
@@ -208,7 +221,12 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
 
     setLoading(true)
     setDisableDockFunctionality(true)
-    setTabsDisabled(true)    
+    setTabsDisabled(true)
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(true)   
+    }    
+
+
     if (edit.key <= existingRecordsAmount){
       const req = await axios.put('http://localhost:8080/editTitleFilter', {data : edit}) 
       if (req.status === 200){
@@ -229,7 +247,10 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
     getRecords()
     setLoading(false)
     setDisableDockFunctionality(false)
-    setTabsDisabled(false)    
+    setTabsDisabled(false)
+    if (currentTabKey === 'fav'){
+        setOperationInProgress(false)   
+    } 
     setEdit(null)
   }
 
@@ -334,11 +355,11 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
               onCancel={cancelDeletion}
               okText="Yes"
               cancelText="No"
+              disabled={operationInProgress}
             >
               <a >Delete</a>
             </Popconfirm>
           }
-
           </>
         ) : null,
     },
@@ -503,13 +524,16 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
         {!applyLoading && !showResult &&
           <>
             <div className='mx-auto justify-center flex mt-[30px] mb-[20px]'>       
-              <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} onChange={(e)=>setMode(e.target.value)}/> 
+              <Radio.Group block options={options} value={mode} optionType="button" buttonStyle="solid" style={{width: 300}} disabled={operationInProgress} onChange={(e)=>setMode(e.target.value)}/> 
             </div>     
-            <div className="flex -mt-[52px] mb-[30px] ml-[505px]" >
+            <div className="flex -mt-[52px] -mb-[32px] ml-[505px]" >
                 <Tooltip title="help">
-                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => handleOpenTour()}/>
+                    <Button shape="circle" icon={<QuestionOutlined />} onClick={() => handleOpenTour()} disabled={operationInProgress}/>
                 </Tooltip>                                    
-            </div>                       
+            </div>       
+              <div  className='flex ml-[420px] mb-[30px]  inline-block ' ref={favoritesRef}>
+                <Button shape="circle" icon={favorites.phraseFilter[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('phraseFilter')}/>   
+            </div>
           </>
         }
 
@@ -517,7 +541,7 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
         <>
           <div>
             <div className='inline-block' ref={addRowRef}>
-              <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+              <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }} disabled={operationInProgress}>
                 Add a row
               </Button>
             </div>
@@ -542,18 +566,20 @@ const TitleFilter = ({refreshRecords, setRefresh, setTabsDisabled}) => {
             <>
               <div className="inline-block" ref={selectRef}>
                   <Select
+                      showSearch={true}
                       allowClear={true}
                       defaultValue={[]}
                       style={{ width: 500 }}
                       onChange={(e) => playlistChoseon(e)}
                       options={existingPlaylistNames}
+                      disabled={operationInProgress}
                   />                               
               </div>  
               {playlist && 
                 <>
                   <div>
                     <div className='mt-[20px] inline-block' ref={saveRef}>
-                      <Button onClick={()=> handleApplyFilter()} >Save</Button>
+                      <Button onClick={()=> handleApplyFilter()} disabled={operationInProgress} >Save</Button>
                     </div>                   
                   </div>
                 </>

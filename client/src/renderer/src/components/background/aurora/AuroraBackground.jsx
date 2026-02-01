@@ -2,7 +2,7 @@ import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
 
-function AuroraBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function AuroraBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, auroraSettings} = toggleBackgroundSettings();
 
     return (
@@ -17,6 +17,7 @@ function AuroraBackground({setFormData, handleFormChange, formData, backgroundFo
                 min={auroraSettings.auroraFormSettings.blend.min}
                 max={auroraSettings.auroraFormSettings.blend.max}
                 step={auroraSettings.auroraFormSettings.blend.step} 
+                disabled={operationInProgress}
                 />
             </Form.Item> 
 
@@ -40,7 +41,8 @@ function AuroraBackground({setFormData, handleFormChange, formData, backgroundFo
                 <Slider 
                 min={auroraSettings.auroraFormSettings.speed.min}
                 max={auroraSettings.auroraFormSettings.speed.max}
-                step={auroraSettings.auroraFormSettings.speed.step} 
+                step={auroraSettings.auroraFormSettings.speed.step}
+                disabled={operationInProgress}
                 />
             </Form.Item>                           
 
@@ -53,6 +55,7 @@ function AuroraBackground({setFormData, handleFormChange, formData, backgroundFo
                 >   
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color1']
@@ -73,6 +76,7 @@ function AuroraBackground({setFormData, handleFormChange, formData, backgroundFo
                 >
                     <ColorPicker
                     allowClear
+                    disabled={operationInProgress}
                     onChange={c => {
                         if (c.cleared){
                             delete formData['color2']
@@ -94,6 +98,7 @@ function AuroraBackground({setFormData, handleFormChange, formData, backgroundFo
                 >
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color3']

@@ -111,6 +111,11 @@ class backgroundData():
                 "speed" : 0.5,
                 "distort" : 0,
                 "rayCount" : 0
+            }, 
+            "floatingLines" : {
+                "lineCount" : [10, 15, 20],
+                "lineDistance" : [8, 6, 4],
+                "animationSpeed" : 1    
             }           
         }
     }
@@ -134,7 +139,6 @@ class backgroundData():
                 with open(self.defaultDataFile, 'w') as file:
                     file.write(backgroundData.data)
             self.addNewBackground()
-            self.getShowPatchNotesStatus()
             return
 
         except Exception as error:
@@ -157,6 +161,7 @@ class backgroundData():
 
         with open(self.file, 'r') as file:
             data = json.load(file)
+            print(changes, background)
             for property, value in changes.items():
                 if background == 'aurora':
                     if property == 'color1':
@@ -353,10 +358,33 @@ class backgroundData():
 
                     if property == 'rayCount':
                         data['Backgrounds'][background]['rayCount'] = value
+
+                elif background == 'floatingLines':
+                    if property == 'lineCount1':
+                        data['Backgrounds'][background]['lineCount'][0] = value
+
+                    if property == 'lineCount2':
+                        data['Backgrounds'][background]['lineCount'][1] = value                        
+
+                    if property == 'lineCount3':
+                        data['Backgrounds'][background]['lineCount'][2] = value
+
+                    if property == 'lineDistance1':
+                        data['Backgrounds'][background]['lineDistance'][0] = value
+
+                    if property == 'lineDistance2':
+                        data['Backgrounds'][background]['lineDistance'][1] = value                        
+
+                    if property == 'lineDistance3':
+                        data['Backgrounds'][background]['lineDistance'][2] = value
+                        
+                    if property == 'animationSpeed':
+                        print(f'animation speed: {property, value}')
+                        data['Backgrounds'][background]['animationSpeed'] = value
+
                         
             data['selectedBackground'] = background
  
-
         with open(self.file, 'w') as file:
             json.dump(data, file, indent=4)   
 
@@ -400,6 +428,10 @@ class backgroundData():
         """
         Adds background to default background file + regular background file
         """
+
+
+        ############## ADD TO DEFAULT FILE FIRST ###########################
+
         with open(self.defaultDataFile, 'r') as file:
             data = json.load(file)
 
@@ -415,8 +447,17 @@ class backgroundData():
             with open(self.defaultDataFile, 'w') as file:
                 json.dump(data, file, indent=4)  
 
+        if 'floatingLines' not in data['Backgrounds']:
+            data['Backgrounds']['floatingLines'] = {}
+            data['Backgrounds']['floatingLines'][ "lineCount"] = [10, 15, 20]
+            data['Backgrounds']['floatingLines']['lineDistance'] = [8, 6, 4]
+            data['Backgrounds']['floatingLines']['animationSpeed'] = 1          
+
+            with open(self.defaultDataFile, 'w') as file:
+                json.dump(data, file, indent=4)  
 
 
+        ############## ADD TO REGULAR FILE NEXT ###########################
         with open(self.file, 'r') as file:
             data = json.load(file)
 
@@ -428,6 +469,12 @@ class backgroundData():
             data['Backgrounds']['prismaticBurst']['speed'] = 0.5
             data['Backgrounds']['prismaticBurst']['distort'] = 0
             data['Backgrounds']['prismaticBurst']['rayCount'] = 0
+
+        if 'floatingLines' not in data['Backgrounds']:
+            data['Backgrounds']['floatingLines'] = {}
+            data['Backgrounds']['floatingLines'][ "lineCount"] = [10, 15, 20]
+            data['Backgrounds']['floatingLines']['lineDistance'] = [8, 6, 4]
+            data['Backgrounds']['floatingLines']['animationSpeed'] = 1
 
             with open(self.file, 'w') as file:
                 json.dump(data, file, indent=4)  

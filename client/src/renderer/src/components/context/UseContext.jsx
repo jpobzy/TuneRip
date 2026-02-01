@@ -8,9 +8,10 @@ export const ToggleProvider = ({children}) => {
     const [disableDockFunctionality, setDisableDockFunctionality] = useState(false)
     const [showUI, setShowUI] = useState(true)
     const [showSwitch, setShowSwitch] = useState(false)
+    const [disableUISwitch, setDisableUISwitch] = useState(false)
 
     return (
-        <toggleContext.Provider value={{showDock, setShowDock, disableDockFunctionality, setDisableDockFunctionality, setShowSwitch}}>
+        <toggleContext.Provider value={{showDock, setShowDock, disableDockFunctionality, setDisableDockFunctionality, setShowSwitch, setDisableUISwitch}}>
             <>
                 <>
                     <div className={showUI ? 'visible' : 'invisible'}>
@@ -23,7 +24,7 @@ export const ToggleProvider = ({children}) => {
                         <div className={`text-white font-[15px] ${showUI ? 'visible' : 'invisible'}`}>
                             Toggle UI
                         </div>
-                        <Switch onChange={(e)=>setShowUI(!e)} />  
+                        <Switch disabled={disableUISwitch} onChange={(e)=>setShowUI(!e)} />  
                     </div> 
                 </>             
                 }

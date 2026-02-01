@@ -6,9 +6,12 @@ import CoverArtCard from "components/coverArtCard/CoverArtCard";
 import UploadButton from "components/uploadImagesButton/UploadButton";
 import { QuestionOutlined  } from '@ant-design/icons';
 import { useToggle } from "components/context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-
-function CoverArtSettings({setTabsDisabled}){
+function CoverArtSettings({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [coverArtFileNames, setCoverArtFileNames] = useState([]); // for all the cover file names: 1.jpg, 2.jpg, 3...
     const [imgClicked, setImgClicked] = useState('')
     const [shownImages, setShownImages] = useState([])
@@ -35,7 +38,8 @@ function CoverArtSettings({setTabsDisabled}){
     const hideCoverArtRef = useRef(null)
     const moveCoverArtRef = useRef(null)
     const deleteCoverArtRef = useRef(null)
-    
+    const favoritesRef = useRef(null);
+
     const handleCoverArtClicked = async(file) =>{
         if (imgClicked === file){
             setImgClicked('')
@@ -91,15 +95,36 @@ function CoverArtSettings({setTabsDisabled}){
         description: 'After downloading the playlist move the cover art file to the subfolder located at "Documents/TuneRip/server/static/coverArt/used',
         target: () => moveCoverArtRef.current,
         },       
-
+        {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+        },
     ]
 
+    const operationInProgressErrorMessage = () => {
+        return notification.error({
+            message : 'Disable Edit Mode before making changes.',
+            description : 'Cover art will be deleted post download, change this setting in cover art settings',
+            placement : 'topLeft'
+        })       
+    }
 
     const handlePrevUsed = async (e) => {
+        if (editImgCard === true){
+            operationInProgressErrorMessage()
+            return
+        }
+
         setSwitchLoading(true)
         togglePrevUsed(e)
         setDisableDockFunctionality(true)
         setTabsDisabled(true)
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
+
+
         const req = await axios.post('http://localhost:8080/toggleHidePrevUsedImages', {'data' : e})
         if (req.status === 200){
             message.success('Status changed')
@@ -109,6 +134,9 @@ function CoverArtSettings({setTabsDisabled}){
         setSwitchLoading(false)
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
     }
 
     const getArtDownloadStatus = async () => {
@@ -138,6 +166,11 @@ function CoverArtSettings({setTabsDisabled}){
     }
 
     const handleMovetoSubfolder = async (e) => {
+        if (editImgCard === true){
+            operationInProgressErrorMessage()
+            return
+        }
+
         if (postDownloadSetting.deleteSwitchChecked ){
             notification.error({
             message: 'Cannot enable move when delete is enabled',
@@ -154,6 +187,9 @@ function CoverArtSettings({setTabsDisabled}){
 
         setDisableDockFunctionality(true)
         setTabsDisabled(true)        
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }   
         const req = await axios.post('http://localhost:8080/toggleMoveImages', {'data' : e})
         if (req.status === 200){
             notification.success({
@@ -167,6 +203,9 @@ function CoverArtSettings({setTabsDisabled}){
 
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
 
         setPostDownloadSetting(prev => {
             return {...prev,  moveSwitchLoading : !prev.moveSwitchLoading}
@@ -178,6 +217,11 @@ function CoverArtSettings({setTabsDisabled}){
 
 
     const handleDeleteImage = async (e) => {
+        if (editImgCard === true){
+            operationInProgressErrorMessage()
+            return
+        }
+
         if (postDownloadSetting.moveSwitchChecked ){
             notification.error({
             message: 'Cannot enable delete when move is enabled',
@@ -192,6 +236,9 @@ function CoverArtSettings({setTabsDisabled}){
         })
         setDisableDockFunctionality(true)
         setTabsDisabled(true)
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
 
         const req = await axios.post('http://localhost:8080/toggleDeleteImages', {'data' : e})
         if (req.status === 200){
@@ -206,25 +253,32 @@ function CoverArtSettings({setTabsDisabled}){
 
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        } 
 
         setPostDownloadSetting(prev => {
             return {...prev, deleteSwitchLoading : !prev.deleteSwitchLoading}
         })
     }
     
-    
     return (
         <>
-            <div>
+            <div className="">
                 <div className="inline-block" ref={addCoverArtRef}>
-                    <UploadButton refresh={getNewCoverArt}/>  
+                    <UploadButton refresh={getNewCoverArt} operationInProgress={operationInProgress}/>  
                 </div>
                  
-                <div className="ml-[20px] flex -mt-[32px] ml-[505px]">
+                <div className="ml-[20px] flex -mt-[32px] ml-[505px] -mb-[32px]">
                     <Tooltip title="help">
-                            <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => startTour()}/>
+                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => startTour()}/>
                     </Tooltip>                                           
                 </div>
+
+                <div className='flex ml-[415px] inline-block' ref={favoritesRef}>
+                    <Button shape="circle" icon={favorites.coverArtSettings[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('coverArtSettings')}/>
+                </div>
+
             </div>
             
 
@@ -240,6 +294,7 @@ function CoverArtSettings({setTabsDisabled}){
                         key = {filename[1]}
                         imgClicked={imgClicked}
                         enlargenImg={true}
+                        operationInProgress={operationInProgress}
                         />
                     </div>                
                 ))}
@@ -256,7 +311,7 @@ function CoverArtSettings({setTabsDisabled}){
                             Edit art
                         </div>
                         <div className='mt-[30px] inline-block' ref={editSwitchCoverArtRef}> 
-                            <Switch onChange={() => setEditImgCard(!editImgCard)} />        
+                            <Switch onChange={() => setEditImgCard(!editImgCard)} disabled={operationInProgress}/>        
                         </div>     
                     </div>
 
@@ -270,7 +325,7 @@ function CoverArtSettings({setTabsDisabled}){
                         
                             <div className='mt-[30px] inline-block' ref={hideCoverArtRef}> 
                                 <Tooltip placement="right" title={hideText} >
-                                    <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} />        
+                                    <Switch  loading={switchLoading} value={disablePrevUsedStatus} onChange={(e) => handlePrevUsed(e)} disabled={operationInProgress}/>        
                                 </Tooltip>
                             </div>  
                         
@@ -288,7 +343,7 @@ function CoverArtSettings({setTabsDisabled}){
                         </div>
                         <div className='mt-[30px]  inline-block' ref={deleteCoverArtRef}> 
                             <Tooltip placement="right" title={deleteText} >
-                                <Switch  loading={postDownloadSetting.deleteSwitchLoading} value={postDownloadSetting.deleteSwitchChecked} onChange={(e) => handleDeleteImage(e)} /> 
+                                <Switch  loading={postDownloadSetting.deleteSwitchLoading} value={postDownloadSetting.deleteSwitchChecked} onChange={(e) => handleDeleteImage(e)} disabled={operationInProgress}/> 
                             </Tooltip>           
                         </div>  
                         
@@ -304,7 +359,7 @@ function CoverArtSettings({setTabsDisabled}){
                         </div>
                             <div className='mt-[30px]  inline-block' ref={moveCoverArtRef}> 
                                 <Tooltip placement="right" title={moveText} >
-                                    <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} />  
+                                    <Switch  loading={postDownloadSetting.moveSwitchLoading} value={postDownloadSetting.moveSwitchChecked} onChange={(e) => handleMovetoSubfolder(e)} disabled={operationInProgress}/>  
                                 </Tooltip>         
                             </div>
                     </div>
@@ -317,6 +372,7 @@ function CoverArtSettings({setTabsDisabled}){
 
             <div className="flex mx-auto justify-center mt-[20px] mb-[20px]">
                 <Pagination 
+                disabled={operationInProgress}
                 current={currPaginationPage}
                 showSizeChanger={false}
                 defaultCurrent={1} 
@@ -324,9 +380,7 @@ function CoverArtSettings({setTabsDisabled}){
                 onChange={(e)=> chooseWhichImagesToShow(e)}
                 />
             </div>
-            
             <Tour disabledInteraction={true} open={open} onClose={() => endTour()} steps={steps} />
-
             <div className="mb-[80px]"></div>
         </>
     )

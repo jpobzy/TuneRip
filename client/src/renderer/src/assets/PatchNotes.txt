@@ -1,3 +1,15 @@
+Version 1.2.5 Patch Notes
+- Fixed a bug where trying to reoreder multiple folders would only reorder the first folder
+- Added new Floating Lines background
+- Fixed a bug where trim button would stay disabled when trying to make an audio trim of with no changes to the original audio file
+- Renamed foldermerge on backend to MergeFolders for more consistency
+- Renamed selectBackground on backend to ChangeBackground for more consistency
+- Added small tour to edit channel card setting
+- Fixed video filter allowing any file type, now will only accept .txt 
+- Added favorites feature
+------------------------------------------------------------------------------
+
+
 Version 1.2.4 Patch Notes
 - Added search feature in track title column in the track database setting
 - Download track page now shows which track is being downloaded more clearly
@@ -5,6 +17,8 @@ Version 1.2.4 Patch Notes
 - Added feature to swap out channel pfp's
 - Added feature to edit an individual tracks track number in edit meta data settings
 - Added more information about a track after clicking on it in history
+- Fixed being able to spam trim button in audio trimmer setting
+- Fixed an issue in video filter where it would fail to finish loading after trying to filter a previously added url
 
 ------------------------------------------------------------------------------
 

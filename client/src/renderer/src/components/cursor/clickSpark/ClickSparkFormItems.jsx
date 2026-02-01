@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { useClickToggle } from '../../context/CursorContext';
 
-function ClickSparkFormItems({handleFormChange, formData}){
+function ClickSparkFormItems({handleFormChange, formData, operationInProgress}){
     const {reset, clickSparkSettings} = useClickToggle();
     return (
         <>
@@ -15,6 +15,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     >   
                             <ColorPicker 
                             allowClear
+                            disabled={operationInProgress}
                             onChange={c => {
                                 if (c.cleared){
                                     delete formData['sparkColor']
@@ -23,7 +24,6 @@ function ClickSparkFormItems({handleFormChange, formData}){
                                 }                                                
                             }}                                            
                             />
-                    
                     </Form.Item>
                 </div>
 
@@ -36,6 +36,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     min={clickSparkSettings.clickSparkFormSettings.sparkRadius.min}
                     max={clickSparkSettings.clickSparkFormSettings.sparkRadius.max}
                     step={clickSparkSettings.clickSparkFormSettings.sparkRadius.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
         
@@ -48,6 +49,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     min={clickSparkSettings.clickSparkFormSettings.sparkCount.min}
                     max={clickSparkSettings.clickSparkFormSettings.sparkCount.max}
                     step={clickSparkSettings.clickSparkFormSettings.sparkCount.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -60,6 +62,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     min={clickSparkSettings.clickSparkFormSettings.duration.min}
                     max={clickSparkSettings.clickSparkFormSettings.duration.max}
                     step={clickSparkSettings.clickSparkFormSettings.duration.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -73,6 +76,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     min={clickSparkSettings.clickSparkFormSettings.extraScale.min}
                     max={clickSparkSettings.clickSparkFormSettings.extraScale.max}
                     step={clickSparkSettings.clickSparkFormSettings.extraScale.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -85,6 +89,7 @@ function ClickSparkFormItems({handleFormChange, formData}){
                     min={clickSparkSettings.clickSparkFormSettings.sparkSize.min}
                     max={clickSparkSettings.clickSparkFormSettings.sparkSize.max}
                     step={clickSparkSettings.clickSparkFormSettings.sparkSize.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                
             </div> 

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider, Switch } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
+function FaultyTerminalBackground({setFormData, formData, backgroundForm, operationInProgress}){
     const {reset, faultyTerminalSettings} = toggleBackgroundSettings();
 
     return (
@@ -16,6 +16,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     >
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['tintColor']
@@ -36,6 +37,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.scale.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.scale.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.scale.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -50,6 +52,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.digitSize.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -63,6 +66,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.noiseAmplitude.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -76,6 +80,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.brightness.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.brightness.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.brightness.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -89,6 +94,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.scanlineIntensity.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -102,6 +108,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.curvature.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.curvature.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.curvature.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -116,6 +123,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     min={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.min}
                     max={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.max}
                     step={faultyTerminalSettings.faultyTerminalFormSettings.mouseStrength.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -124,7 +132,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     name="mouseReact"
                     label={'Mouse React'}
                     >
-                    <Switch />
+                    <Switch disabled={operationInProgress} />
                 </Form.Item>
 
                 <Form.Item
@@ -132,7 +140,7 @@ function FaultyTerminalBackground({setFormData, formData, backgroundForm}){
                     name="pageLoadAnimation"
                     label={'Page Load Animation'}
                     >
-                    <Switch />
+                    <Switch disabled={operationInProgress} />
                 </Form.Item>                                   
 
             </div> 

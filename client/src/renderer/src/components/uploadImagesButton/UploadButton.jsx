@@ -4,7 +4,7 @@ import { Button, Upload } from 'antd';
 import './uploadButton.css'
 import { App } from 'antd';
 
-export default function UploadButton({refresh}){
+export default function UploadButton({refresh, operationInProgress}){
     const { message } = App.useApp();	
     const props = {
     name: 'file',
@@ -30,6 +30,7 @@ export default function UploadButton({refresh}){
         accept='.png,.jpg,.jpeg'
       >
         <Button 
+        disabled={operationInProgress}
         className='custom-upload-button'
         icon={<UploadOutlined />}>Click to Upload your own album cover</Button>
       </Upload>      

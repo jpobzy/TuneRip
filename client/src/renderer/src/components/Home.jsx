@@ -119,6 +119,8 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     sseDownload.current.onmessage = (event) => {
       const data = JSON.parse(event.data)
       const message = data.message
+      console.log(`message: ${message}`)
+      console.log(data)
       
       if (data.statusCode){
         setResultStatusCode(parseInt(data.statusCode))
@@ -299,6 +301,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
         placement : 'topLeft'
       })  
     }
+
     return
   }
 
@@ -396,7 +399,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
 
   }
 
-  const handleChannelRemoved = () => {
+  function handleChannelRemoved(){
     getChannelsData();
   }
 
@@ -413,10 +416,14 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
     } 
   }
 
-  function openFolder(){
-    const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : responseData.downloadPath})
-  }
+  // function openFolder(){
+  //   const req = axios.post('http://localhost:8080/open-dir', {'downloadPath' : responseData.downloadPath})
+  // }
+
+  const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10']; 
+
   
+
 
 
   return (
@@ -435,7 +442,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                             {/* <div className=' mt-[100px] w-[800px] mx-auto justify-center inset-x-0  rounded-lg results '> */}
                             {/* <div className='mt-[100px] bg-[rgba(255,255,255,0.336)] border-[1px] inline-block rounded-lg border-gray-400 test' > */}
                             <div className='mt-[100px] bg-[#eeeeee] border-[1px] inline-block rounded-lg border-gray-200 test' >
-                              {resultStatusCode === 200  && ResultSuccess( responseData.message === 'No new tracks to download were found'  ? 'No New Downloads' : 'Successfully downloaded all tracks!', responseData.message, goBack, openFolder)}
+                              {resultStatusCode === 200  && ResultSuccess( responseData.message === 'No new tracks to download were found'  ? 'No New Downloads' : 'Successfully downloaded all tracks!', responseData.message, goBack, responseData.downloadPath)}
                               {resultStatusCode === 207  && ResultWarning('Some tracks failed to download', responseData.message, goBack)}   
                               {resultStatusCode === 400  && ResultError('Something went wrong, please check the logs', responseData.message, goBack)}
                             </div>
@@ -595,7 +602,7 @@ const Home = forwardRef(({collapseActiveKey, setCollapseActiveKey}, ref) => {
                               onClick={()=>handleChannelClicked(item[0])}
                               editChannels = {channelData.editChannels}
                               key = {item[0]}
-                              handleChanndelRemoved={handleChannelRemoved}
+                              handleChannelRemoved={handleChannelRemoved}
                               newestChannel={channelData.newestChannel}
                               pfpVersions = {channelData.pfpVersions}
                             /> 

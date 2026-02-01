@@ -3,8 +3,6 @@ import { AntDesignOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Space } from 'antd';
 import { createStyles } from 'antd-style';
 
-import { useTourContext } from 'components/context/SettingsTourContext';
-
 const useStyle = createStyles(({ prefixCls, css }) => ({
   linearGradientButton: css`
     &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
@@ -28,18 +26,17 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
     }
   `,
 }));
-const GradientSubmitButton = ({callbackFunction, buttonDisabled}) => {
+const GradientSubmitButton = ({callbackFunction, buttonDisabled, operationInProgress}) => {
   const { styles } = useStyle();
-  const {submitPlaylistsRef} = useTourContext();
   return (
-    <div className='inline-block' ref={submitPlaylistsRef}>
+    <div className='inline-block'>
       <ConfigProvider
         button={{
           className: styles.linearGradientButton,
         }}
       >
         <Space>
-          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />}  onClick={() => callbackFunction()}>
+          <Button type="primary" size="" loading={buttonDisabled} icon={<AntDesignOutlined />} disabled={operationInProgress} onClick={() => callbackFunction()}>
             Submit
           </Button>
 

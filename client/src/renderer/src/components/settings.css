@@ -6,3 +6,34 @@
 .ant-tabs .ant-tabs-nav .ant-tabs-nav-more{
     color: white;
 }
+
+
+.ant-btn-variant-outlined:disabled {
+  background-color: rgba(255, 255, 255, 0.336);
+  border-color: white;
+}
+
+.ant-btn-variant-solid:disabled{
+  background-color: rgba(255, 255, 255, 0.336);
+  border-color: white;
+}
+
+.ant-radio-button-wrapper-disabled{
+  background-color: rgba(255, 255, 255, 0.336);
+  border-color: white;
+}
+
+.ant-radio-group .ant-radio-button-wrapper.ant-radio-button-wrapper-disabled {
+  background-color: rgba(255, 255, 255, 0.336) ;
+  border-color: white;
+}
+
+.ant-input-number .ant-input-number-input{
+  background-color: rgba(255, 255, 255, 0.336) ;
+  border-color: white;
+}
+
+.ant-checkbox-wrapper-disabled{
+  background-color: rgba(255, 255, 255, 0.336) ;
+  border-color: white;
+}

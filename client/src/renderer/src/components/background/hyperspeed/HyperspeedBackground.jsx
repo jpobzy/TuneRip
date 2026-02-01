@@ -3,7 +3,7 @@ import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContex
 import { hyperspeedPresets } from '../hyperspeedPresets/HyperspeedPresets';
 import { useState } from 'react';
 
-function HyperspeedBackground({setFormData, handleFormChange, formData, backgroundForm, setSelectedPreset}){
+function HyperspeedBackground({setFormData, handleFormChange, formData, backgroundForm, setSelectedPreset, operationInProgress}){
 
     const hyperspeedPresetOptions = [
         { value: 'Default', label: 'Default' },
@@ -23,11 +23,12 @@ function HyperspeedBackground({setFormData, handleFormChange, formData, backgrou
                     label="preset"
                     initialValue={'Default'}
                 >
-                        <Select
-                        style={{ width: 120 }}
-                        onChange={(e) => setSelectedPreset(e)}
-                        options={hyperspeedPresetOptions}
-                        />
+                    <Select
+                    style={{ width: 120 }}
+                    onChange={(e) => setSelectedPreset(e)}
+                    options={hyperspeedPresetOptions}
+                    disabled={operationInProgress}
+                    />
                 </Form.Item>            
             </div>
         </>

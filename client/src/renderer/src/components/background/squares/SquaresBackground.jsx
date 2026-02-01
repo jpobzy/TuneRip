@@ -2,7 +2,7 @@ import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
 
-function SquaresBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function SquaresBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, squaresSettings} = toggleBackgroundSettings();
 
 
@@ -48,8 +48,8 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                         options={options}
                         optionType="button"
                         buttonStyle="solid"
-                        >                        
-                        </Radio.Group>  
+                        disabled={operationInProgress}
+                        />               
                 </Form.Item>
 
                <Form.Item
@@ -61,6 +61,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                     min={squaresSettings.squaresFormSettings.squareSize.min}
                     max={squaresSettings.squaresFormSettings.squareSize.max}
                     step={squaresSettings.squaresFormSettings.squareSize.step} 
+                    disabled={operationInProgress}
                     />
                </Form.Item>
 
@@ -73,6 +74,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                     min={squaresSettings.squaresFormSettings.speed.min}
                     max={squaresSettings.squaresFormSettings.speed.max}
                     step={squaresSettings.squaresFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                </Form.Item> 
 
@@ -84,6 +86,7 @@ function SquaresBackground({setFormData, handleFormChange, formData, backgroundF
                     >
                         <ColorPicker
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['borderColor']

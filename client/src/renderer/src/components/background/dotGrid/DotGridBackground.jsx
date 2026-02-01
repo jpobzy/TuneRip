@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function DotGridBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function DotGridBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, dotGridSettings} = toggleBackgroundSettings();
 
     return (
@@ -16,6 +16,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     >    
                             <ColorPicker
                             allowClear
+                            disabled={operationInProgress}
                             onChange={c => {
                                 if (c.cleared){
                                     delete formData['baseColor']
@@ -36,6 +37,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     >       
                             <ColorPicker 
                             allowClear
+                            disabled={operationInProgress}
                             onChange={c => {
                                 if (c.cleared){
                                     delete formData['activeColor']
@@ -57,6 +59,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0}
                     max={50}
                     step={1} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -69,6 +72,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0}
                     max={100}
                     step={1} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                           
 
@@ -81,6 +85,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0}
                     max={500}
                     step={10} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>     
 
@@ -93,6 +98,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0}
                     max={500}
                     step={10} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>     
 
@@ -105,6 +111,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0}
                     max={20}
                     step={1} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>     
 
@@ -117,6 +124,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={100}
                     max={2000}
                     step={50} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>     
 
@@ -130,6 +138,7 @@ function DotGridBackground({setFormData, handleFormChange, formData, backgroundF
                     min={0.1}
                     max={5}
                     step={0.1} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>     
             </div>   

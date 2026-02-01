@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function BalatroBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function BalatroBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, balatroSettings} = toggleBackgroundSettings();
 
     return (
@@ -14,6 +14,7 @@ function BalatroBackground({setFormData, handleFormChange, formData, backgroundF
                 >       
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color1']
@@ -31,6 +32,7 @@ function BalatroBackground({setFormData, handleFormChange, formData, backgroundF
                 >       
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color2']
@@ -48,6 +50,7 @@ function BalatroBackground({setFormData, handleFormChange, formData, backgroundF
                 >       
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color3']
@@ -68,6 +71,7 @@ function BalatroBackground({setFormData, handleFormChange, formData, backgroundF
                     min={balatroSettings.balatroFormSettings.pixelFilter.min}
                     max={balatroSettings.balatroFormSettings.pixelFilter.max}
                     step={balatroSettings.balatroFormSettings.pixelFilter.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                     
             </div>

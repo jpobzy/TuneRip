@@ -1,5 +1,5 @@
 import { Button, Select, Form, Input, ColorPicker, ConfigProvider, Slider, Switch} from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toggleBackgroundSettings } from "components/context/BackgroundSettingsContext";
 import SquaresBackground from "components/background/squares/SquaresBackground";
 import AuroraBackground from "components/background/aurora/AuroraBackground";
@@ -15,11 +15,18 @@ import LetterGlitchBackground from "components/background/letterGlitch/LetterGli
 import LiquidChromeBackground from "components/background/liquidChrome/LiquidChromeBackground";
 import BalatroBackground from "components/background/balatro/BalatroBackground";
 import PrismaticBurstBackground from "components/background/prismaticBurst/PrismaticBurstBackground";
+import FloatingLinesBackground from "components/background/floatingLines/FloatingLinesBackground";
+import { App } from 'antd';
 import axios from 'axios';
 import { useToggle } from "components/context/UseContext";
 
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function SelectBackground({setTabsDisabled}){
+
+function ChangeBackground({setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const {background, setChosenBackground, reset, 
         prevEditedBackgrounds, getData,
         auroraSettings, veilSettings, galaxySettings, 
@@ -28,7 +35,7 @@ function SelectBackground({setTabsDisabled}){
         iridescenceSettings, wavesSettings,
         letterGlitchSettings, squaresSettings,
         liquidChromeSettings, balatroSettings,
-        prismaticBurstSettings,
+        prismaticBurstSettings, floatingLinesSettings
     } = toggleBackgroundSettings();
 
     const [selectChosen, setSelectChosen] = useState('')
@@ -37,10 +44,12 @@ function SelectBackground({setTabsDisabled}){
     const [formData, setFormData] = useState({});
     const [selectedPreset, setSelectedPreset] = useState('')
     const [selectedHasPrevData, setSelectedHasPrevData] = useState(false)
-    const {setShowSwitch} = useToggle()
+    const {setShowSwitch, setDisableUISwitch} = useToggle()
 
     const {setDisableDockFunctionality} = useToggle()
-
+    const favoritesRef = useRef(null);
+    const { message } = App.useApp();
+    
     const newLabel = (title) => {
         return (
             <>
@@ -71,6 +80,7 @@ function SelectBackground({setTabsDisabled}){
         { value: 'liquidChrome', label: 'Liquid Chrome' }, 
         { value: 'balatro', label: 'Balatro' }, 
         { value: 'prismaticBurst', label: 'Prismatic Burst' }, 
+        { value: 'floatingLines', label: newLabel('FloatingLines') }, 
     ]
 
 
@@ -396,18 +406,51 @@ function SelectBackground({setTabsDisabled}){
                     prismaticBurstSettings.updatePrismaticBurstColorIndex(2, formData.color3)
                 }
 
+            } else if (selectChosen === 'floatingLines'){
+                floatingLinesSettings.setFloatingLinesBackgroundSettings(prev => {
+                    const updates = {}
+                    if (formData.animationSpeed) updates.animationSpeed = formData.animationSpeed
+                    return {...prev, ...updates}
+                })
+
+                if (formData.lineCount1){
+                    floatingLinesSettings.updateFloatingLinesLineCountIndex(0, formData.lineCount1)
+                }
+                if (formData.lineCount2){
+                   floatingLinesSettings.updateFloatingLinesLineCountIndex(1, formData.lineCount2) 
+                } 
+                if (formData.lineCount3){
+                  floatingLinesSettings.updateFloatingLinesLineCountIndex(2, formData.lineCount3)  
+                } 
+
+                if (formData.lineDistance1){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(0, formData.lineDistance1) 
+                } 
+                if (formData.lineDistance2){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(1, formData.lineDistance2) 
+                } 
+                if (formData.lineDistance3){
+                   floatingLinesSettings.updateFloatingLinesLineDistanceIndex(2, formData.lineDistance3) 
+                } 
+               
             }
         }
         setChosenBackground(selectChosen)
 
         setDisableDockFunctionality(true)
-        setTabsDisabled(true)      
-          
+        setTabsDisabled(true)  
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
+        
+        
         await axios.post('http://localhost:8080/savebackgroundsettings', formData, {params : {'background' : selectChosen}})
     
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
-    
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
     }
 
     const handleDefaultSettings = () => {
@@ -420,38 +463,53 @@ function SelectBackground({setTabsDisabled}){
         setChosenBackground(selectChosen)
         setDisableDockFunctionality(true)
         setTabsDisabled(true)   
-        
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
+
         await axios.post('http://localhost:8080/savebackgroundsettings', {params : {'background' : selectChosen}})
         
         setDisableDockFunctionality(false)
         setTabsDisabled(false)        
         setSelectedHasPrevData(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
     }   
 
     useEffect(()=> {
         setShowSwitch(true)
 
+        if (operationInProgress === true){
+            setDisableUISwitch(true)
+        }else{
+            setDisableUISwitch(false)
+        }  
+
         return () =>{
-            setShowSwitch(false)
+            setShowSwitch(false)      
         }
-    }, [])
+    }, [operationInProgress])
 
     return (
         <>
-            <div className="-mt-[30px]">
-                {/* {!selectChosen && 
-                    <div className="flex absolute mt-[6px] ml-[200px] text-red-500">
-                        NEW
-                    </div>                
-                } */}
+            {/* <div className="-mt-[30px]"> */}
+            <div className={currentTabKey === 'changeBackground' ? "-mt-[30px]" : ''}>
+                <div>
+                    <Select
+                        showSearch={true}
+                        defaultValue=""
+                        style={{ width: 220 }}
+                        value={selectChosen}
+                        onChange={(e) => changeBackground(e)}
+                        options={backgroundOptions}
+                        disabled={operationInProgress}
+                    />     
+                    <div className='flex ml-[5px] inline-block' ref={favoritesRef}>
+                        <Button shape="circle" icon={favorites.changeBackground[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('changeBackground')}/>
+                    </div>
+                </div>
 
-                <Select
-                    defaultValue=""
-                    style={{ width: 220 }}
-                    value={selectChosen}
-                    onChange={(e) => changeBackground(e)}
-                    options={backgroundOptions}
-                    />
 
 
                 <ConfigProvider
@@ -473,61 +531,61 @@ function SelectBackground({setTabsDisabled}){
                         onValuesChange={(e, a)=>handleFormChange(e, a)}
                         >
                             {selectChosen === 'aurora' &&
-                                <AuroraBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <AuroraBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             } 
                             {selectChosen === 'veil' &&
-                                <DarkVeilBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <DarkVeilBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }      
                             {selectChosen === 'galaxy' &&
-                                <GalaxyBackround handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <GalaxyBackround handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }  
                             {selectChosen === 'lightning' &&
-                                <LightningBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <LightningBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'faultyTerminal' &&
-                                <FaultyTerminalBackground formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <FaultyTerminalBackground formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'dotGrid' && 
-                                <DotGridBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <DotGridBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'hyperspeed' &&
-                                <HyperspeedBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} setSelectedPreset={setSelectedPreset}/>
+                                <HyperspeedBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} setSelectedPreset={setSelectedPreset} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'iridescence' &&
-                                <IridescenceBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <IridescenceBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }                            
                             {selectChosen === 'waves' &&
-                                <WavesBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <WavesBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             } 
                             {selectChosen === 'letterGlitch' &&
-                                <LetterGlitchBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <LetterGlitchBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'squares' &&
-                                <SquaresBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <SquaresBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'liquidChrome' &&
-                                <LiquidChromeBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <LiquidChromeBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'balatro' &&
-                                <BalatroBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <BalatroBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
                             {selectChosen === 'prismaticBurst' &&
-                                <PrismaticBurstBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData}/>
+                                <PrismaticBurstBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
                             }
+                            {selectChosen === 'floatingLines' &&
+                                <FloatingLinesBackground handleFormChange={handleFormChange} formData={formData} backgroundForm={backgroundForm} setFormData={setFormData} operationInProgress={operationInProgress}/>
+                            }
+
+
                             {selectChosen &&
                                 <Form.Item>
-                                    {/* {!selectedHasPrevData &&
-                                        
-                                    } */}
-                                    
                                     {selectedHasPrevData  
-                                        ? <Button type="primary" onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
+                                        ? <Button type="primary" disabled={operationInProgress} onClick={()=>loadPrevBackgroundSettings()}>Load prev settings</Button>
                                         : <>
-                                            <Button type="primary" onClick={()=>saveChanges()}>Save</Button>
+                                            <Button type="primary" disabled={operationInProgress}  onClick={()=>saveChanges()}>Save</Button>
                                             { selectChosen == background &&
-                                            <Button type="primary" onClick={()=>handleDefaultSettings()}>Revert to default</Button>
+                                            <Button type="primary" disabled={operationInProgress}  onClick={()=>handleDefaultSettings()}>Revert to default</Button>
                                             }
-                                            
                                         </>
                                     }
                                 </Form.Item>                                         
@@ -540,4 +598,4 @@ function SelectBackground({setTabsDisabled}){
     )
 }
 
-export default SelectBackground;
+export default ChangeBackground;

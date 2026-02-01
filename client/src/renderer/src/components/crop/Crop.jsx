@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Slider, Button, Divider, Result, Tour, InputNumber, ConfigProvider, Spin, Input } from 'antd';
+import { Slider, Button, Divider, Result, Tour, InputNumber, ConfigProvider, Input } from 'antd';
 import Cropper from "react-easy-crop";
 import axios from "axios";
 import { SearchOutlined, QuestionCircleOutlined, QuestionCircleTwoTone, QuestionCircleFilled, QuestionOutlined  } from '@ant-design/icons';
@@ -10,7 +10,12 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { resultToggle } from "../context/ResultContext";
 import { useToggle } from "../context/UseContext";
 
-function Crop({setTabsDisabled}){
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
+
+function Crop({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
     const [cropData, setCropData] = useState({})
@@ -22,9 +27,11 @@ function Crop({setTabsDisabled}){
     const refZoomInput = useRef(null);
     const [blobURL, setBlobURL] = useState()
     const [fileData, setFileData] = useState()
-    const [validFile, setValidFile] = useState(true)
+    // const [validFile, setValidFile] = useState(true)
     const { message } = App.useApp();	
 
+
+    const favoritesRef = useRef(null);
     const {setDisableDockFunctionality} = useToggle()
     
     const {ResultSuccess, ResultFailed, Loading} = resultToggle()
@@ -39,6 +46,11 @@ function Crop({setTabsDisabled}){
           title: 'Add an image to crop',
           description: 'Add an image to the crop editor which can be used for any cover art.',
           target: () => refAdd.current,
+        },
+        {
+            title: 'Add to favorites',
+            description: 'Add this feature to your favorites for quick access.',
+            target: () => favoritesRef.current,
         },
         {
           title: 'Crop the image here',
@@ -81,11 +93,16 @@ function Crop({setTabsDisabled}){
     async function preview(){
         
         if (fileData){
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(true)   
+            }    
             const formData = new FormData()
             formData.append('imageFile', fileData);
             formData.append('cropData', JSON.stringify(cropData))
-            const response = await axios.post('http://localhost:8080/croppreview',
-                formData,)
+            const response = await axios.post('http://localhost:8080/croppreview', formData,)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(false)   
+            } 
         }else{
             message.error('There is no cropped image to preview')
         }
@@ -95,9 +112,11 @@ function Crop({setTabsDisabled}){
     async function save(){
         if (fileData){
             setIsLoading(true)
-
             setTabsDisabled(true)
             setDisableDockFunctionality(true)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(true)   
+            }    
 
             const formData = new FormData()
             formData.append('imageFile', fileData);
@@ -116,6 +135,10 @@ function Crop({setTabsDisabled}){
             
             setTabsDisabled(false)
             setDisableDockFunctionality(false)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(false)   
+            }    
+
 
         }else{
             message.error('There is no cropped image to save')
@@ -128,7 +151,6 @@ function Crop({setTabsDisabled}){
         setCropSubmessage('')
     }
 
-
     return(
         <div className=" mb-[100px]">
             <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
@@ -139,13 +161,14 @@ function Crop({setTabsDisabled}){
                             <Input 
                             type="file"
                             accept='.png,.jpg,.jpeg'
+                            disabled={operationInProgress}
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file.type === 'image/jpeg' || file.type === 'image/png'){
                                     const url = URL.createObjectURL(file); 
                                     setBlobURL(url)
                                     setFileData(file)   
-                                    setValidFile(true)
+                                    // setValidFile(true)
                                 }else{
                                     message.error('File is not a png or jpeg');                       
                                 }
@@ -155,11 +178,16 @@ function Crop({setTabsDisabled}){
      
 
                     </div>
-                   <div className="flex ml-[455px] -mt-[32px] mb-[10px]">
-                            <Tooltip title="help" >
-                                <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
-                            </Tooltip>                                  
-                        </div>
+                   <div className="flex ml-[455px] -mt-[32px] -mb-[31.5px]">
+                        <Tooltip title="help" >
+                            <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
+                        </Tooltip>                                  
+                    </div>
+
+                    <div className='flex ml-[315px] mb-[30px] inline-block' ref={favoritesRef}>
+                        <Button shape="circle" icon={favorites.crop[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('crop')}/>
+                    </div>
+
                     <div ref={refCropArea} className='mx-auto relative w-[500px] h-[400px] bg-black'>     
                         <Cropper
                         image={blobURL}
@@ -175,8 +203,8 @@ function Crop({setTabsDisabled}){
                     <div>
                         <div className="flex justify-center">
                             <div className="flex gap-2 w-fit">
-                                <Button ref={refPreview} type="primary" onClick={preview}>Preview</Button>
-                                <Button ref={refSave} type="primary" onClick={save}>Save</Button>                                  
+                                <Button ref={refPreview} type="primary" disabled={operationInProgress} onClick={preview}>Preview</Button>
+                                <Button ref={refSave} type="primary" disabled={operationInProgress} onClick={save}>Save</Button>                                  
                             </div>
                         </div>
                     
@@ -193,6 +221,7 @@ function Crop({setTabsDisabled}){
                                 }}
                                 >
                                 <Slider   
+                                    disabled={operationInProgress}
                                     value={zoom}
                                     defaultValue={30} 
                                     onChange={onChange}
@@ -204,6 +233,7 @@ function Crop({setTabsDisabled}){
                             </div>
                             <div ref={refZoomInput}>
                                 <InputNumber
+                                disabled={operationInProgress}
                                 min={1}
                                 max={3}
                                 style={{ margin: '0 16px' }}

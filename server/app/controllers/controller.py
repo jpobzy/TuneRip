@@ -15,6 +15,7 @@ from mutagen.id3 import ID3, TRCK
 from app.controllers.imageSettingsController import imageSettingsController
 import random, string
 from urllib.parse import parse_qs
+import pywinctl as pwc
 
 class controller():
     def __init__(self, databaseFolderRoute, logger):
@@ -229,7 +230,7 @@ class controller():
             return ({"message": "Succcess"}, 200) if len(failures) == 0 else ({"message" : f'Failed to add tracks: {failures}'}, 207)
         
         else:
-            exists = ('Track already exists', 304)
+            exists = ('Track already exists', 200)
             success = ('Track has been added to the DB', 200)
             track = str(json.loads(request.data)['ytLink'].strip())
             if track.startswith('https://www.youtube.com/watch?v=') and self.db.checkIfTrackExists(track.replace('https://www.youtube.com/watch?v=', '')):
@@ -400,6 +401,7 @@ class controller():
         try:
             for playlist in request['playlist']:
                 playlistPath = Path(self.projRoot / playlist)
+                self.logger.logInfo(f'Attempting to reorder folder [{playlistPath}]')
                 if not playlistPath.exists():
                     self.logger.logError(f'PATH [{playlistPath}] WAS NOT FOUND')
                     return 'Path not found', 404
@@ -420,7 +422,8 @@ class controller():
                             audio['TRCK'] = TRCK(encoding=3, text=str(trackNum)) # Track number
                             audio.save()
                         trackNum += 1
-                    return "Success", 200
+                    self.logger.logInfo(f'Reorder complete for folder [{playlistPath}]')
+            return "Success", 200
                 
         except Exception as error:
             self.logger.logError('ERROR REORDERING TRACKS FAILED')
@@ -435,20 +438,17 @@ class controller():
         for track in playlistPath.iterdir():
             if track.suffix == '.mp3':
                 audio = MP3(track, ID3=ID3)
-                coverArtFile = str(audio['COMM::XXX'])
-                if len(coverArtFile) > 0:
-                    # path = Path(coverArtPath)
-                    # res['coverArtFile'] = path.parts[-1]
-                    res['coverArtFile'] = coverArtFile
+                if 'COMM::XXX' in str(audio) and len(str(audio['COMM::XXX'])) > 0:
+                    res['coverArtFile'] = str(audio['COMM::XXX'])
 
-                artist = str(audio['TPE1'])
-                album = str(audio['TALB'])
+                if 'TPE1' in audio and len(str(audio['TPE1'])) > 0:
+                    res['artist'] = str(audio['TPE1']) # artist
+
+                if 'TALB' in audio and len(str(audio['TALB'])) > 0:
+                    res['album'] = str(audio['TALB']) # artist
+
                 if 'TCON' in audio:
-                    genre = str(audio['TCON'])
-                    res['genre'] = genre
-
-                res['artist'] = artist
-                res['album'] = album
+                    res['genre'] = str(audio['TCON'])
                 
                 break
                 
@@ -476,6 +476,9 @@ class controller():
         fullPath = Path(self.projRoot) / playlistPath
         newTitle = playlistData.get('title')
         selectedTrack = playlistData.get('selectedTrack')
+        if selectedTrack: 
+            selectedTrack = selectedTrack.split('- ', 1)[-1]
+
         trackNumber = playlistData.get('trackNumber')
 
 
@@ -509,7 +512,7 @@ class controller():
             self.logger.logError(error)
             raise Exception(f'Error when trying to update filename in channels db')
 
-        return f'Success', 200
+        return {'message' : f'Successfully edited tracks meta data in folder {fullPath}', 'directory' : f'{fullPath}'}
 
 
     def clientMessageFormatter(self, message):
@@ -728,11 +731,11 @@ class controller():
                     
             if self.downloadCount > 0:
                 if erorrCount > 0:
-                    yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
+                    yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207, 'downloadPath': str(downloadPath)})
                 else:
-                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200, 'downloadPath': str(downloadPath)})
             else:
-                yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200, 'downloadPath': str(downloadPath)})
 
         
         elif (url and url.startswith('https://www.youtube.com/watch?v=')) or (url and url.startswith('https://youtu.be/')):
@@ -790,9 +793,9 @@ class controller():
 
            
             if erorrCount > 0:
-                yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
+                yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207, 'downloadPath': str(downloadPath)})
             else:
-                yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200})
+                yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200, 'downloadPath': str(downloadPath)})
 
 
         else:
@@ -821,7 +824,8 @@ class controller():
         
             if Path(downloadPath).exists():
                 self.trackNum = sum(1 if '.mp3' in str(i) else 0 for i in Path(downloadPath).iterdir()) + 1
-   
+
+
             try:
                 c = Channel(ytLink)
                 erorrCount = 0
@@ -869,19 +873,19 @@ class controller():
                 
                 if self.downloadCount > 0:
                     if erorrCount > 0:
-                        yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207})
+                        yield from self.clientMessageFormatter({"message" :  f'There were some tracks that failed to download, please check the logs for more info', "statusCode" : 207, 'downloadPath': str(downloadPath)})
                     else:
                         if self.downloadCount == 1:
-                            yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200})
+                            yield from self.clientMessageFormatter({"message" : f'Downloaded 1 track which can be found in {downloadPath}', "statusCode" : 200, 'downloadPath': str(downloadPath)})
                         else:
-                            yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200})
+                            yield from self.clientMessageFormatter({"message" : f'Downloaded {self.downloadCount} tracks which can be found in {downloadPath}', "statusCode" : 200, 'downloadPath': str(downloadPath)})
                 else:
-                    yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200})
+                    yield from self.clientMessageFormatter({"message" : "No new tracks to download were found", "statusCode" : 200, 'downloadPath': str(downloadPath)})
             
             except Exception as error:
                 self.logger.logInfo(f'Channel [{ytLink}] could not be found, possible it was taken down')
                 self.logger.logError(error)
-                yield from self.clientMessageFormatter({"message" :  f'Channel [{ytLink}] could not be found, possible it was taken down', "statusCode" : 400})
+                yield from self.clientMessageFormatter({"message" :  f'Channel [{ytLink}] could not be found, possible it was taken down', "statusCode" : 400, 'downloadPath': str(downloadPath)})
                 yield from self.clientMessageFormatter({"message" : f"Completed download"}) 
                 return 'ok'
 
@@ -946,7 +950,8 @@ class controller():
 
             for mfile in sorted(data, key=lambda file: int(str(MP3(file, ID3=ID3)['TRCK']))):
                 # res.append({'value': mfile.parts[-1], 'label': mfile.parts[-1]})
-                res.append({'value': mfile.parts[-1], 'label': f'#{int(str(MP3(mfile, ID3=ID3)['TRCK']))} - {mfile.parts[-1]}'})
+                # res.append({'value': mfile.parts[-1], 'label': f'#{int(str(MP3(mfile, ID3=ID3)['TRCK']))} - {mfile.parts[-1]}'})
+                res.append({'value': f'#{int(str(MP3(mfile, ID3=ID3)['TRCK']))} - {mfile.parts[-1]}', 'label': f'#{int(str(MP3(mfile, ID3=ID3)['TRCK']))} - {mfile.parts[-1]}'})
 
             # for track in path.iterdir():
             #     if track.suffix == '.mp3':
@@ -982,7 +987,7 @@ class controller():
             self.logger.logError('Error when trying to open folder directory')
             self.logger.logError(error)
             raise Exception(error)
-
+        
         os.startfile(dir)
         return 'ok'
     

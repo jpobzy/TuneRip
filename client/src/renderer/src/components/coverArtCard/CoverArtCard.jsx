@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react'
 import './CoverArtImages.css'
-import { Button, Popconfirm, Image} from 'antd';
+import { Button, Popconfirm, Image, App } from 'antd';
 import minusIcon from '../../assets/minusIcon.svg'
 import axios from 'axios';
 import { useToggle } from '../context/UseContext';
 
 
-export default function CoverArtCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg, prevChannelCoverArtArr}) {
+export default function CoverArtCard({filename, cardClicked, previousImg, edit, refresh, imgClicked, enlargenImg, prevChannelCoverArtArr, operationInProgress}) {
     const [loaded, setLoaded] = useState(false);
     const {setDisableDockFunctionality} = useToggle()
+    const { message, notification  } = App.useApp();
 
     async function deleteImg() {
+        if (operationInProgress === true){
+            notification.error({
+            message : 'Cannot delete an image while there is an operation going',
+            description : 'Please wait for the operation to finish before deleting the image',
+            placement : 'topLeft'
+            })    
+            return
+        }
+
         setDisableDockFunctionality(true)
         const deleteReq = await axios.delete('http://localhost:8080/deleteimg', {data: {'filename': filename}})
         if (deleteReq.status === 200 || deleteReq.status === 204) {
@@ -48,7 +58,7 @@ export default function CoverArtCard({filename, cardClicked, previousImg, edit, 
                         <Image 
                         className='image relative'
                         src={`http://localhost:8080/getCoverArt/${filename}`} 
-                        preview={enlargenImg}
+                        preview={enlargenImg && !operationInProgress}
                         // style={{display: loaded ? 'block' : 'none'}}
                         onLoad={() => setLoaded(true)}
                         />

@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider, Switch } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function GalaxyBackround({setFormData, handleFormChange, formData, backgroundForm}){
+function GalaxyBackround({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, galaxySettings} = toggleBackgroundSettings();
 
     return (
@@ -18,6 +18,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.starSpeed.min}
                     max={galaxySettings.galaxyFormSettings.starSpeed.max}
                     step={galaxySettings.galaxyFormSettings.starSpeed.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -31,6 +32,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.glowIntensity.min}
                     max={galaxySettings.galaxyFormSettings.glowIntensity.max}
                     step={galaxySettings.galaxyFormSettings.glowIntensity.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -44,6 +46,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.saturation.min}
                     max={galaxySettings.galaxyFormSettings.saturation.max}
                     step={galaxySettings.galaxyFormSettings.saturation.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                           
 
@@ -57,6 +60,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.hueShift.min}
                     max={galaxySettings.galaxyFormSettings.hueShift.max}
                     step={galaxySettings.galaxyFormSettings.hueShift.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item>                           
 
@@ -70,6 +74,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.twinkleIntensity.min}
                     max={galaxySettings.galaxyFormSettings.twinkleIntensity.max}
                     step={galaxySettings.galaxyFormSettings.twinkleIntensity.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -79,7 +84,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     label={'Transparent'}
                     initialValue={galaxySettings.galaxyBackgroundSettings.transparent}
                     >
-                    <Switch />
+                    <Switch disabled={operationInProgress} />
                 </Form.Item>
 
                 <Form.Item 
@@ -92,6 +97,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.starSpeed.min}
                     max={galaxySettings.galaxyFormSettings.starSpeed.max}
                     step={galaxySettings.galaxyFormSettings.starSpeed.step}
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
 
@@ -105,6 +111,7 @@ function GalaxyBackround({setFormData, handleFormChange, formData, backgroundFor
                     min={galaxySettings.galaxyFormSettings.speed.min}
                     max={galaxySettings.galaxyFormSettings.speed.max}
                     step={galaxySettings.galaxyFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item>   
             </div> 

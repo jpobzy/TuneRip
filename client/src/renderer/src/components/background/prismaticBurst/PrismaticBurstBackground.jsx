@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Flex, Form, Radio, Slider } from 'antd';
 import { toggleBackgroundSettings } from '../../context/BackgroundSettingsContext';
 
-function PrismaticBurstBackground({setFormData, handleFormChange, formData, backgroundForm}){
+function PrismaticBurstBackground({setFormData, handleFormChange, formData, backgroundForm, operationInProgress}){
     const {reset, prismaticBurstSettings} = toggleBackgroundSettings();
 
     return (
@@ -15,6 +15,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     >   
                         <ColorPicker 
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color1']
@@ -34,6 +35,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     >
                         <ColorPicker
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color2']
@@ -54,6 +56,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     >
                         <ColorPicker
                         allowClear
+                        disabled={operationInProgress}
                         onChange={c => {
                             if (c.cleared){
                                 delete formData['color3']
@@ -75,6 +78,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     min={prismaticBurstSettings.prismaticBurstFormSettings.intensity.min}
                     max={prismaticBurstSettings.prismaticBurstFormSettings.intensity.max}
                     step={prismaticBurstSettings.prismaticBurstFormSettings.intensity.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -88,6 +92,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     min={prismaticBurstSettings.prismaticBurstFormSettings.speed.min}
                     max={prismaticBurstSettings.prismaticBurstFormSettings.speed.max}
                     step={prismaticBurstSettings.prismaticBurstFormSettings.speed.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -100,6 +105,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     min={prismaticBurstSettings.prismaticBurstFormSettings.distort.min}
                     max={prismaticBurstSettings.prismaticBurstFormSettings.distort.max}
                     step={prismaticBurstSettings.prismaticBurstFormSettings.distort.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 
@@ -113,6 +119,7 @@ function PrismaticBurstBackground({setFormData, handleFormChange, formData, back
                     min={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.min}
                     max={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.max}
                     step={prismaticBurstSettings.prismaticBurstFormSettings.rayCount.step} 
+                    disabled={operationInProgress}
                     />
                 </Form.Item> 
 

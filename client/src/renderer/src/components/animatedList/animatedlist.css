@@ -67,3 +67,21 @@
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
+
+
+
+.failed-item {
+  padding: 16px;
+  background-color: #e70000;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.failed-item.selected {
+  background-color: #222;
+}
+
+.failed-item-text {
+  color: white;
+  margin: 0;
+}

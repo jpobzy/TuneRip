@@ -7,8 +7,12 @@ import fileDownload from 'js-file-download'
 import { useToggle } from 'components/context/UseContext';
 import audioExample from 'assets/audioTrimExample.mp3'
 import { QuestionOutlined } from '@ant-design/icons';
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function AudioTrimmer({setTabsDisabled}){
+function AudioTrimmer({setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
 
     const [start, setStart] = useState(null);
     const [end, setEnd] = useState(null);
@@ -20,10 +24,11 @@ function AudioTrimmer({setTabsDisabled}){
     const [filename, setFilename] = useState(null)
     const [openTour, setTourOpen] = useState(false);  
     const [inputPrefix, setInputPrefix] = useState('')
+    const [trimButtonDisabled, setTrimButtonDisabled] = useState(false)
 
     const uploadRef = useRef(null)
     const trimRef = useRef(null)
-
+    const favoritesRef = useRef(null);
 
     const handleAddFile = (e) => {
         setFilename(e.target.files[0].name)
@@ -60,11 +65,12 @@ function AudioTrimmer({setTabsDisabled}){
     }
 
     const handleDownload = async () => {
+        
         if (start === '00:00' && end === trackLength){
             message.error('No audio trim was detected')
             return
         }
-
+        setTrimButtonDisabled(true)
         const formData = new FormData();
         
         formData.append('startTime', start)
@@ -73,6 +79,9 @@ function AudioTrimmer({setTabsDisabled}){
 
         setDisableDockFunctionality(true)
         setTabsDisabled(true)
+        if (currentTabKey === 'fav'){
+            setOperationInProgress(true)   
+        }    
 
         const req = await axios.post('http://localhost:8080/trimAudio', 
             formData, 
@@ -87,8 +96,12 @@ function AudioTrimmer({setTabsDisabled}){
             fileDownload(req.data, filename)
         }
 
+        setTrimButtonDisabled(false)
         setDisableDockFunctionality(false)
         setTabsDisabled(false)
+      	if (currentTabKey === 'fav'){
+            setOperationInProgress(false)   
+        }    
     }
 
     
@@ -126,22 +139,29 @@ function AudioTrimmer({setTabsDisabled}){
     ]
 
 
-
     return (
         <>
-            <div ref={uploadRef}  className='w-[220px]  justify-center mx-auto -mt-[20px] '>
-                <Input
-                prefix={inputPrefix}
-                type="file"
-                accept="audio/*"
-                onChange={(e) => handleAddFile(e)}
-                />
+            <div>
+                <div ref={uploadRef}  className={`w-[220px]  justify-center mx-auto  ${currentTabKey === 'audioTrimmer' ? "-mt-[20px]" : ''}`}>
+                    <Input
+                    disabled={operationInProgress}
+                    prefix={inputPrefix}
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => handleAddFile(e)}
+                    />
+                </div>
+                <div className="flex -mt-[32px] ml-[465px] -mb-[32px]" >
+                    <Tooltip title="help">
+                        <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => loadDemo()}/>
+                    </Tooltip>                                    
+                </div>          
+                <div className='flex ml-[335px] inline-block' ref={favoritesRef}>
+                    <Button shape="circle" icon={favorites.audioTrimmer[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('audioTrimmer')}/>
+                </div>                          
             </div>
-            <div className="flex -mt-[32px] ml-[465px]" >
-                <Tooltip title="help">
-                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => loadDemo()}/>
-                </Tooltip>                                    
-            </div>           
+
+
             {file && 
             <>  
                 <div className='mt-[20px]'>
@@ -164,7 +184,7 @@ function AudioTrimmer({setTabsDisabled}){
 
 
                     <div className='mt-[10px]'>
-                        <Button ref={trimRef} onClick={()=>handleDownload()}>Trim</Button>
+                        <Button disabled={trimButtonDisabled || operationInProgress} ref={trimRef}  onClick={()=>handleDownload()}>Trim</Button>
                     </div>                   
                 </div>
             </>

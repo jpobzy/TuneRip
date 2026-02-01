@@ -89,6 +89,7 @@ export default function History() {
             <div className='mx-auto text-center text-gray-200 text-[50px] z-10  position: relative'>
               Download history
             </div>
+            
             <div className='text-[20px] pointer-events-none'>
     
               <GradientText

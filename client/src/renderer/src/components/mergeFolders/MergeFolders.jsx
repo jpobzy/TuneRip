@@ -5,10 +5,14 @@ import axios from "axios";
 import { QuestionOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import GradientSubmitButton from "components/gradientSubmitButton/GradientSubmitButton";
 import { App } from 'antd';
-import './FolderMerge.css'
+import './MergeFolders.css'
 import { useToggle } from "../context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function FolderMerge({setTabsDisabled}){
+function MergeFolders({setTabsDisabled, favorites, operationInProgress, setOperationInProgress, handleSaveTab, currentTabKey}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [mergeFolderForm] = Form.useForm();
     const [open, setOpen] = useState(false);    
@@ -22,7 +26,7 @@ function FolderMerge({setTabsDisabled}){
     const [isLoading, setIsLoading] = useState(false)
     const [showResult, setShowResult] = useState(false)
     const [resultStatusCode, setResultStatusCode] = useState()
-    const { message, notification  } = App.useApp();
+    const { message } = App.useApp();
 
     const mergeFolderRef = useRef()
     const destinationFolderRef = useRef()
@@ -32,6 +36,7 @@ function FolderMerge({setTabsDisabled}){
     const excludedestinationDirValue = existingPlaylistNames.filter(item => item.value !== String(destinationDir))
 
     const {setDisableDockFunctionality} = useToggle()
+    const favoritesRef = useRef(null);
 
     const goBack = () => {
         setIsLoading(false)
@@ -52,6 +57,10 @@ function FolderMerge({setTabsDisabled}){
 
                 setDisableDockFunctionality(true)
                 setTabsDisabled(true)
+                if (currentTabKey === 'fav'){
+                    setOperationInProgress(true)   
+                }    
+
 
                 const req = await axios.post('http://localhost:8080/foldermerge', { mergeDir : mergeDir, destinationDir : destinationDir, newCoverArt : imgClicked})
                 console.log(`req status is: ${req.status}`)
@@ -67,6 +76,9 @@ function FolderMerge({setTabsDisabled}){
 
                 setDisableDockFunctionality(false)
                 setTabsDisabled(false)
+                if (currentTabKey === 'fav'){
+                    setOperationInProgress(false)   
+                }    
 
             }
         }else{
@@ -92,25 +104,30 @@ function FolderMerge({setTabsDisabled}){
 
     const steps = [
     {
-      title: 'Choose a folder to merge',
-      description: 'Merges the current folder’s tracks into the selected folder and updates their metadata to match',
-       target: () => mergeFolderRef.current
+        title: 'Choose a folder to merge',
+        description: 'Merges the current folder’s tracks into the selected folder and updates their metadata to match',
+        target: () => mergeFolderRef.current
     },
     {
-      title: 'Choose the destination folder to merge into',
-      description: 'Select a folder, then click Submit to merge the current folder’s tracks into it and update their metadata',
-       target: () => destinationFolderRef.current
+        title: 'Choose the destination folder to merge into',
+        description: 'Select a folder, then click Submit to merge the current folder’s tracks into it and update their metadata',
+        target: () => destinationFolderRef.current
     },
     {
-      title: 'Submit',
-      description: 'Click submit to start the process',
-       target: () => submitPlaylistsRef.current
+        title: 'Submit',
+        description: 'Click submit to start the process',
+        target: () => submitPlaylistsRef.current
     },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },    
     ]
 
 
     useEffect(()=>{
-            getExistingPlaylists();
+        getExistingPlaylists();
     }, [])
 
     return (
@@ -118,7 +135,7 @@ function FolderMerge({setTabsDisabled}){
             <div>
                     <div className="mx-auto justify-center ">
                         {!isLoading && !showResult &&
-                            <div className="mt-[-50px]">
+                            <div className={currentTabKey === 'mergeFolders' ? "-mt-[50px]" : ''}>
                             <ConfigProvider
                                 theme={{
                                     components :{
@@ -138,27 +155,30 @@ function FolderMerge({setTabsDisabled}){
                                             Directory to merge
                                         </div>
 
-                                        <Form.Item>
+                                        <div>
                                             <div className="inline-block" ref={mergeFolderRef}>
                                                 <Select
+                                                    disabled={operationInProgress}
+                                                    showSearch={true}
                                                     // onDeselect={()=>handleMergeCleared()}
                                                     // onClear={()=>handleMergeCleared()}
                                                     // allowClear={true}
                                                     defaultValue={[]}
-                                                    style={{ width: 600 }}
+                                                    style={{ width: 500 }}
                                                     onChange={(e) => handleMergeSelected(e)}
                                                     // options={excludedestinationDirValue}
                                                     options={existingPlaylistNames}
                                                 />                               
                                             </div>
-                                            <div className="flex -mt-[32px] ml-[655px]" >
+                                            <div className="flex -mt-[32px] ml-[605px] -mb-[35px]" >
                                                 <Tooltip title="help">
-                                                    <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                                    <Button shape="circle" icon={<QuestionOutlined />} disabled={operationInProgress} onClick={() => setOpen(true)}/>
                                                 </Tooltip>                                    
-                                            </div>
-
-                                        </Form.Item>   
-
+                                            </div> 
+                                            <div className='flex ml-[620px] inline-block' ref={favoritesRef}>
+                                                <Button shape="circle" icon={favorites.mergeFolders[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('mergeFolders')}/>
+                                            </div>                                                                                       
+                                        </div>
 
                                         <div className=" mb-[20px]">
                                             <ArrowDownOutlined style={{ fontSize: '70px', color: '#08c' }} />
@@ -173,19 +193,20 @@ function FolderMerge({setTabsDisabled}){
                                         <Form.Item>
                                             <div className="inline-block" ref={destinationFolderRef}>
                                                 <Select
+                                                    showSearch={true}
                                                     allowClear={true}
                                                     // defaultValue={[]}
-                                                    style={{ width: 600 }}
+                                                    style={{ width: 500 }}
                                                     onChange={(e) => setDestinationDir(e)}
                                                     options={excludeMergeDirValue}
-                                                    disabled={isDisabled}
+                                                    disabled={isDisabled || operationInProgress}
                                                 />                               
                                             </div>
                                         </Form.Item>   
 
                                         <div className="flex justify-center">
                                             <div className="flex" ref={submitPlaylistsRef}>
-                                                <GradientSubmitButton  callbackFunction={submit}/>                                
+                                                <GradientSubmitButton callbackFunction={submit} operationInProgress={operationInProgress} setOperationInProgress={setOperationInProgress}/>                                
                                             </div>
   
                                         </div>
@@ -217,15 +238,6 @@ function FolderMerge({setTabsDisabled}){
 
                     </div>
             </div>
-
-
-
-            <div className="mb-[200px] mt-[20px]">
-               {/* <ImageCarousel/>                 */}
-               
-            </div>
-
-                    
             <Tour disabledInteraction={true} open={open} onClose={() => setOpen(false)} steps={steps} />
         </>
     )
@@ -233,4 +245,4 @@ function FolderMerge({setTabsDisabled}){
 
 // label: '/downloads/customTracks', value: '/downloads/customTracks'}
 
-export default FolderMerge
+export default MergeFolders;

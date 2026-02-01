@@ -6,8 +6,13 @@ import {App} from 'antd'
 import { QuestionOutlined  } from '@ant-design/icons';
 import { resultToggle } from "components/context/ResultContext";
 import { useToggle } from "../context/UseContext";
+import {
+  StarOutlined,
+  StarFilled
+} from '@ant-design/icons';
 
-function ReorderTracks({setTabsDisabled}){
+
+function ReorderTracks({setTabsDisabled, favorites, setFavorites, operationInProgress, setOperationInProgress, handleSaveTab}){
     const [existingPlaylistNames, setExistingPlaylistNames] = useState([])
     const [playlistData, setPlaylistData] = useState([])
     const {message} = App.useApp();
@@ -23,6 +28,7 @@ function ReorderTracks({setTabsDisabled}){
     const [resultStatusCode, setResultStatusCode] = useState()
 
     const {setDisableDockFunctionality} = useToggle()
+    const favoritesRef = useRef(null);
 
     const getExistingPlaylists = async ()=>{
         const req = await axios.get('http://localhost:8080/getallfoldernamesindownloads');
@@ -50,9 +56,11 @@ function ReorderTracks({setTabsDisabled}){
             message.error('Error no folder is selected')
         }else{
             setIsLoading(true)
-
             setTabsDisabled(true)
             setDisableDockFunctionality(true)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(true)   
+            }    
 
             try{
                 const response = await axios.post('http://localhost:8080/refactor', {'playlist': playlistData.value})
@@ -69,6 +77,10 @@ function ReorderTracks({setTabsDisabled}){
 
             setTabsDisabled(false)
             setDisableDockFunctionality(false)
+            if (currentTabKey === 'fav'){
+                setOperationInProgress(false)   
+            }    
+
         }
     
     }
@@ -79,24 +91,21 @@ function ReorderTracks({setTabsDisabled}){
       description: 'Pick one or multiple playlists to reorganize their track numbers in the correct order',
        target: () => selectPlaylistsRef.current
     },
-    // {
-    //   title: 'Clear',
-    //   description: "Click 'x' to deselect all selected records.",
-    //    target: () => document.querySelector('.ant-select-selector .ant-select-arrow')
-    // },
     {
       title: 'Submit',
       description: 'Click submit to start the process',
        target: () => submitPlaylistsRef.current
     },
+    {
+        title: 'Add to favorites',
+        description: 'Add this feature to your favorites for quick access.',
+        target: () => favoritesRef.current,
+    },    
     ]
 
     useEffect(()=>{
-            getExistingPlaylists();
-        }, [])
-
-
-
+        getExistingPlaylists();
+    }, [])
 
     return (
         <div>
@@ -106,27 +115,32 @@ function ReorderTracks({setTabsDisabled}){
                     name="refactor"
                     >
                         <Form.Item>
-                            <div className="inline-block" ref={selectPlaylistsRef}>
+                            <div className="inline-block -ml-[55px]" ref={selectPlaylistsRef}>
                                 <Select
+                                    disabled={operationInProgress}
                                     allowClear={true}
                                     mode="multiple"
                                     defaultValue={[]}
-                                    style={{ width: 500 }}
+                                    style={{ width: 450 }}
                                     onChange={(value, label) => setPlaylistChosen(value, label)}
                                     options={existingPlaylistNames}
                                 />      
-                                <div className="flex  -mt-[32px] ml-[541px]" >
+                                <div className="flex  -mt-[32px] ml-[531px] -mb-[32px]" >
                                     <Tooltip title="help">
-                                        <Button shape="circle" icon={<QuestionOutlined />}  onClick={() => setOpen(true)}/>
+                                        <Button shape="circle" icon={<QuestionOutlined />} onClick={() => setOpen(true)} disabled={operationInProgress}/>
                                     </Tooltip>                                    
-                                </div>                         
+                                </div>
+
+                                <div className='flex ml-[570px] inline-block ' ref={favoritesRef}>
+                                    <Button shape="circle" icon={favorites.reorderTracks[0] ? <StarFilled /> : <StarOutlined />} disabled={operationInProgress} onClick={() => handleSaveTab('reorderTracks')}/>
+                                </div>                                                         
                             </div>
                         
                         </Form.Item>
                         <Form.Item>
                             <div className="flex justify-center">
                                 <div className="flex" ref={submitPlaylistsRef}>
-                                    <GradientSubmitButton  callbackFunction={refactor}/>                                
+                                    <GradientSubmitButton  callbackFunction={refactor} operationInProgress={operationInProgress}/>                                
                                 </div>
 
                             </div>
